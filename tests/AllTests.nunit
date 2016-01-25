@@ -1,0 +1,9 @@
+﻿<NUnitProject>
+  <Settings activeconfig="Debug" processModel="Multiple" domainUsage="Default" />
+  <Config name="Debug" binpathtype="Auto" runtimeFramework="net-4.0.21006">
+    <assembly path="LudumLinguarum.Tests\bin\Debug\LudumLinguarumLib.Tests.dll" />
+  </Config>
+  <Config name="Release" binpathtype="Auto">
+    <assembly path="LudumLinguarum.Tests\bin\Release\LudumLinguarumLib.Tests.dll" />
+  </Config>
+</NUnitProject>

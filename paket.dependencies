@@ -1,0 +1,22 @@
+framework net452
+
+source https://nuget.org/api/v2
+
+nuget CommandLineParser
+github praeclarum/sqlite-net
+nuget sqlite
+
+group Build
+  source https://nuget.org/api/v2
+  
+  nuget SourceLink.Fake
+  nuget FAKE
+  nuget FSharp.Formatting
+
+  github fsharp/FAKE modules/Octokit/Octokit.fsx
+
+group Test
+  source https://nuget.org/api/v2
+  
+  nuget NUnit ~> 2.6.4
+  nuget NUnit.Runners ~> 2.6.4

@@ -1,0 +1,23 @@
+type project
+owners
+    Erik Novales
+authors 
+    Erik Novales
+projectUrl
+    http://github.com/enovales/LudumLinguarum
+iconUrl
+    https://raw.githubusercontent.com/enovales/LudumLinguarum/master/docs/files/img/logo.png
+licenseUrl
+    http://github.com/enovales/LudumLinguarum/blob/master/LICENSE.txt
+requireLicenseAcceptance
+    false
+copyright
+    Copyright 2016 Erik Novales
+tags
+    GameDev LanguageLearning
+summary
+    Tools for extracting localized content from games, and turning them into language learning content.
+description
+    Tools for extracting localized content from games, and turning them into language learning content.
+
+

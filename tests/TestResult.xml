@@ -1,0 +1,117 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<!--This file represents the results of running a test suite-->
+<test-results name="E:\projects\LudumLinguarum\tests\AllTests.nunit" total="9" errors="9" failures="0" not-run="0" inconclusive="0" ignored="0" skipped="0" invalid="0" date="2016-01-25" time="00:22:34">
+  <environment nunit-version="2.6.4.14350" clr-version="2.0.50727.8670" os-version="Microsoft Windows NT 6.2.9200.0" platform="Win32NT" cwd="E:\projects\LudumLinguarum\packages\test\NUnit.Runners\tools" machine-name="AXBATTLER" user="enova" user-domain="AXBATTLER" />
+  <culture-info current-culture="en-US" current-uiculture="en-US" />
+  <test-suite type="Test Project" name="E:\projects\LudumLinguarum\tests\AllTests.nunit" executed="True" result="Failure" success="False" time="0.357" asserts="0">
+    <results>
+      <test-suite type="Assembly" name="E:\projects\LudumLinguarum\tests\LudumLinguarum.Tests\bin\Debug\LudumLinguarumLib.Tests.dll" executed="True" result="Failure" success="False" time="0.102" asserts="0">
+        <results>
+          <test-suite type="TestFixture" name="LLDatabaseTests+LLDatabaseTests" executed="True" result="Failure" success="False" time="0.095" asserts="0">
+            <results>
+              <test-case name="LLDatabaseTests+LLDatabaseTests.TestAddCard" executed="True" result="Error" success="False" time="0.048" asserts="0">
+                <failure>
+                  <message><![CDATA[SetUp : System.DllNotFoundException : Unable to load DLL 'sqlite3': The specified module could not be found. (Exception from HRESULT: 0x8007007E)]]></message>
+                  <stack-trace><![CDATA[at SQLite.SQLite3.Open(Byte[] filename, IntPtr& db, Int32 flags, IntPtr zvfs)
+at SQLite.SQLiteConnection..ctor(String databasePath, SQLiteOpenFlags openFlags, Boolean storeDateTimeAsTicks) in E:\projects\LudumLinguarum\paket-files\praeclarum\sqlite-net\src\SQLite.cs:line 219
+at SQLite.SQLiteConnection..ctor(String databasePath, Boolean storeDateTimeAsTicks) in E:\projects\LudumLinguarum\paket-files\praeclarum\sqlite-net\src\SQLite.cs:line 181
+at LLDatabase.LLDatabase..ctor(String dbPath) in E:\projects\LudumLinguarum\src\LudumLinguarumLib\LLDatabase.fs:line 154
+at LLDatabaseTests.LLDatabaseTests.SetUpTest() in E:\projects\LudumLinguarum\tests\LudumLinguarum.Tests\LLDatabaseTests.fs:line 78
+]]></stack-trace>
+                </failure>
+              </test-case>
+              <test-case name="LLDatabaseTests+LLDatabaseTests.TestAddGame" executed="True" result="Error" success="False" time="0.001" asserts="0">
+                <failure>
+                  <message><![CDATA[SetUp : System.DllNotFoundException : Unable to load DLL 'sqlite3': The specified module could not be found. (Exception from HRESULT: 0x8007007E)]]></message>
+                  <stack-trace><![CDATA[at SQLite.SQLite3.Open(Byte[] filename, IntPtr& db, Int32 flags, IntPtr zvfs)
+at SQLite.SQLiteConnection..ctor(String databasePath, SQLiteOpenFlags openFlags, Boolean storeDateTimeAsTicks) in E:\projects\LudumLinguarum\paket-files\praeclarum\sqlite-net\src\SQLite.cs:line 219
+at SQLite.SQLiteConnection..ctor(String databasePath, Boolean storeDateTimeAsTicks) in E:\projects\LudumLinguarum\paket-files\praeclarum\sqlite-net\src\SQLite.cs:line 181
+at LLDatabase.LLDatabase..ctor(String dbPath) in E:\projects\LudumLinguarum\src\LudumLinguarumLib\LLDatabase.fs:line 154
+at LLDatabaseTests.LLDatabaseTests.SetUpTest() in E:\projects\LudumLinguarum\tests\LudumLinguarum.Tests\LLDatabaseTests.fs:line 78
+]]></stack-trace>
+                </failure>
+              </test-case>
+              <test-case name="LLDatabaseTests+LLDatabaseTests.TestAddLesson" executed="True" result="Error" success="False" time="0.001" asserts="0">
+                <failure>
+                  <message><![CDATA[SetUp : System.DllNotFoundException : Unable to load DLL 'sqlite3': The specified module could not be found. (Exception from HRESULT: 0x8007007E)]]></message>
+                  <stack-trace><![CDATA[at SQLite.SQLite3.Open(Byte[] filename, IntPtr& db, Int32 flags, IntPtr zvfs)
+at SQLite.SQLiteConnection..ctor(String databasePath, SQLiteOpenFlags openFlags, Boolean storeDateTimeAsTicks) in E:\projects\LudumLinguarum\paket-files\praeclarum\sqlite-net\src\SQLite.cs:line 219
+at SQLite.SQLiteConnection..ctor(String databasePath, Boolean storeDateTimeAsTicks) in E:\projects\LudumLinguarum\paket-files\praeclarum\sqlite-net\src\SQLite.cs:line 181
+at LLDatabase.LLDatabase..ctor(String dbPath) in E:\projects\LudumLinguarum\src\LudumLinguarumLib\LLDatabase.fs:line 154
+at LLDatabaseTests.LLDatabaseTests.SetUpTest() in E:\projects\LudumLinguarum\tests\LudumLinguarum.Tests\LLDatabaseTests.fs:line 78
+]]></stack-trace>
+                </failure>
+              </test-case>
+              <test-case name="LLDatabaseTests+LLDatabaseTests.TestCreateOrUpdateCard" executed="True" result="Error" success="False" time="0.001" asserts="0">
+                <failure>
+                  <message><![CDATA[SetUp : System.DllNotFoundException : Unable to load DLL 'sqlite3': The specified module could not be found. (Exception from HRESULT: 0x8007007E)]]></message>
+                  <stack-trace><![CDATA[at SQLite.SQLite3.Open(Byte[] filename, IntPtr& db, Int32 flags, IntPtr zvfs)
+at SQLite.SQLiteConnection..ctor(String databasePath, SQLiteOpenFlags openFlags, Boolean storeDateTimeAsTicks) in E:\projects\LudumLinguarum\paket-files\praeclarum\sqlite-net\src\SQLite.cs:line 219
+at SQLite.SQLiteConnection..ctor(String databasePath, Boolean storeDateTimeAsTicks) in E:\projects\LudumLinguarum\paket-files\praeclarum\sqlite-net\src\SQLite.cs:line 181
+at LLDatabase.LLDatabase..ctor(String dbPath) in E:\projects\LudumLinguarum\src\LudumLinguarumLib\LLDatabase.fs:line 154
+at LLDatabaseTests.LLDatabaseTests.SetUpTest() in E:\projects\LudumLinguarum\tests\LudumLinguarum.Tests\LLDatabaseTests.fs:line 78
+]]></stack-trace>
+                </failure>
+              </test-case>
+              <test-case name="LLDatabaseTests+LLDatabaseTests.TestCreateOrUpdateGame" executed="True" result="Error" success="False" time="0.001" asserts="0">
+                <failure>
+                  <message><![CDATA[SetUp : System.DllNotFoundException : Unable to load DLL 'sqlite3': The specified module could not be found. (Exception from HRESULT: 0x8007007E)]]></message>
+                  <stack-trace><![CDATA[at SQLite.SQLite3.Open(Byte[] filename, IntPtr& db, Int32 flags, IntPtr zvfs)
+at SQLite.SQLiteConnection..ctor(String databasePath, SQLiteOpenFlags openFlags, Boolean storeDateTimeAsTicks) in E:\projects\LudumLinguarum\paket-files\praeclarum\sqlite-net\src\SQLite.cs:line 219
+at SQLite.SQLiteConnection..ctor(String databasePath, Boolean storeDateTimeAsTicks) in E:\projects\LudumLinguarum\paket-files\praeclarum\sqlite-net\src\SQLite.cs:line 181
+at LLDatabase.LLDatabase..ctor(String dbPath) in E:\projects\LudumLinguarum\src\LudumLinguarumLib\LLDatabase.fs:line 154
+at LLDatabaseTests.LLDatabaseTests.SetUpTest() in E:\projects\LudumLinguarum\tests\LudumLinguarum.Tests\LLDatabaseTests.fs:line 78
+]]></stack-trace>
+                </failure>
+              </test-case>
+              <test-case name="LLDatabaseTests+LLDatabaseTests.TestCreateOrUpdateLesson" executed="True" result="Error" success="False" time="0.001" asserts="0">
+                <failure>
+                  <message><![CDATA[SetUp : System.DllNotFoundException : Unable to load DLL 'sqlite3': The specified module could not be found. (Exception from HRESULT: 0x8007007E)]]></message>
+                  <stack-trace><![CDATA[at SQLite.SQLite3.Open(Byte[] filename, IntPtr& db, Int32 flags, IntPtr zvfs)
+at SQLite.SQLiteConnection..ctor(String databasePath, SQLiteOpenFlags openFlags, Boolean storeDateTimeAsTicks) in E:\projects\LudumLinguarum\paket-files\praeclarum\sqlite-net\src\SQLite.cs:line 219
+at SQLite.SQLiteConnection..ctor(String databasePath, Boolean storeDateTimeAsTicks) in E:\projects\LudumLinguarum\paket-files\praeclarum\sqlite-net\src\SQLite.cs:line 181
+at LLDatabase.LLDatabase..ctor(String dbPath) in E:\projects\LudumLinguarum\src\LudumLinguarumLib\LLDatabase.fs:line 154
+at LLDatabaseTests.LLDatabaseTests.SetUpTest() in E:\projects\LudumLinguarum\tests\LudumLinguarum.Tests\LLDatabaseTests.fs:line 78
+]]></stack-trace>
+                </failure>
+              </test-case>
+              <test-case name="LLDatabaseTests+LLDatabaseTests.TestGetCardsByLesson" executed="True" result="Error" success="False" time="0.001" asserts="0">
+                <failure>
+                  <message><![CDATA[SetUp : System.DllNotFoundException : Unable to load DLL 'sqlite3': The specified module could not be found. (Exception from HRESULT: 0x8007007E)]]></message>
+                  <stack-trace><![CDATA[at SQLite.SQLite3.Open(Byte[] filename, IntPtr& db, Int32 flags, IntPtr zvfs)
+at SQLite.SQLiteConnection..ctor(String databasePath, SQLiteOpenFlags openFlags, Boolean storeDateTimeAsTicks) in E:\projects\LudumLinguarum\paket-files\praeclarum\sqlite-net\src\SQLite.cs:line 219
+at SQLite.SQLiteConnection..ctor(String databasePath, Boolean storeDateTimeAsTicks) in E:\projects\LudumLinguarum\paket-files\praeclarum\sqlite-net\src\SQLite.cs:line 181
+at LLDatabase.LLDatabase..ctor(String dbPath) in E:\projects\LudumLinguarum\src\LudumLinguarumLib\LLDatabase.fs:line 154
+at LLDatabaseTests.LLDatabaseTests.SetUpTest() in E:\projects\LudumLinguarum\tests\LudumLinguarum.Tests\LLDatabaseTests.fs:line 78
+]]></stack-trace>
+                </failure>
+              </test-case>
+              <test-case name="LLDatabaseTests+LLDatabaseTests.TestGetCardsByLessonAndLanguage" executed="True" result="Error" success="False" time="0.001" asserts="0">
+                <failure>
+                  <message><![CDATA[SetUp : System.DllNotFoundException : Unable to load DLL 'sqlite3': The specified module could not be found. (Exception from HRESULT: 0x8007007E)]]></message>
+                  <stack-trace><![CDATA[at SQLite.SQLite3.Open(Byte[] filename, IntPtr& db, Int32 flags, IntPtr zvfs)
+at SQLite.SQLiteConnection..ctor(String databasePath, SQLiteOpenFlags openFlags, Boolean storeDateTimeAsTicks) in E:\projects\LudumLinguarum\paket-files\praeclarum\sqlite-net\src\SQLite.cs:line 219
+at SQLite.SQLiteConnection..ctor(String databasePath, Boolean storeDateTimeAsTicks) in E:\projects\LudumLinguarum\paket-files\praeclarum\sqlite-net\src\SQLite.cs:line 181
+at LLDatabase.LLDatabase..ctor(String dbPath) in E:\projects\LudumLinguarum\src\LudumLinguarumLib\LLDatabase.fs:line 154
+at LLDatabaseTests.LLDatabaseTests.SetUpTest() in E:\projects\LudumLinguarum\tests\LudumLinguarum.Tests\LLDatabaseTests.fs:line 78
+]]></stack-trace>
+                </failure>
+              </test-case>
+              <test-case name="LLDatabaseTests+LLDatabaseTests.TestGetLanguagesForLesson" executed="True" result="Error" success="False" time="0.001" asserts="0">
+                <failure>
+                  <message><![CDATA[SetUp : System.DllNotFoundException : Unable to load DLL 'sqlite3': The specified module could not be found. (Exception from HRESULT: 0x8007007E)]]></message>
+                  <stack-trace><![CDATA[at SQLite.SQLite3.Open(Byte[] filename, IntPtr& db, Int32 flags, IntPtr zvfs)
+at SQLite.SQLiteConnection..ctor(String databasePath, SQLiteOpenFlags openFlags, Boolean storeDateTimeAsTicks) in E:\projects\LudumLinguarum\paket-files\praeclarum\sqlite-net\src\SQLite.cs:line 219
+at SQLite.SQLiteConnection..ctor(String databasePath, Boolean storeDateTimeAsTicks) in E:\projects\LudumLinguarum\paket-files\praeclarum\sqlite-net\src\SQLite.cs:line 181
+at LLDatabase.LLDatabase..ctor(String dbPath) in E:\projects\LudumLinguarum\src\LudumLinguarumLib\LLDatabase.fs:line 154
+at LLDatabaseTests.LLDatabaseTests.SetUpTest() in E:\projects\LudumLinguarum\tests\LudumLinguarum.Tests\LLDatabaseTests.fs:line 78
+]]></stack-trace>
+                </failure>
+              </test-case>
+            </results>
+          </test-suite>
+        </results>
+      </test-suite>
+    </results>
+  </test-suite>
+</test-results>
