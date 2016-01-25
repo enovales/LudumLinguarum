@@ -190,4 +190,4 @@ docs/tools/FSharp.Formatting.svclog
 
 # NUnit outputs
 tests/*.VisualState.xml
-tests/TestResults.xml
+tests/TestResult.xml
