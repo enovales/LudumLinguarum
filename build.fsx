@@ -147,25 +147,11 @@ Target "RunTests" (fun _ ->
     !! testConfiguration 
     |> NUnit (fun p -> 
         { p with
-            //ToolPath = "packages" </> "test" </> "NUnit.Console" </> "tools"
-            //ToolName = "nunit3-console.exe"
             Framework = "4.5.2"
             DisableShadowCopy = true
             TimeOut = TimeSpan.FromMinutes 20.
             ShowLabels = true
             OutputFile = "TestResults.xml" })
-    (*
-    !! testAssemblies
-    |> NUnit (fun p ->
-        { p with
-            //ToolPath = "packages" </> "test" </> "NUnit.Console" </> "tools"
-            //ToolName = "nunit3-console.exe"
-            Framework = "4.5.2"
-            DisableShadowCopy = true
-            TimeOut = TimeSpan.FromMinutes 20.
-            ShowLabels = true
-            OutputFile = "TestResults.xml" })
-    *)
 )
 
 #if MONO

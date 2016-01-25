@@ -31,7 +31,7 @@ type JadeEmpireContextTests() =
     [<TearDown>]
     member this.TearDownTest() = ()
 
-    [<Test>]
+    [<Test; Explicit>]
     member this.TryCreatingContext(): Unit = 
         let contextGerman = new JadeEmpireContext(rootPathGerman)
         let contextEnglish = new JadeEmpireContext(rootPathEnglish)
@@ -40,7 +40,7 @@ type JadeEmpireContextTests() =
         Assert.IsNotEmpty(contextEnglish.Resources)
         ()
 
-    [<Test>]
+    [<Test; Explicit>]
     member this.ExtractOneLanguageDialoguesToDatabase(): Unit = 
         let contextGerman = new JadeEmpireContext(rootPathGerman)
         let dialogueResources = contextGerman.Resources |> Array.filter(fun t -> t.ResourceType = ResType.Dlg)
@@ -75,7 +75,7 @@ type JadeEmpireContextTests() =
         Assert.AreEqual(LLDatabase.Cards |> Array.ofSeq |> Array.length, stringsAndKeys.Length)
         ()
 
-    [<Test>]
+    [<Test; Explicit>]
     member this.Extract2DAs(): Unit = 
         let contextEnglish = new JadeEmpireContext(rootPathEnglish)
         let twoDAResources = contextEnglish.Resources |> Array.filter(fun t -> t.ResourceType = ResType.Twoda)
@@ -91,7 +91,7 @@ type JadeEmpireContextTests() =
         )
         ()
 
-    [<Test>]
+    [<Test; Explicit>]
     member this.Export2DAsAsCSVs(): Unit = 
         let contextEnglish = new JadeEmpireContext(rootPathEnglish)
         let twoDAResources = contextEnglish.Resources |> Array.filter(fun t -> t.ResourceType = ResType.Twoda)

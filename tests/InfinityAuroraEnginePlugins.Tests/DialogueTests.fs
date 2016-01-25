@@ -34,7 +34,7 @@ type DialogueTests() =
     [<TearDown>]
     member this.TearDownTest() = ()
 
-    [<Test>]
+    [<Test; Explicit>]
     member this.CheckLoadedGFF(): Unit = 
         let gff = LoadGFF({ ResRef.Value = "nw_hen_bod"}, ResType.Dlg, contextGerman.Resources)
         Assert.IsTrue(gff.Members.GetDword(SerializedDialogue.DelayEntryName).IsSome, "didn't have DelayEntry")
@@ -48,7 +48,7 @@ type DialogueTests() =
         Assert.IsTrue(gff.Members.GetList(SerializedDialogue.StartingListName).IsSome, "didn't have StartingList")
         ()
 
-    [<Test>]
+    [<Test; Explicit>]
     member this.TestLoadSerializedDialogue(): Unit = 
         let gff = LoadGFF({ ResRef.Value = "nw_hen_bod"}, ResType.Dlg, contextGerman.Resources)
         let serializedDialogue = SerializedDialogue.FromGFF(gff)
@@ -57,7 +57,7 @@ type DialogueTests() =
         Assert.IsTrue(serializedDialogue.ReplyList.IsSome, "didn't have reply list")
         ()
 
-    [<Test>]
+    [<Test; Explicit>]
     member this.TestLoadDialogue(): Unit = 
         let gff = LoadGFF({ ResRef.Value = "nw_hen_bod"}, ResType.Dlg, contextGerman.Resources)
         let serializedDialogue = SerializedDialogue.FromGFF(gff)
@@ -67,7 +67,7 @@ type DialogueTests() =
         Assert.IsNotEmpty(dialogue.ReplyList)
         Assert.IsNotEmpty(dialogue.StartingList)
 
-    [<Test>]
+    [<Test; Explicit>]
     member this.TestWalkDialogueTree(): Unit = 
         let dialogue = LoadDialogue({ ResRef.Value = "nw_hen_bod"}, contextGerman.Resources)
         let strings = dialogue.StartingList |> Array.mapi (fun i t -> GatherStrings([], t, 0, i) |> List.toArray) |> Array.concat
@@ -76,7 +76,7 @@ type DialogueTests() =
             System.Console.WriteLine(EvaluateString(t, germanTalkTable, germanTalkTableF, LanguageType.German, Gender.MasculineOrNeutral))) |> ignore
         ()
 
-    [<Test>]
+    [<Test; Explicit>]
     member this.TestWalkAllDialogueTrees(): Unit = 
         let dialogueResources = contextEnglish.Resources |> Array.filter(fun t -> t.ResourceType = ResType.Dlg)
         let dialogues = dialogueResources |> Array.map (fun t -> LoadDialogue(t.Name, contextEnglish.Resources))

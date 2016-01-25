@@ -120,7 +120,7 @@ DEFAULT: foo
         let twoDA = TwoDAFile.FromString(sample2DATextWithFloats)
         Assert.AreEqual(Some(5.0f), twoDA.ValueFloat(1, 1))
 
-    [<Test>]
+    [<Test; Explicit>]
     member this.Test2DABinaryRead(): Unit = 
         let twoDA = TwoDAFile.FromFile(sample2DABinaryFilePath)
         Assert.IsTrue(twoDA.RowCount > 0)

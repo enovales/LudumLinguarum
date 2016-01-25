@@ -1,9 +1,13 @@
 ﻿<NUnitProject>
-  <Settings activeconfig="Debug" processModel="Multiple" domainUsage="Default" />
-  <Config name="Debug" binpathtype="Auto" runtimeFramework="net-4.0.21006">
+  <Settings activeconfig="Release" processModel="Multiple" />
+  <Config name="Debug" binpathtype="Auto" runtimeFramework="net-4.0">
     <assembly path="LudumLinguarum.Tests\bin\Debug\LudumLinguarumLib.Tests.dll" />
+    <assembly path="InfinityAuroraEnginePlugins.Tests\bin\Debug\InfinityAuroraEnginePlugins.Tests.dll" />
+    <assembly path="OneOffGamesPlugin.Tests\bin\Debug\OneOffGamesPlugin.Tests.dll" />
   </Config>
   <Config name="Release" binpathtype="Auto">
     <assembly path="LudumLinguarum.Tests\bin\Release\LudumLinguarumLib.Tests.dll" />
+    <assembly path="InfinityAuroraEnginePlugins.Tests\bin\Release\InfinityAuroraEnginePlugins.Tests.dll" />
+    <assembly path="OneOffGamesPlugin.Tests\bin\Release\OneOffGamesPlugin.Tests.dll" />
   </Config>
 </NUnitProject>

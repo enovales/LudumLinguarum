@@ -28,7 +28,7 @@ type AuroraPluginTests() =
     [<TearDown>]
     member this.TearDownTest() = ()
 
-    [<Test>]
+    [<Test; Explicit>]
     member this.TestExtractNWN1() = 
         (plugin :> IGameExtractorPlugin).Load(System.Console.Out)
         (plugin :> IGameExtractorPlugin).ExtractAll("Neverwinter Nights", rootPathEnglish, db)

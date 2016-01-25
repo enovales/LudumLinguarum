@@ -22,7 +22,7 @@ type ArchiveFilesTests() =
     [<TearDown>]
     member this.TearDownTest() = ()
 
-    [<Test>]
+    [<Test; Explicit>]
     member this.TestExtractNWN(): Unit = 
         let keyFile = KEYFile.FromFilePath(keyFilePath)
         let bifFiles = [for i in 0..(keyFile.BIFFilenames.Length - 1) -> BIFFile.FromKEYFile(keyFile, rootDataPath, i)]
@@ -35,7 +35,7 @@ type ArchiveFilesTests() =
 
         ()
 
-    [<Test>]
+    [<Test; Explicit>]
     member this.ReadDLGs(): Unit = 
         let keyFile = KEYFile.FromFilePath(keyFilePath)
         let bifFiles = [for i in 0..(keyFile.BIFFilenames.Length - 1) -> BIFFile.FromKEYFile(keyFile, rootDataPath, i)]
@@ -44,7 +44,7 @@ type ArchiveFilesTests() =
         let dialogues = keyFile.ResourceEntries |> List.filter(fun r -> r.resource.ResType = ResType.Dlg )
         ignore (dialogues |> List.map(fun d -> bifSet.GetBinaryReader(d).Dispose()))
 
-    [<Test>]
+    [<Test; Explicit>]
     member this.ReadERF(): Unit = 
         let erfFile = ERFFile.FromFilePath(Path.Combine(rootDataPath, @"nwm\Chapter1.nwm"))
         Assert.IsNotEmpty(erfFile.Resources)

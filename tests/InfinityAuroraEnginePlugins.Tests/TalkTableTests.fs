@@ -19,7 +19,7 @@ type TalkTableTests() =
     member this.TearDownTest() = ()
 
 
-    [<Test>]
+    [<Test; Explicit>]
     member this.TestLoadNWNTalkTable(): Unit = 
         let talkTable = TalkTableV3.FromFilePath(@"C:\GOG Games\Neverwinter Nights Diamond Edition (German)\dialog.tlk")
         let fTalkTable = TalkTableV3.FromFilePath(@"C:\GOG Games\Neverwinter Nights Diamond Edition (German)\dialogF.tlk")

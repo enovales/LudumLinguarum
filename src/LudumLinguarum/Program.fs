@@ -104,8 +104,8 @@ let main argv =
     let pluginManager = new PluginManager()
     let iPluginManager = pluginManager :> IPluginManager
 
-    // try and load all plugins from eligible paths
-    let bundledPluginsPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "plugins")
+    // try and load all plugins that are alongside this executable
+    let bundledPluginsPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
     let bundledPlugins = Directory.GetFiles(bundledPluginsPath, "*.dll", SearchOption.AllDirectories)
 
     let commandLineParser = new CommandLine.Parser(fun t -> 

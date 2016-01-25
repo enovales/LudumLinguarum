@@ -173,7 +173,7 @@ docs/output/
 temp/
 
 # Test results produced by build
-TestResults.xml
+TestResults.XML
 
 # Nuget outputs
 nuget/*.nupkg
@@ -187,3 +187,7 @@ docs/content/license.md
 docs/content/release-notes.md
 .fake
 docs/tools/FSharp.Formatting.svclog
+
+# NUnit outputs
+tests/*.VisualState.xml
+tests/TestResults.xml

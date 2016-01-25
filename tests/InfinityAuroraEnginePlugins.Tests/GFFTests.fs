@@ -24,7 +24,7 @@ type GFFTests() =
     member this.TearDownTest() = ()
 
 
-    [<Test>]
+    [<Test; Explicit>]
     member this.TestLoadGFF(): Unit = 
         let bifSet = BIFSet.FromKEYPath(keyFilePath)
         let resOpt = bifSet.GetBinaryReader({ ResRef.Value = "nw_hen_bod" }, ResType.Dlg)
@@ -33,7 +33,7 @@ type GFFTests() =
         Assert.IsNotEmpty(gff.Members.Fields)
         ()
 
-    [<Test>]
+    [<Test; Explicit>]
     member this.DumpResourceTypes(): Unit = 
         let bifSet = BIFSet.FromKEYPath(keyFilePath)
         let resourceGroups = bifSet.KEY.ResourceEntries |> List.toArray |> Array.groupBy (fun t -> t.resource.ResType)

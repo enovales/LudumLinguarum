@@ -30,7 +30,7 @@ type NWN1ContextTests() =
     [<TearDown>]
     member this.TearDownTest() = ()
 
-    [<Test>]
+    [<Test; Explicit>]
     member this.TryCreatingContext(): Unit = 
         let contextGerman = new NWN1Context(rootPathGerman)
         let contextEnglish = new NWN1Context(rootPathEnglish)
@@ -39,7 +39,7 @@ type NWN1ContextTests() =
         Assert.IsNotEmpty(contextEnglish.Resources)
         ()
 
-    [<Test>]
+    [<Test; Explicit>]
     member this.ExtractOneLanguageDialoguesToDatabase(): Unit = 
         let contextGerman = new NWN1Context(rootPathGerman)
         let dialogueResources = contextGerman.Resources |> Array.filter(fun t -> t.ResourceType = ResType.Dlg)
@@ -74,7 +74,7 @@ type NWN1ContextTests() =
         Assert.AreEqual(LLDatabase.Cards |> Array.ofSeq |> Array.length, stringsAndKeys.Length)
         ()
 
-    [<Test>]
+    [<Test; Explicit>]
     member this.Extract2DAs(): Unit = 
         let contextEnglish = new NWN1Context(rootPathEnglish)
         let twoDAResources = contextEnglish.Resources |> Array.filter(fun t -> t.ResourceType = ResType.Twoda)
