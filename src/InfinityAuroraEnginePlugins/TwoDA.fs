@@ -157,7 +157,7 @@ type TwoDAFile(columnHeaders: string array, defaultValue: string option, rowData
                 None
 
         let columnHeaders = tr.ReadLine().Split([| ' ' |], StringSplitOptions.RemoveEmptyEntries)
-        let restOfText = tr.ReadToEnd().Split([| Environment.NewLine |], StringSplitOptions.RemoveEmptyEntries)
+        let restOfText = tr.ReadToEnd().Split([| Environment.NewLine; new String(char 10, 1); new String(char 13, 1) |], StringSplitOptions.RemoveEmptyEntries)
         let rowData = restOfText |> Array.map (fun t -> TwoDAFile.ParseDataLine(t)) |> Array.filter(fun t -> t.Length > 0)
         (columnHeaders, defaultValue, rowData)
 
