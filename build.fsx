@@ -51,6 +51,16 @@ let solutionFile  = "LudumLinguarum.sln"
 let testAssemblies = "tests/**/bin/Release/*Tests*.dll"
 let testConfiguration = "tests/AllTests.nunit"
 
+// Projects whose output should not be copied to bin/
+let buildFilteredProjects = 
+    [
+        "src/**/*.shproj";
+        "src/*Plugin*/*.??proj";
+        "src/LLsqlite-net/*.??proj";
+        "src/LudumLinguarumLib/*.??proj";
+        "src/OneOffGamesData/*.??proj"
+    ]
+
 // Git configuration (used for publishing documentation in gh-pages branch)
 // The profile where the project is posted
 let gitOwner = "enovales"
@@ -110,8 +120,10 @@ Target "AssemblyInfo" (fun _ ->
 // But keeps a subdirectory structure for each project in the
 // src folder to support multiple project outputs
 Target "CopyBinaries" (fun _ ->
-    !! "src/**/*.??proj"
-    -- "src/**/*.shproj"
+    let baseProjects = !! "src/**/*.??proj"
+    let filteredProjects = buildFilteredProjects |> Seq.fold (fun fi p -> fi -- p) baseProjects
+
+    filteredProjects
     |>  Seq.map (fun f -> ((System.IO.Path.GetDirectoryName f) </> "bin/Release", "bin" </> (System.IO.Path.GetFileNameWithoutExtension f)))
     |>  Seq.iter (fun (fromDir, toDir) -> CopyDir toDir fromDir (fun _ -> true))
 )
