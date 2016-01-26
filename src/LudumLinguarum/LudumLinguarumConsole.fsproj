@@ -23,6 +23,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <WarningLevel>3</WarningLevel>
     <OtherFlags>--warnon:1182</OtherFlags>
+    <StartArguments>import --game="Jet Set Radio" --game-dir="C:\Program Files (x86)\Steam\steamapps\common\Jet Set Radio"</StartArguments>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -33,6 +34,7 @@
     <WarningLevel>3</WarningLevel>
     <DocumentationFile>.\bin\Release\LudumLinguarum.xml</DocumentationFile>
     <OtherFlags>--warnon:1182</OtherFlags>
+    <StartArguments>import --game="Jet Set Radio" --game-dir="C:\Program Files (x86)\Steam\steamapps\common\Jet Set Radio"</StartArguments>
   </PropertyGroup>
   <PropertyGroup>
     <MinimumVisualStudioVersion Condition="'$(MinimumVisualStudioVersion)' == ''">11</MinimumVisualStudioVersion>
@@ -58,12 +60,45 @@
   </Target>
   -->
   <Import Project="..\..\.paket\paket.targets" />
+  <Choose>
+    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.5.2'">
+      <ItemGroup>
+        <Reference Include="CommandLine">
+          <HintPath>..\..\packages\CommandLineParser\lib\net45\CommandLine.dll</HintPath>
+          <Private>True</Private>
+          <Paket>True</Paket>
+        </Reference>
+      </ItemGroup>
+    </When>
+  </Choose>
   <ItemGroup>
     <None Include="paket.references" />
     <None Include="paket.template" />
     <Compile Include="Program.fs" />
+    <Content Include="App.config">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <None Include="..\..\packages\sqlite.redist\build\native\bin\x64\Release\sqlite3.dll">
+      <Link>sqlite3.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\InfinityAuroraEnginePlugins\InfinityAuroraEnginePlugins.fsproj">
+      <Name>InfinityAuroraEnginePlugins</Name>
+      <Project>{551ec15e-2d53-4ed8-bd64-e1dc64a228a3}</Project>
+      <Private>True</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\OneOffGamesData\OneOffGamesData.csproj">
+      <Name>OneOffGamesData</Name>
+      <Project>{42818c9b-d028-47a4-8629-b2753c185915}</Project>
+      <Private>True</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\OneOffGamesPlugin\OneOffGamesPlugin.fsproj">
+      <Name>OneOffGamesPlugin</Name>
+      <Project>{0737fc91-c5e0-421a-8d56-b552f83b6dec}</Project>
+      <Private>True</Private>
+    </ProjectReference>
     <Reference Include="mscorlib" />
     <Reference Include="FSharp.Core, Version=$(TargetFSharpCoreVersion), Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
       <Private>True</Private>
@@ -77,20 +112,4 @@
       <Private>True</Private>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <Content Include="App.config">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
-  <Choose>
-    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.5.2'">
-      <ItemGroup>
-        <Reference Include="CommandLine">
-          <HintPath>..\..\packages\CommandLineParser\lib\net45\CommandLine.dll</HintPath>
-          <Private>True</Private>
-          <Paket>True</Paket>
-        </Reference>
-      </ItemGroup>
-    </When>
-  </Choose>
 </Project>
