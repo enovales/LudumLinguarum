@@ -26,6 +26,38 @@ type ReaderWrapper(br: BinaryReader) =
         if needToConvert then Array.Reverse(bytes)
         BitConverter.ToUInt32(bytes, 0)
 
+// **************************************************************************
+// .srt subtitle files from modern re-release
+// **************************************************************************
+type SrtEntry = {
+        SubtitleId: string
+        Timecodes: string
+        Subtitle: string
+    }
+    with
+        override self.ToString() = 
+            "SrtEntry(id = " + self.SubtitleId + ", timecodes = " + self.Timecodes + ", subtitle = " + self.Subtitle + ")"
+
+let parseSrtSubtitles(lines: string array) = 
+    let unfoldNextEntry(s: string list): (SrtEntry * string list) option = 
+        let nextBlock = s |> List.takeWhile(String.IsNullOrWhiteSpace >> not)
+        match nextBlock with
+        | subtitleLine :: (timecodesLine :: subtitleText) when not(subtitleText |> List.isEmpty) -> 
+            let processedSubtitle = String.Join(" ", subtitleText |> Array.ofList).Replace(Environment.NewLine, "")
+            let nextList = s |> List.skip(nextBlock |> List.length) |> List.skipWhile(String.IsNullOrWhiteSpace)
+
+            Some(({
+                    SrtEntry.SubtitleId = subtitleLine
+                    Timecodes = timecodesLine
+                    Subtitle = processedSubtitle
+            }, nextList))
+        | _ -> None
+    Seq.unfold unfoldNextEntry (lines |> List.ofArray)
+
+
+// **************************************************************************
+// AFS archive code
+// **************************************************************************
 type AFSArchiveRawFileEntry = {
         Offset: uint32
         Length: uint32
@@ -117,6 +149,10 @@ type AFSArchive(s: Stream, br: BinaryReader, entries: AFSArchiveFileEntry array)
     interface IDisposable with
         member this.Dispose() = 
             s.Dispose()
+
+// **************************************************************************
+// String block extraction code
+// **************************************************************************
 
 /// <summary>
 /// Function intended for use with unfold, which reads from the provided binary reader
@@ -357,6 +393,9 @@ let readStringsFromBin(br: BinaryReader): string array array =
 
     Array.unfold(readStringSet(ssr, 5)) ()
         
+// **************************************************************************
+// Modern-release-specific string code
+// **************************************************************************
 
 type LanguageType = 
     | English       = 0
