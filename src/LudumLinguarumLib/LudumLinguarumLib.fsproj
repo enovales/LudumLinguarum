@@ -70,6 +70,7 @@
     <Content Include="dictionary.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Compile Include="SrtTools.fs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />
