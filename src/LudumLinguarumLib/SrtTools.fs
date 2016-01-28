@@ -50,9 +50,9 @@ let parseSrtSubtitles(lines: string array) =
 
 type SrtBlockExtractor(entries: SrtBlockExtractorEntry seq, entryGenerator: SrtBlockExtractorEntry -> SrtEntry array) = 
     static member private DefaultEntryGenerator(rootPath: string)(entry: SrtBlockExtractorEntry): SrtEntry array = 
-        File.ReadAllLines(Path.Combine(rootPath, entry.RelativePath)) |> parseSrtSubtitles |> Array.ofSeq
+        File.ReadAllLines(Path.Combine(rootPath, entry.RelativePath)) |> parseSrtSubtitles |> Array.ofSeq   
 
-    private new (rootPath: string, csvLines: string array) = 
+    static member internal GenerateEntriesForLines(csvLines: string array) = 
         let tryParseAsHex(s: string): int64 = 
             if (s.StartsWith("0x", StringComparison.InvariantCultureIgnoreCase)) then
                 Int64.Parse(s.Substring(2), NumberStyles.HexNumber)
@@ -68,22 +68,26 @@ type SrtBlockExtractor(entries: SrtBlockExtractorEntry seq, entryGenerator: SrtB
             else
                 s
 
-        let csvEntries = csvLines |> Array.map(fun line ->
+        csvLines |> Array.map(fun line ->
                 let fields = line.Split(',') |> Array.map(fun f -> f.Trim())
                 
                 lastRelativePath <- getOrLast(fields.[0], lastRelativePath)
                 lastID <- getOrLast(fields.[2], lastID)
+
+                let currentSubtitleIdStart = fields.[4]
 
                 {
                     SrtBlockExtractorEntry.RelativePath = lastRelativePath
                     OverrideBaseKey = fields.[1]
                     Id = tryParseAsHex(lastID)
                     Languages = fields.[3]
-                    SubtitleIdStart = Int32.Parse(fields.[4])
-                    SubtitleIdEnd = Int32.Parse(fields.[5])
+                    SubtitleIdStart = Int32.Parse(currentSubtitleIdStart)
+                    SubtitleIdEnd = Int32.Parse(getOrLast(fields.[5], currentSubtitleIdStart))
                 }
             )
-        new SrtBlockExtractor(csvEntries, SrtBlockExtractor.DefaultEntryGenerator(rootPath))
+
+    private new (rootPath: string, csvLines: string array) = 
+        new SrtBlockExtractor(SrtBlockExtractor.GenerateEntriesForLines(csvLines), SrtBlockExtractor.DefaultEntryGenerator(rootPath))
 
     new(rootPath: string, sourceCsvStream: Stream) = 
         let toRead = sourceCsvStream.Length - sourceCsvStream.Position
@@ -142,7 +146,7 @@ type SrtBlockExtractor(entries: SrtBlockExtractorEntry seq, entryGenerator: SrtB
 
         entriesByFile |> (Array.map extractEntriesForFile) |> Array.collect(fun t -> t) |> Seq.ofArray
 
-let convertStringBlockExtractedEntriesToCardRecords(lid: int)(extracted: SrtBlockExtractedEntry seq): CardRecord seq =
+let convertSrtBlockExtractedEntriesToCardRecords(lid: int)(extracted: SrtBlockExtractedEntry seq): CardRecord seq =
     let createCardRecordForEntry(e: SrtBlockExtractedEntry) = 
         let baseKey = e.Entry.RelativePath + "\\" + e.Entry.Id.ToString()
         {
