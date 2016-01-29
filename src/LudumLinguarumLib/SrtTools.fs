@@ -68,9 +68,13 @@ type SrtBlockExtractor(entries: SrtBlockExtractorEntry seq, entryGenerator: SrtB
             else
                 s
 
-        csvLines |> Array.map(fun line ->
-                let fields = line.Split(',') |> Array.map(fun f -> f.Trim())
-                
+        let dataLinesSplitIntoFields = 
+            csvLines 
+            |> Array.skip(1) 
+            |> Array.map(fun t -> t.Split(',') |> Array.map(fun f -> f.Trim()))
+            |> Array.filter(fun t -> t.Length >= 5)
+
+        dataLinesSplitIntoFields |> Array.map(fun fields ->
                 lastRelativePath <- getOrLast(fields.[0], lastRelativePath)
                 lastID <- getOrLast(fields.[2], lastID)
 
@@ -133,7 +137,7 @@ type SrtBlockExtractor(entries: SrtBlockExtractorEntry seq, entryGenerator: SrtB
         let readNext(entries: SrtEntry array) = fun(state: SrtBlockExtractorEntry list) -> 
             match state with
             | n :: rest -> 
-                let nextSubtitleEntries = Array.sub entries n.SubtitleIdStart (n.SubtitleIdEnd - n.SubtitleIdStart + 1)
+                let nextSubtitleEntries = Array.sub entries (n.SubtitleIdStart - 1) (n.SubtitleIdEnd - n.SubtitleIdStart + 1)
                 let nextString = String.Join(" ", nextSubtitleEntries |> Array.map(fun s -> s.Subtitle) |> Array.filter(String.IsNullOrWhiteSpace >> not))
                 Some((createEntriesForLanguages(n, nextString), rest))
             | [] -> None
