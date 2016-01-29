@@ -1,6 +1,7 @@
 ﻿module JetSetRadio
 
 open LLDatabase
+open SrtTools
 open StringExtractors
 open System
 open System.Collections.Generic
@@ -25,10 +26,6 @@ type ReaderWrapper(br: BinaryReader) =
         let bytes = br.ReadBytes(4)
         if needToConvert then Array.Reverse(bytes)
         BitConverter.ToUInt32(bytes, 0)
-
-// **************************************************************************
-// .srt subtitle files from modern re-release
-// **************************************************************************
 
 // **************************************************************************
 // AFS archive code
@@ -490,6 +487,12 @@ type JetSetRadio =
             |> convertStringBlockExtractedEntriesToCardRecords(lessonId)
             |> Array.ofSeq
 
+    static member private ExtractStringsFromSrt(path: string, lessonId: int) = 
+        let extractor = new SrtBlockExtractor(path, OneOffGamesData.DataAssembly.GetManifestResourceStream(@"OneOffGamesData.JetSetRadio.SrtExtraction.csv"))
+        extractor.Extract()
+            |> convertSrtBlockExtractedEntriesToCardRecords(lessonId)
+            |> Array.ofSeq
+
     static member ExtractJetSetRadio(path: string, db: LLDatabase, gameEntryWithId: GameRecord, args: string[]) = 
         let lessonEntry = {
             LessonRecord.GameID = gameEntryWithId.ID;
@@ -502,7 +505,7 @@ type JetSetRadio =
                 [|
                     JetSetRadio.ExtractJSRStringsDotStr(path, lessonEntryWithId.ID);
                     // TBD: extract CUSTOM\instructions*.txt
-                    // TBD: extract subtitles from DATA\VIDEOS\*.srt
+                    JetSetRadio.ExtractStringsFromSrt(path, lessonEntryWithId.ID);
                     JetSetRadio.ExtractStringsFromBinaries(path, lessonEntryWithId.ID)
                     // TBD: extract .NET satellite assembly localized strings
                 |])

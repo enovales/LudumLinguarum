@@ -35,7 +35,7 @@ let parseSrtSubtitles(lines: string array) =
     let unfoldNextEntry(s: string list): (SrtEntry * string list) option = 
         let nextBlock = s |> List.takeWhile(String.IsNullOrWhiteSpace >> not)
         match nextBlock with
-        | subtitleLine :: (timecodesLine :: subtitleText) when not(subtitleText |> List.isEmpty) -> 
+        | subtitleLine :: (timecodesLine :: subtitleText) -> 
             let processedSubtitle = String.Join(" ", subtitleText |> Array.ofList).Replace(Environment.NewLine, "")
             let nextList = s |> List.skip(nextBlock |> List.length) |> List.skipWhile(String.IsNullOrWhiteSpace)
 
@@ -61,6 +61,7 @@ type SrtBlockExtractor(entries: SrtBlockExtractorEntry seq, entryGenerator: SrtB
 
         // Allow for sparse specification of some fields.
         let mutable lastRelativePath = ""
+        let mutable lastOverrideBaseKey = ""
         let mutable lastID = ""
         let getOrLast(s: string, os: string) =
             if String.IsNullOrWhiteSpace(s) then
@@ -76,13 +77,14 @@ type SrtBlockExtractor(entries: SrtBlockExtractorEntry seq, entryGenerator: SrtB
 
         dataLinesSplitIntoFields |> Array.map(fun fields ->
                 lastRelativePath <- getOrLast(fields.[0], lastRelativePath)
+                lastOverrideBaseKey <- getOrLast(fields.[1], lastOverrideBaseKey)
                 lastID <- getOrLast(fields.[2], lastID)
 
                 let currentSubtitleIdStart = fields.[4]
 
                 {
                     SrtBlockExtractorEntry.RelativePath = lastRelativePath
-                    OverrideBaseKey = fields.[1]
+                    OverrideBaseKey = lastOverrideBaseKey
                     Id = tryParseAsHex(lastID)
                     Languages = fields.[3]
                     SubtitleIdStart = Int32.Parse(currentSubtitleIdStart)
@@ -98,12 +100,11 @@ type SrtBlockExtractor(entries: SrtBlockExtractorEntry seq, entryGenerator: SrtB
         let csvBytes = Array.zeroCreate<byte>(int toRead)
         let csvRead = sourceCsvStream.Read(csvBytes, 0, int toRead)
         let csvText = Encoding.UTF8.GetString(csvBytes)
-        let csvLines = csvText.Split([| Environment.NewLine |], StringSplitOptions.RemoveEmptyEntries) |> Array.skip(1)
+        let csvLines = csvText.Split([| Environment.NewLine |], StringSplitOptions.RemoveEmptyEntries)
         new SrtBlockExtractor(rootPath, csvLines)
 
     new(rootPath: string, sourceCsvPath: string) = 
-        // read in the source csv, and skip the header line
-        let csvLines = File.ReadAllLines(sourceCsvPath) |> Array.skip(1)
+        let csvLines = File.ReadAllLines(sourceCsvPath)
         new SrtBlockExtractor(rootPath, csvLines)
 
     member this.Extract(): SrtBlockExtractedEntry seq = 

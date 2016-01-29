@@ -114,14 +114,62 @@ which is a subtitle that has two parts""".Split([| Environment.NewLine; "\r"; "\
 00:00:00,000 --> 00:00:01,000
 Test Single Line Subtitle
 
-2
-00:00:01,000 --> 00:00:02,000""".Split([| Environment.NewLine; "\r"; "\n" |], StringSplitOptions.None)
+2"""            .Split([| Environment.NewLine; "\r"; "\n" |], StringSplitOptions.None)
         let results = SrtTools.parseSrtSubtitles(subtitleText) |> Seq.toArray
         let expected = [| 
             {
                 SrtEntry.SubtitleId = "1"
                 Timecodes = "00:00:00,000 --> 00:00:01,000"
                 Subtitle = "Test Single Line Subtitle"
+            }
+        |]
+
+        Assert.AreEqual(expected, results)
+
+    /// <summary>
+    /// Tests parsing of a single blank subtitle.
+    /// </summary>
+    [<Test>]
+    member this.TestSrtParseEmptySubtitle() = 
+        let unSplitSubtitleText = """1
+00:00:00,000 --> 00:00:01,000
+
+"""
+        let subtitleText = unSplitSubtitleText.Split([| Environment.NewLine; "\r"; "\n" |], StringSplitOptions.None)
+        let results = SrtTools.parseSrtSubtitles(subtitleText) |> Seq.toArray
+        let expected = [| 
+            {
+                SrtEntry.SubtitleId = "1"
+                Timecodes = "00:00:00,000 --> 00:00:01,000"
+                Subtitle = ""
+            }
+        |]
+
+        Assert.AreEqual(expected, results)        
+
+        /// <summary>
+    /// Test parsing of multiple .srt entries.
+    /// </summary>
+    [<Test>]
+    member this.TestSrtParseOneEmptySubtitleAndOneNormal() = 
+        let subtitleText = 
+            """1
+00:00:00,000 --> 00:00:01,000
+
+2
+00:00:01,000 --> 00:00:02,000
+Test Single Line Subtitle 2""".Split([| Environment.NewLine; "\r"; "\n" |], StringSplitOptions.None)
+        let results = SrtTools.parseSrtSubtitles(subtitleText) |> Seq.toArray
+        let expected = [| 
+            {
+                SrtEntry.SubtitleId = "1"
+                Timecodes = "00:00:00,000 --> 00:00:01,000"
+                Subtitle = ""
+            };
+            {
+                SrtEntry.SubtitleId = "2"
+                Timecodes = "00:00:01,000 --> 00:00:02,000"
+                Subtitle = "Test Single Line Subtitle 2"
             }
         |]
 
@@ -182,4 +230,39 @@ DATA\VIDEOS\blah_en.srt,DATA\VIDEOS\blah.srt,1,en,1,,comment
 
         Assert.AreEqual(1, entries |> Seq.length)
         Assert.AreEqual(expected, entries.[0])
+
+    /// <summary>
+    /// Test parsing a .csv file with multiple .srt entries, including carry-over of 
+    /// previous values.
+    /// </summary>
+    [<Test>]
+    member this.TestSrtBlockMultipleParsing() = 
+        let csvText = """File,MappedFile,StringId,Language,SubtitleIdStart,SubtitleIdEnd,Comment
+DATA\VIDEOS\blah_en.srt,DATA\VIDEOS\blah.srt,1,en,1,1,comment
+,,2,en,2,2,comment
+        """
+
+        let entries = 
+            SrtBlockExtractor.GenerateEntriesForLines(csvText.Split([| Environment.NewLine; "\r"; "\n" |], StringSplitOptions.None))
+        let expected1 = {
+            SrtBlockExtractorEntry.Id = int64 1
+            SrtBlockExtractorEntry.Languages = "en"
+            SrtBlockExtractorEntry.OverrideBaseKey = @"DATA\VIDEOS\blah.srt"
+            SrtBlockExtractorEntry.RelativePath = @"DATA\VIDEOS\blah_en.srt"
+            SrtBlockExtractorEntry.SubtitleIdStart = 1
+            SrtBlockExtractorEntry.SubtitleIdEnd = 1
+        }
+
+        let expected2 = {
+            SrtBlockExtractorEntry.Id = int64 2
+            SrtBlockExtractorEntry.Languages = "en"
+            SrtBlockExtractorEntry.OverrideBaseKey = @"DATA\VIDEOS\blah.srt"
+            SrtBlockExtractorEntry.RelativePath = @"DATA\VIDEOS\blah_en.srt"
+            SrtBlockExtractorEntry.SubtitleIdStart = 2
+            SrtBlockExtractorEntry.SubtitleIdEnd = 2
+        }
+
+        Assert.AreEqual(2, entries |> Seq.length)
+        Assert.AreEqual(expected1, entries.[0])
+        Assert.AreEqual(expected2, entries.[1])
 
