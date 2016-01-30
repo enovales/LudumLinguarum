@@ -72,6 +72,7 @@
     </Content>
     <Compile Include="SrtTools.fs" />
     <Compile Include="AssemblyInfoStatic.fs" />
+    <Compile Include="AssemblyResourceTools.fs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />
