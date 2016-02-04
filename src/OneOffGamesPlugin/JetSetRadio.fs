@@ -1,5 +1,6 @@
 ﻿module JetSetRadio
 
+open AssemblyResourceTools
 open LLDatabase
 open SrtTools
 open StringExtractors
@@ -8,6 +9,7 @@ open System.Collections.Generic
 open System.Diagnostics
 open System.Globalization
 open System.IO
+open System.Reflection
 open System.Resources
 open System.Text
 open System.Text.RegularExpressions
@@ -487,6 +489,37 @@ type JetSetRadio =
             |> convertStringBlockExtractedEntriesToCardRecords(lessonId)
             |> Array.ofSeq
 
+    static member private ExtractStringsFromAssemblies(path: string, lessonId: int) = 
+        let otherAssemblyPaths = Directory.GetFiles(path, "jsrsetup.resources.dll", SearchOption.AllDirectories)
+        let generateLanguagesFromPath(p: string): string = 
+            let parentDirectory = Path.GetDirectoryName(p)
+            let parentOfParentDirectory = Path.GetDirectoryName(parentDirectory)
+            parentDirectory.Substring(parentOfParentDirectory.Length).Trim([| Path.DirectorySeparatorChar; Path.AltDirectorySeparatorChar |])
+
+        let generateLanguageAssemblyResourceTripleFromPath(p: string): string * Assembly * string = 
+            let language = generateLanguagesFromPath(p)
+            (language, Assembly.ReflectionOnlyLoadFrom(p), "jsrsetup.Localization.Strings." + language + ".resources")
+
+        let generateCardsForLanguage(language: string, a: Assembly, resourcesName: string) = 
+            AssemblyResourceTools.extractResourcesFromAssemblyViaResourceReader(a, CultureInfo.GetCultureInfo(language), resourcesName)
+            |> AssemblyResourceTools.createCardRecordForStrings(lessonId, "jsrsetup", language)
+
+        // set up default assembly resolution during reflection-only loads.
+        let provideAssembly(o: obj)(args: ResolveEventArgs): Assembly = 
+            Assembly.ReflectionOnlyLoad(args.Name)
+        let provideAssemblyHandler = new ResolveEventHandler(provideAssembly)
+        AppDomain.CurrentDomain.add_ReflectionOnlyAssemblyResolve(provideAssemblyHandler)
+
+        try
+            let mainAssembly = Assembly.ReflectionOnlyLoadFrom(Path.Combine(path, "jsrsetup.exe"))
+            let languagesAndAssemblies = 
+                ("en", mainAssembly, "jsrsetup.Localization.Strings.resources") ::
+                ((otherAssemblyPaths |> Array.map generateLanguageAssemblyResourceTripleFromPath) |> List.ofArray)
+
+            languagesAndAssemblies |> Array.ofList |> Array.collect generateCardsForLanguage
+        finally
+            AppDomain.CurrentDomain.remove_ReflectionOnlyAssemblyResolve(provideAssemblyHandler)            
+
     static member private ExtractStringsFromSrt(path: string, lessonId: int) = 
         let extractor = new SrtBlockExtractor(path, OneOffGamesData.DataAssembly.GetManifestResourceStream(@"OneOffGamesData.JetSetRadio.SrtExtraction.csv"))
         extractor.Extract()
@@ -507,7 +540,7 @@ type JetSetRadio =
                     // TBD: extract CUSTOM\instructions*.txt
                     JetSetRadio.ExtractStringsFromSrt(path, lessonEntryWithId.ID);
                     JetSetRadio.ExtractStringsFromBinaries(path, lessonEntryWithId.ID)
-                    // TBD: extract .NET satellite assembly localized strings
+                    JetSetRadio.ExtractStringsFromAssemblies(path, lessonEntryWithId.ID)
                 |])
 
         // filter out empty cards.

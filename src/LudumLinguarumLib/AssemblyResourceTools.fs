@@ -1,5 +1,6 @@
 ﻿module AssemblyResourceTools
 
+open LLDatabase
 open System.Collections
 open System.Globalization
 open System.Reflection
@@ -20,12 +21,31 @@ let rec collectStringResources(e: IDictionaryEnumerator, acc: (string * string) 
         else
             acc
 
-let extractResourcesFromAssembly(a: Assembly, c: CultureInfo) = 
-    let rm = new ResourceManager(a.GetName().Name, a)
-    let rs = rm.GetResourceSet(c, true, true)
-    let strings = collectStringResources(rs.GetEnumerator(), [])
+
+let createResourceManagerForAssembly(a: Assembly, baseName: string): ResourceManager = 
+    new ResourceManager(baseName, a)
+
+let extractResourcesFromAssemblyViaResourceReader(a: Assembly, c: CultureInfo, resourcesName: string) = 
+    use stream = a.GetManifestResourceStream(resourcesName)
+    let resReader = new ResourceReader(stream)
+    let e = resReader.GetEnumerator()
+    e.MoveNext() |> ignore
+    let strings = collectStringResources(e, [])
     strings |> Map.ofList
 
-let loadAssemblyAndExtractResources(path: string, baseName: string, c: CultureInfo) = 
-    let a = Assembly.LoadFile(path)
-    extractResourcesFromAssembly(a, c)
+let createCardRecordForStrings(lid: int, keyRoot: string, language: string)(strings: Map<string, string>) = 
+    let createCardRecordForMapEntry (k, v) = 
+        {
+            CardRecord.ID = 0
+            LessonID = lid
+            Text = v
+            Gender = "masculine"
+            Key = keyRoot + k
+            GenderlessKey = keyRoot + k
+            KeyHash = 0
+            GenderlessKeyHash = 0
+            SoundResource = ""
+            LanguageTag = language
+            Reversible = true
+        }
+    strings |> Map.toArray |> Array.map createCardRecordForMapEntry
