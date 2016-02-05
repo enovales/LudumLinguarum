@@ -30,6 +30,72 @@ type ReaderWrapper(br: BinaryReader) =
         BitConverter.ToUInt32(bytes, 0)
 
 // **************************************************************************
+// Custom instructions code
+// **************************************************************************
+type CustomInstructionsNodeType = 
+    | Paragraph
+    | Image
+type CustomInstructionsNode = {
+        Type: CustomInstructionsNodeType
+        Text: string
+        Children: CustomInstructionsNode list
+    }
+    with
+        override this.ToString() = 
+            let children = List.fold(fun (acc: StringBuilder)(t: CustomInstructionsNode) -> acc.Append(t.ToString() + ", ")) (new StringBuilder()) this.Children
+            "[" + this.Type.ToString() + ", Text(\"" + this.Text + "\"), Children(" + children.ToString() + ")]"
+
+let rec getCustomInstructionsStrings(n: CustomInstructionsNode) = 
+    match n.Type with
+    | CustomInstructionsNodeType.Paragraph -> 
+        seq {
+            yield n.Text
+            yield! (n.Children |> Seq.collect(getCustomInstructionsStrings))
+        } |> Array.ofSeq
+    | CustomInstructionsNodeType.Image -> [||]
+
+let rec readCustomInstructionsText(r: TextReader, acc: StringBuilder, childAcc: CustomInstructionsNode list) = 
+    match r.Read() with
+    | -1 -> (acc.ToString(), childAcc)
+    | i ->
+        let c = char i
+        match c with
+        | '[' -> 
+            let newNode = readCustomInstructionsNode(r)
+            readCustomInstructionsText(r, acc, newNode :: childAcc)
+        | ']' ->
+            (acc.ToString(), childAcc)
+        | c ->
+            readCustomInstructionsText(r, acc.Append(c), childAcc)
+and readCustomInstructionsNode(r: TextReader): CustomInstructionsNode = 
+    match char(r.Read()) with
+    | 'P' -> 
+        // paragraph node
+        // skip until fourth pipe
+        for i = 1 to 4 do while (char(r.Read()) <> '|') do ()
+        let (text, children) = readCustomInstructionsText(r, new StringBuilder(), [])
+        {
+            CustomInstructionsNode.Type = CustomInstructionsNodeType.Paragraph
+            Text = text
+            Children = children
+        }
+    | 'I' -> 
+        // image node. just skip the whole thing and return an empty image node.
+        while (char(r.Read()) <> ']') do ()
+
+        {
+            CustomInstructionsNode.Type = CustomInstructionsNodeType.Image
+            Text = ""
+            Children = []
+        }
+    | _ ->
+        failwith("malformed instructions node")
+
+let readCustomInstructions(r: TextReader) = 
+    while (char(r.Read()) <> '[') do ()
+    readCustomInstructionsNode(r)
+
+// **************************************************************************
 // AFS archive code
 // **************************************************************************
 type AFSArchiveRawFileEntry = {

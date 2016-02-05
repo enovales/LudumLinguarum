@@ -60,3 +60,86 @@ type JetSetRadioTests() =
         Assert.AreEqual(2, result.Length)
         Assert.AreEqual([| "A"; "B"; "C"; "D"; "E" |], result.[0])
         Assert.AreEqual([| "F"; "G"; "H"; "I"; "J" |], result.[1])
+
+    [<Test>]
+    member this.TestGetCustomInstructionsStringsSingle() = 
+        let node = {
+                CustomInstructionsNode.Type = CustomInstructionsNodeType.Paragraph
+                Text = "Foo"
+                Children = []
+            }
+
+        Assert.AreEqual([| "Foo" |], JetSetRadio.getCustomInstructionsStrings(node))
+
+    [<Test>]
+    member this.GetCustomInstructionsStringsMultiple() = 
+        let node = {
+                CustomInstructionsNode.Type = CustomInstructionsNodeType.Paragraph
+                Text = "Foo"
+                Children = 
+                    [{
+                        CustomInstructionsNode.Type = CustomInstructionsNodeType.Paragraph
+                        Text = "Bar"
+                        Children = []
+                    }]
+            }
+
+        Assert.AreEqual([| "Foo"; "Bar" |], JetSetRadio.getCustomInstructionsStrings(node))
+
+    [<Test>]
+    member this.GetCustomInstructionsStringsSkipImages() = 
+        let node = {
+                CustomInstructionsNode.Type = CustomInstructionsNodeType.Image
+                Text = ""
+                Children = []
+            }
+
+        Assert.AreEqual([||], JetSetRadio.getCustomInstructionsStrings(node))
+
+    [<Test>]
+    member this.ParseCustomInstructionsSingle() = 
+        let text = """[P0||||Test]"""
+        use reader = new StringReader(text)
+        let result = JetSetRadio.readCustomInstructions(reader)
+        let expected = {
+                CustomInstructionsNode.Type = CustomInstructionsNodeType.Paragraph
+                Text = "Test"
+                Children = []
+            }
+        Assert.AreEqual(expected, result)
+
+    [<Test>]
+    member this.ParseCustomInstructionsEmbedded() = 
+        let text = """[P0||||[P1||||Test]String]"""
+        use reader = new StringReader(text)
+        let result = JetSetRadio.readCustomInstructions(reader)
+        let expected = {
+                CustomInstructionsNode.Type = CustomInstructionsNodeType.Paragraph
+                Text = "String"
+                Children = 
+                    [{
+                        CustomInstructionsNode.Type = CustomInstructionsNodeType.Paragraph
+                        Text = "Test"
+                        Children = []
+                    }]
+            }
+
+        Assert.AreEqual(expected, result)
+
+    [<Test>]
+    member this.ParseCustomInstructionsImage() = 
+        let text = """[P0||||[I1||||Test.png]String]"""
+        use reader = new StringReader(text)
+        let result = JetSetRadio.readCustomInstructions(reader)
+        let expected = {
+                CustomInstructionsNode.Type = CustomInstructionsNodeType.Paragraph
+                Text = "String"
+                Children = 
+                    [{
+                        CustomInstructionsNode.Type = CustomInstructionsNodeType.Image
+                        Text = ""
+                        Children = []
+                    }]
+            }
+
+        Assert.AreEqual(expected, result)
