@@ -355,13 +355,13 @@ type StringBlockExtractor(entries: StringBlockExtractorEntry seq, streamGenerato
             |> Array.fold foldNextByFile Map.empty
             |> Map.map (fun _ v -> v |> List.rev) |> Map.toArray
 
-        let readNextNullTerminatedAndPaddedStrings(br: BinaryReader, ncs: int) = 
+        let readNextNullTerminatedAndPaddedStrings(br: BinaryReader, ncs: int, encoding: Encoding) = 
             let rec readNext(acc: string list, remaining: int): string = 
                 if remaining = 0 then
                     String.Join(" ", acc |> Array.ofList |> Array.rev)
                 else
                     readNext(
-                        Encoding.UTF8.GetString(Array.unfold(readUntilTooManyNulls(br, 1, true))(0)).TrimEnd(char 0) :: acc,
+                        encoding.GetString(Array.unfold(readUntilTooManyNulls(br, 1, true))(0)).TrimEnd(char 0) :: acc,
                         remaining - 1)
 
             readNext([], ncs)
@@ -372,6 +372,12 @@ type StringBlockExtractor(entries: StringBlockExtractorEntry seq, streamGenerato
             e.Languages.Split([| ';' |], StringSplitOptions.RemoveEmptyEntries)
             |> Array.map(fun l -> createExtractedEntry(e, s, l.Trim()))
 
+        let getEncodingForEntry(e: StringBlockExtractorEntry) = 
+            let languages = e.Languages.Split([| ';' |], StringSplitOptions.RemoveEmptyEntries)
+            match languages |> Array.head with
+            | "ja" -> Encoding.GetEncoding("shift_jis")
+            | _ -> Encoding.GetEncoding("Windows-1252")
+
         let readNext(br: BinaryReader) = fun(state: int64 option * StringBlockExtractorEntry list) -> 
             match state with
             | (lastOffsetOpt, entries) ->
@@ -379,14 +385,16 @@ type StringBlockExtractor(entries: StringBlockExtractorEntry seq, streamGenerato
                 match (lastOffsetOpt, entries |> List.tryHead) with
                 | (Some(lastOffset), Some(nextEntry)) when (lastOffset = nextEntry.StartingOffset) ->
                     // same as previous offset. do not seek.
-                    let nextString = readNextNullTerminatedAndPaddedStrings(br, nextEntry.NumConsecutiveStrings)
+                    let encoding = getEncodingForEntry(nextEntry)
+                    let nextString = readNextNullTerminatedAndPaddedStrings(br, nextEntry.NumConsecutiveStrings, encoding)
                     Some(createEntriesForLanguages(nextEntry, nextString), (Some(lastOffset), entries |> List.tail))
                 | (_, Some(nextEntry)) ->
                     // not the same as previous offset, so go ahead and seek.
                     if (br.BaseStream.Seek(nextEntry.StartingOffset, SeekOrigin.Begin) <> nextEntry.StartingOffset) then
                         failwith("couldn't seek to offset " + nextEntry.StartingOffset.ToString("X8") + " in file " + nextEntry.RelativePath)
 
-                    let nextString = readNextNullTerminatedAndPaddedStrings(br, nextEntry.NumConsecutiveStrings)
+                    let encoding = getEncodingForEntry(nextEntry)
+                    let nextString = readNextNullTerminatedAndPaddedStrings(br, nextEntry.NumConsecutiveStrings, encoding)
                     Some(createEntriesForLanguages(nextEntry, nextString), (Some(nextEntry.StartingOffset), entries |> List.tail))
                 | (_, None) ->
                     None
