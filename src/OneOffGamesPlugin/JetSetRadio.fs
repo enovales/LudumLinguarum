@@ -56,7 +56,7 @@ let rec getCustomInstructionsStrings(n: CustomInstructionsNode) =
 
 let rec readCustomInstructionsText(r: TextReader, acc: StringBuilder, childAcc: CustomInstructionsNode list) = 
     match r.Read() with
-    | -1 -> (acc.ToString(), childAcc)
+    | -1 -> (acc.ToString().Trim(), childAcc)
     | i ->
         let c = char i
         match c with
@@ -64,7 +64,7 @@ let rec readCustomInstructionsText(r: TextReader, acc: StringBuilder, childAcc: 
             let newNode = readCustomInstructionsNode(r)
             readCustomInstructionsText(r, acc, newNode :: childAcc)
         | ']' ->
-            (acc.ToString(), childAcc)
+            (acc.ToString().Trim(), childAcc)
         | c ->
             readCustomInstructionsText(r, acc.Append(c), childAcc)
 and readCustomInstructionsNode(r: TextReader): CustomInstructionsNode = 
@@ -94,6 +94,24 @@ and readCustomInstructionsNode(r: TextReader): CustomInstructionsNode =
 let readCustomInstructions(r: TextReader) = 
     while (char(r.Read()) <> '[') do ()
     readCustomInstructionsNode(r)
+
+let createCardRecordForCustomInstructionsString(lid: int, language: string)(index: int)(text: string) = 
+    let baseKey = "custominstructions" + index.ToString()
+    {
+        CardRecord.ID = 0
+        LessonID = lid
+        Text = text
+        Gender = "masculine"
+        Key = baseKey
+        GenderlessKey = baseKey
+        KeyHash = 0
+        GenderlessKeyHash = 0
+        SoundResource = ""
+        LanguageTag = language
+        Reversible = true
+    }
+
+
 
 // **************************************************************************
 // AFS archive code
@@ -592,6 +610,24 @@ type JetSetRadio =
             |> convertSrtBlockExtractedEntriesToCardRecords(lessonId)
             |> Array.ofSeq
 
+    static member private ExtractStringsFromCustomInstructions(path: string, lessonId: int) = 
+        let pathsAndLanguages = 
+            [|
+                (Path.Combine(path, @"CUSTOM\instructions.txt"), "en");
+                (Path.Combine(path, @"CUSTOM\instructions_DE.txt"), "de");
+                (Path.Combine(path, @"CUSTOM\instructions_ES.txt"), "es");
+                (Path.Combine(path, @"CUSTOM\instructions_FR.txt"), "fr")
+            |]
+
+        let generateCardsForLanguage(p: string, l: string) = 
+            use sr = new StreamReader(p)
+            let n = readCustomInstructions(sr)
+            getCustomInstructionsStrings(n)
+            |> Array.mapi(createCardRecordForCustomInstructionsString(lessonId, l))
+
+
+        pathsAndLanguages |> Array.collect generateCardsForLanguage
+
     static member ExtractJetSetRadio(path: string, db: LLDatabase, gameEntryWithId: GameRecord, args: string[]) = 
         let lessonEntry = {
             LessonRecord.GameID = gameEntryWithId.ID;
@@ -603,7 +639,7 @@ type JetSetRadio =
             Array.concat(
                 [|
                     JetSetRadio.ExtractJSRStringsDotStr(path, lessonEntryWithId.ID);
-                    // TBD: extract CUSTOM\instructions*.txt
+                    JetSetRadio.ExtractStringsFromCustomInstructions(path, lessonEntryWithId.ID);
                     JetSetRadio.ExtractStringsFromSrt(path, lessonEntryWithId.ID);
                     JetSetRadio.ExtractStringsFromBinaries(path, lessonEntryWithId.ID)
                     JetSetRadio.ExtractStringsFromAssemblies(path, lessonEntryWithId.ID)
