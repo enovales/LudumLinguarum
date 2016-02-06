@@ -47,10 +47,12 @@ let parseSrtSubtitles(lines: string array) =
         | _ -> None
     Seq.unfold unfoldNextEntry (lines |> List.ofArray)
 
+type SrtEncodingSelector = string -> Encoding
 
-type SrtBlockExtractor(entries: SrtBlockExtractorEntry seq, entryGenerator: SrtBlockExtractorEntry -> SrtEntry array) = 
-    static member private DefaultEntryGenerator(rootPath: string)(entry: SrtBlockExtractorEntry): SrtEntry array = 
-        File.ReadAllLines(Path.Combine(rootPath, entry.RelativePath)) |> parseSrtSubtitles |> Array.ofSeq   
+type SrtBlockExtractor(entries: SrtBlockExtractorEntry seq, entryGenerator: SrtBlockExtractorEntry -> SrtEntry array, encodingMapper: SrtEncodingSelector) = 
+    static member private DefaultEntryGenerator(rootPath: string, encodingMapper: SrtEncodingSelector)(entry: SrtBlockExtractorEntry): SrtEntry array = 
+        let languages = entry.Languages.Split([| ';' |], StringSplitOptions.RemoveEmptyEntries)
+        File.ReadAllLines(Path.Combine(rootPath, entry.RelativePath), encodingMapper(languages |> Array.head)) |> parseSrtSubtitles |> Array.ofSeq
 
     static member internal GenerateEntriesForLines(csvLines: string array) = 
         let tryParseAsHex(s: string): int64 = 
@@ -92,20 +94,23 @@ type SrtBlockExtractor(entries: SrtBlockExtractorEntry seq, entryGenerator: SrtB
                 }
             )
 
-    private new (rootPath: string, csvLines: string array) = 
-        new SrtBlockExtractor(SrtBlockExtractor.GenerateEntriesForLines(csvLines), SrtBlockExtractor.DefaultEntryGenerator(rootPath))
+    private new (rootPath: string, csvLines: string array, encodingMapper: SrtEncodingSelector) = 
+        new SrtBlockExtractor(
+            SrtBlockExtractor.GenerateEntriesForLines(csvLines), 
+            SrtBlockExtractor.DefaultEntryGenerator(rootPath, encodingMapper), 
+            encodingMapper)
 
-    new(rootPath: string, sourceCsvStream: Stream) = 
+    new(rootPath: string, sourceCsvStream: Stream, encodingMapper: SrtEncodingSelector) = 
         let toRead = sourceCsvStream.Length - sourceCsvStream.Position
         let csvBytes = Array.zeroCreate<byte>(int toRead)
         let csvRead = sourceCsvStream.Read(csvBytes, 0, int toRead)
         let csvText = Encoding.UTF8.GetString(csvBytes)
         let csvLines = csvText.Split([| Environment.NewLine |], StringSplitOptions.RemoveEmptyEntries)
-        new SrtBlockExtractor(rootPath, csvLines)
+        new SrtBlockExtractor(rootPath, csvLines, encodingMapper)
 
-    new(rootPath: string, sourceCsvPath: string) = 
+    new(rootPath: string, sourceCsvPath: string, encodingMapper: SrtEncodingSelector) = 
         let csvLines = File.ReadAllLines(sourceCsvPath)
-        new SrtBlockExtractor(rootPath, csvLines)
+        new SrtBlockExtractor(rootPath, csvLines, encodingMapper)
 
     member this.Extract(): SrtBlockExtractedEntry seq = 
         let createExtractedEntry(e: SrtBlockExtractorEntry, t: string, l: string) = 

@@ -573,8 +573,18 @@ type JetSetRadio =
             )
 
     static member private ExtractStringsFromBinaries(path: string, lessonId: int) = 
+        let regexReplaceFold(acc: string)(r: string * string) = 
+            let (pattern, replacement) = r
+            Regex.Replace(acc, pattern, replacement)
+
+        let replacements = 
+            [|
+                (@"\s*\$n\s*", " ");
+                (@"\$c\[.*\]", "")
+            |]
+
         let formatCharFilter(e: StringBlockExtractedEntry) = 
-            { e with StringBlockExtractedEntry.Text = Regex.Replace(e.Text, @"\s*\$n\s*", " ").Trim() }
+            { e with StringBlockExtractedEntry.Text = (Array.fold regexReplaceFold e.Text replacements).Trim() }
         let extractor = new StringBlockExtractor(path, OneOffGamesData.DataAssembly.GetManifestResourceStream(@"OneOffGamesData.JetSetRadio.StringBlockExtraction.csv"))
         extractor.Extract()
             |> Seq.map formatCharFilter
@@ -613,7 +623,16 @@ type JetSetRadio =
             AppDomain.CurrentDomain.remove_ReflectionOnlyAssemblyResolve(provideAssemblyHandler)            
 
     static member private ExtractStringsFromSrt(path: string, lessonId: int) = 
-        let extractor = new SrtBlockExtractor(path, OneOffGamesData.DataAssembly.GetManifestResourceStream(@"OneOffGamesData.JetSetRadio.SrtExtraction.csv"))
+        let languageToEncoding(l: string) = 
+            match l with
+            | "ja" -> Encoding.UTF8
+            | _ -> Encoding.GetEncoding("Windows-1252")
+
+        let extractor = 
+            new SrtBlockExtractor(
+                path, 
+                OneOffGamesData.DataAssembly.GetManifestResourceStream(@"OneOffGamesData.JetSetRadio.SrtExtraction.csv"), 
+                languageToEncoding)
         extractor.Extract()
             |> convertSrtBlockExtractedEntriesToCardRecords(lessonId)
             |> Array.ofSeq

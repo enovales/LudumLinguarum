@@ -1,6 +1,7 @@
 ﻿module SrtToolsTests
 
 open System
+open System.Text
 
 open NUnit.Framework
 open SrtTools
@@ -21,6 +22,8 @@ type SrtToolsTests() =
         SubtitleIdStart = 1
         SubtitleIdEnd = 1
     }
+
+    let languageToEncoding(l: string) = Encoding.UTF8
 
     [<TestFixtureSetUp>]
     member this.SetUpTestFixture() = ()
@@ -180,7 +183,7 @@ Test Single Line Subtitle 2""".Split([| Environment.NewLine; "\r"; "\n" |], Stri
     /// </summary>
     [<Test>]
     member this.TestSrtBlockExtractSingle() = 
-        let extractor = new SrtBlockExtractor([| srtExtractorEntry |], (fun _ -> [| srtEntry |]))
+        let extractor = new SrtBlockExtractor([| srtExtractorEntry |], (fun _ -> [| srtEntry |]), languageToEncoding)
         let extracted = extractor.Extract()
         Assert.AreEqual(1, extracted |> Seq.length)
 
