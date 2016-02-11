@@ -80,7 +80,11 @@ let processConfiguration(baseConfiguration: BaseLudumLinguarumConfiguration, ver
     // Set up the database.
     let LLDatabase = new LLDatabase(effectiveFLDBPath)
 
+#if DEBUG
+    if true then
+#else
     try
+#endif
         match selectedVerb with
         | "import" ->
             runImportAction(verbConfiguration, iPluginManager, outputTextWriter, LLDatabase, argv)
@@ -91,12 +95,17 @@ let processConfiguration(baseConfiguration: BaseLudumLinguarumConfiguration, ver
         | _ ->
             System.Console.WriteLine("Error: no action specified")
             1
+#if DEBUG
+    else
+        0
+#else
     with
     | e -> 
         System.Console.WriteLine("Exception thrown:" + e.ToString())
 
         // return error code since an exception was thrown
         1
+#endif
 
 
 [<EntryPoint>]

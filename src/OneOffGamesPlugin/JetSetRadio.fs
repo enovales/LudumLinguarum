@@ -580,7 +580,8 @@ type JetSetRadio =
         let replacements = 
             [|
                 (@"\s*\$n\s*", " ");
-                (@"\$c\[.*\]", "")
+                (@"\$c\[.*\]", "");
+                (@"\$w", "")
             |]
 
         let formatCharFilter(e: StringBlockExtractedEntry) = 
