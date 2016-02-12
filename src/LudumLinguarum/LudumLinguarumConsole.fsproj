@@ -23,7 +23,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <WarningLevel>3</WarningLevel>
     <OtherFlags>--warnon:1182</OtherFlags>
-    <StartArguments>import --game="The King of Fighters 2002 Unlimited Match" --game-dir="C:\Program Files (x86)\Steam\steamapps\common\The King of Fighters 2002 Unlimited Match"</StartArguments>
+    <StartArguments>import --game="Jade Empire" --game-dir="C:\TempGameCopies\Jade Empire (German)" --language-tag=de --extract-2das=true --extract-dialogues=true</StartArguments>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>

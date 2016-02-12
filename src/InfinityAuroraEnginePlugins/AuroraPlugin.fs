@@ -21,11 +21,15 @@ type NWN1PluginSettings() =
 
     [<CommandLine.Option("extract-dialogues", DefaultValue = "false", Required = false)>]
     member val ExtractDialogues = "false" with get, set
-    member this.ExtractDialoguesBoolean = bool.Parse(this.ExtractDialogues)
+    member this.ExtractDialoguesBoolean = Boolean.Parse(this.ExtractDialogues)
 
     [<CommandLine.Option("extract-2das", DefaultValue = "true", Required = false)>]
     member val Extract2DAs = "true" with get, set
-    member this.Extract2DAsBoolean = bool.Parse(this.Extract2DAs)
+    member this.Extract2DAsBoolean = Boolean.Parse(this.Extract2DAs)
+
+    [<CommandLine.Option("extract-all", DefaultValue = "false", Required = false)>]
+    member val ExtractAll = "false" with get, set
+    member this.ExtractAllBoolean = Boolean.Parse(this.ExtractAll)
 
 type private ExtractionContext<'TalkTableString when 'TalkTableString :> ITalkTableString> = {
     gameResources: IGenericResource seq;
@@ -358,13 +362,13 @@ type AuroraPlugin() =
         }
         
         let extractedDialogueCards = 
-            if (pluginSettings.ExtractDialoguesBoolean) then
+            if (pluginSettings.ExtractAllBoolean || pluginSettings.ExtractDialoguesBoolean) then
                 this.ExtractDialogues(extractionContext) |> Array.ofSeq
             else
                 [||]
 
         let extracted2DACards = 
-            if (pluginSettings.Extract2DAsBoolean) then
+            if (pluginSettings.ExtractAllBoolean || pluginSettings.Extract2DAsBoolean) then
                 this.ExtractNWN12DAs(extractionContext)
             else
                 [||]
@@ -487,13 +491,13 @@ type AuroraPlugin() =
         }
         
         let extractedDialogueCards = 
-            if (pluginSettings.ExtractDialoguesBoolean) then
+            if (pluginSettings.ExtractAllBoolean || pluginSettings.ExtractDialoguesBoolean) then
                 this.ExtractDialogues(extractionContext) |> Array.ofSeq
             else
                 [||]
 
         let extracted2DACards = 
-            if (pluginSettings.Extract2DAsBoolean) then
+            if (pluginSettings.ExtractAllBoolean || pluginSettings.Extract2DAsBoolean) then
                 this.ExtractJadeEmpire2DAs(extractionContext)
             else
                 [||]
