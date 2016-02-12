@@ -23,7 +23,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <WarningLevel>3</WarningLevel>
     <OtherFlags>--warnon:1182</OtherFlags>
-    <StartArguments>import --game="Jet Set Radio" --game-dir="C:\Program Files (x86)\Steam\steamapps\common\Jet Set Radio"</StartArguments>
+    <StartArguments>import --game="The King of Fighters 2002 Unlimited Match" --game-dir="C:\Program Files (x86)\Steam\steamapps\common\The King of Fighters 2002 Unlimited Match"</StartArguments>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>

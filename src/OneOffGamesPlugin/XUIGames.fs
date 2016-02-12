@@ -2,6 +2,7 @@
 
 open LLDatabase
 open System
+open System.Globalization
 open System.IO
 
 type XUI = 
@@ -10,8 +11,19 @@ type XUI =
         let tabDelimited = stringLines |> Array.map(fun t -> t.Split('\t'))
         let headerRow = tabDelimited |> Array.head
         let dataRows = tabDelimited |> Array.tail
-        // get language tags
-        let languageTags = headerRow |> Array.skip(2) |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t)))
+
+        let languageForXUITag(c: string) = 
+            match c with
+            | "jp" -> "ja"
+            | x -> x
+
+        // get country tags, and convert them into language tags
+        let languageTags = 
+            headerRow 
+            |> Array.skip(2) 
+            |> Array.filter(String.IsNullOrWhiteSpace >> not)
+            |> Array.map languageForXUITag
+
         dataRows |> Array.mapi(fun rowIndex t ->
             let key = t.[0]
             let category = t.[1]
