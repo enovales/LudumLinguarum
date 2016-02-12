@@ -71,7 +71,7 @@ type PluginManager() =
         member this.GetPluginForGame(g: string): IGameExtractorPlugin option = 
             plugins |> List.tryPick(fun p ->
                 match p with
-                | :? IGameExtractorPlugin as gep ->
+                | :? IGameExtractorPlugin as gep when (gep.SupportedGames |> Array.contains(g)) ->
                     Some(gep)
                 | _ -> None)
 
