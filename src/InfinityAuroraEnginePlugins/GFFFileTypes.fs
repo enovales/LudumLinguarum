@@ -40,6 +40,7 @@ type SerializedDialogueStruct = {
         Script: ResRef option
         Sound: ResRef option
         Speaker: GFFRawCExoString option
+        StringRef: uint32 option
         Text: GFFRawCExoLocString option
     }
     with
@@ -59,6 +60,7 @@ type SerializedDialogueStruct = {
             Script = s.GetResRef("Script");
             Sound = s.GetResRef("Sound");
             Speaker = s.GetString("Speaker");
+            StringRef = s.GetStringRef("Text");
             Text = s.GetLocString("Text")
         }
     end
@@ -146,6 +148,21 @@ and DialogueStruct = {
     with
         static member FromSerialized(d: SerializedDialogueStruct, isPlayer: bool) = 
             let nextList = if (isPlayer) then d.EntriesList else d.RepliesList
+            let extractedText = 
+                match (d.Text, d.StringRef) with
+                | (Some(text), _) -> Some(text)
+                | (_, Some(strref)) ->
+                    // convert to a CExoLocString
+                    let locstring = 
+                        { 
+                            GFFRawCExoLocString.sizeOfOtherData = uint32 0
+                            stringRef = strref
+                            stringCount = uint32 0
+                            substrings = []
+                        }
+                    Some(locstring)
+                | _ -> None
+
             let retval = {
                 DialogueStruct.Animation = d.Animation;
                 AnimLoop = d.AnimLoop;
@@ -155,7 +172,7 @@ and DialogueStruct = {
                 QuestEntry = d.QuestEntry;
                 Script = d.Script;
                 Sound = d.Sound;
-                Text = d.Text;
+                Text = extractedText;
                 Next = match nextList with 
                        | Some(nl) -> nl |> List.map (fun r -> AugmentedSyncStruct.FromSerialized(r))
                        | _ -> [];

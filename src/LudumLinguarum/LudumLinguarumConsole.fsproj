@@ -23,7 +23,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <WarningLevel>3</WarningLevel>
     <OtherFlags>--warnon:1182</OtherFlags>
-    <StartArguments>import --game="Star Wars: Knights of the Old Republic" --game-dir="C:\Program Files (x86)\Steam\steamapps\common\swkotor" --language-tag=de --extract-2das=true</StartArguments>
+    <StartArguments>import --game="Jade Empire" --game-dir="E:\Users\enova\SteamLibrary\steamapps\common\Jade Empire" --language-tag=en --extract-2das=true --extract-dialogues=true</StartArguments>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>

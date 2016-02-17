@@ -133,43 +133,56 @@ type AuroraPlugin() =
     member private this.ExtractDialogues<'TalkTableString when 'TalkTableString :> ITalkTableString>(xc: ExtractionContext<'TalkTableString>) = 
         this.LogWriteLine("Starting dialogue extraction.") |> ignore
         // extract dialogues, and create lessons for each one
-        let dialogueResources = xc.gameResources |> Seq.filter(fun t -> t.ResourceType = ResType.Dlg)
-        let dialoguesAndResourcesAndLessons = 
-            dialogueResources |> 
-                Seq.map (fun t -> 
-                    let lessonEntry = { 
-                        LessonRecord.Name = "Dialogue: " + t.Name.Value;
-                        GameID = xc.gameEntry.ID;
-                        ID = 0
-                    }
+        let dialogueResources = xc.gameResources |> Seq.filter(fun t -> t.ResourceType = ResType.Dlg) |> Array.ofSeq
+        let zipResourcesAndLessons(t: IGenericResource) = 
+            let lessonEntry = 
+                { 
+                    LessonRecord.Name = "Dialogue: " + t.Name.Value;
+                    GameID = xc.gameEntry.ID;
+                    ID = 0
+                }
 
-                    let lessonEntryWithId = { lessonEntry with ID = xc.db.CreateOrUpdateLesson(lessonEntry) }
-                    (LoadDialogue(t.Name, xc.gameResources), t, lessonEntryWithId))
+            let lessonEntryWithId = { lessonEntry with ID = xc.db.CreateOrUpdateLesson(lessonEntry) }
+            (LoadDialogue(t.Name, xc.gameResources), t, lessonEntryWithId)        
+                                        
+        let dialoguesAndResourcesAndLessons = 
+            dialogueResources 
+            |> Array.map zipResourcesAndLessons
 
         let languageType = LanguageTypeFromIETFLanguageTag(xc.pluginSettings.LanguageTag)
 
         this.LogWriteLine("Dialogues loaded.") |> ignore
 
+        let generateStringsAndKeys(r: Dialogue * IGenericResource * LessonRecord) = 
+            let (t, dialogueResource, lessonEntry) = r
+            let extractedM = ExtractStringsFromDialogue(t, languageType, Gender.MasculineOrNeutral, xc.masculineOrNeuterTalkTable, xc.feminineTalkTable)
+            let extractedF = 
+                if (xc.masculineOrNeuterTalkTable = xc.feminineTalkTable) then 
+                    [| |]
+                else
+                    ExtractStringsFromDialogue(t, languageType, Gender.Feminine, xc.masculineOrNeuterTalkTable, xc.feminineTalkTable)
+
+            let zipWithLessonEntry(tuple: string * string * string * string) = 
+                let (t, k, genderlessK, g) = tuple
+                (t, k, genderlessK, lessonEntry, g)
+
+            let augmentedM = 
+                AugmentExtractedStringKeys(extractedM, dialogueResource.Name, dialogueResource.OriginDesc, Gender.MasculineOrNeutral) 
+                |> Array.map zipWithLessonEntry
+            let augmentedF = 
+                AugmentExtractedStringKeys(extractedF, dialogueResource.Name, dialogueResource.OriginDesc, Gender.Feminine) 
+                |> Array.map zipWithLessonEntry
+
+            Array.concat([|augmentedM; augmentedF|] |> Array.toSeq)
+
         let stringsAndKeys = 
             dialoguesAndResourcesAndLessons |> 
-            Seq.collect(fun (t, dialogueResource, lessonEntry) -> 
-                let extractedM = ExtractStringsFromDialogue(t, languageType, Gender.MasculineOrNeutral, xc.masculineOrNeuterTalkTable, xc.feminineTalkTable)
-                let extractedF = 
-                    if (xc.masculineOrNeuterTalkTable = xc.feminineTalkTable) then 
-                        [| |]
-                    else
-                        ExtractStringsFromDialogue(t, languageType, Gender.Feminine, xc.masculineOrNeuterTalkTable, xc.feminineTalkTable)
-
-                let augmentedM = 
-                    AugmentExtractedStringKeys(extractedM, dialogueResource.Name, dialogueResource.OriginDesc, Gender.MasculineOrNeutral) |>
-                    Array.map(fun (t, k, genderlessK, g) -> (t, k, genderlessK, lessonEntry, g))
-                let augmentedF = 
-                    AugmentExtractedStringKeys(extractedF, dialogueResource.Name, dialogueResource.OriginDesc, Gender.Feminine) |>
-                    Array.map(fun (t, k, genderlessK, g) -> (t, k, genderlessK, lessonEntry, g))
-                Array.concat([|augmentedM; augmentedF|] |> Array.toSeq))
+            Array.collect(generateStringsAndKeys)
 
         this.LogWriteLine("Dialogue strings extracted.") |> ignore
-        let retVal = stringsAndKeys |> Seq.map (fun (t, k, genderlessKey, l, g) -> 
+
+        let generateCardRecordForTuple(tuple: string * string * string * LessonRecord * string) = 
+            let (t, k, genderlessKey, l, g) = tuple
             {
                 CardRecord.Gender = g;
                 ID = 0;
@@ -182,7 +195,9 @@ type AuroraPlugin() =
                 Text = t;
                 Key = k;
                 GenderlessKey = genderlessKey;
-            })
+            }
+            
+        let retVal = stringsAndKeys |> Array.map generateCardRecordForTuple
 
         this.LogWriteLine("Dialogue cards generated. Dialogue extraction complete.") |> ignore
         retVal

@@ -98,6 +98,9 @@ type GFFFieldType =
     | UntypedBytes              = 13u
     | Struct                    = 14u
     | List                      = 15u
+    | Orientation               = 16u
+    | Position                  = 17u
+    | StringRef                 = 18u
 
 exception UnknownFieldType
 
@@ -112,6 +115,8 @@ type GFFRawValOffsetUnion =
     | FieldDataOffset of uint32
     | StructArrayIndex of uint32
     | ListIndicesBlockOffset of uint32
+    | Vector4 of (single * single * single * single)
+    | Vector3 of (single * single * single)
 
 type GFFRawFieldData = 
     {
@@ -178,6 +183,8 @@ type GFFRawList =
 type GFFDword64 = uint64
 type GFFInt64 = int64
 type GFFDouble = float
+type GFFOrientation = (single * single * single * single)
+type GFFPosition = (single * single * single)
 type GFFRawCExoString = 
     {
         size: uint32;

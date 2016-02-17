@@ -25,6 +25,9 @@ type GFFField =
     | Bytes of array<byte>
     | Struct of GFFStruct
     | List of GFFList
+    | Orientation of GFFOrientation
+    | Position of GFFPosition
+    | StringRef of uint32
 and GFFStruct(fields: list<GFFNamedField>) = 
     member this.Fields = fields
     member private this.GetField(name: string): GFFField option = 
@@ -93,6 +96,18 @@ and GFFStruct(fields: list<GFFNamedField>) =
         match this.GetField(name) with
         | Some(GFFField.List(v)) -> Some(v)
         | _ -> None
+    member this.GetOrientation(name: string): GFFOrientation option = 
+        match this.GetField(name) with
+        | Some(GFFField.Orientation(v)) -> Some(v)
+        | _ -> None
+    member this.GetPosition(name: string): GFFPosition option = 
+        match this.GetField(name) with
+        | Some(GFFField.Position(v)) -> Some(v)
+        | _ -> None
+    member this.GetStringRef(name: string): uint32 option = 
+        match this.GetField(name) with
+        | Some(GFFField.StringRef(v)) -> Some(v)
+        | _ -> None
 and GFFList(structs: list<GFFStruct>) = 
     member this.Structs = structs
 and GFFNamedField(name: string, fieldData: GFFField) = 
@@ -126,6 +141,12 @@ type GFF(topLevelStruct: GFFStruct) =
                 | _, GFFRawValOffsetUnion.Char(data) -> GFFField.Char(data)
                 | _, GFFRawValOffsetUnion.Word(data) -> GFFField.Word(data)
                 | _, GFFRawValOffsetUnion.Short(data) -> GFFField.Short(data)
+                | GFFFieldType.StringRef, GFFRawValOffsetUnion.FieldDataOffset(offset) ->
+                    ignore(f.FieldDataStream.Seek(int64 offset, SeekOrigin.Begin))
+                    // ignore size
+                    f.FieldDataReader.ReadUInt32() |> ignore
+                    // read string ref
+                    GFFField.StringRef(f.FieldDataReader.ReadUInt32())
                 | _, GFFRawValOffsetUnion.Dword(data) -> GFFField.Dword(data)
                 | _, GFFRawValOffsetUnion.Int(data) -> GFFField.Int(data)
                 | _, GFFRawValOffsetUnion.Float(data) -> GFFField.Float(data)
@@ -155,6 +176,12 @@ type GFF(topLevelStruct: GFFStruct) =
                                             match rawList.indices.[i] with
                                             | GFFRawListIndex.StructIndex(index) -> GFF.hydrateStruct(f, f.Structs.[int index])]
                     GFFField.List(new GFFList(hydratedStructs))
+                | GFFFieldType.Orientation, GFFRawValOffsetUnion.FieldDataOffset(offset) ->
+                    ignore(f.FieldDataStream.Seek(int64 offset, SeekOrigin.Begin))
+                    GFFField.Orientation((f.FieldDataReader.ReadSingle(), f.FieldDataReader.ReadSingle(), f.FieldDataReader.ReadSingle(), f.FieldDataReader.ReadSingle()))
+                | GFFFieldType.Position, GFFRawValOffsetUnion.FieldDataOffset(offset) ->
+                    ignore(f.FieldDataStream.Seek(int64 offset, SeekOrigin.Begin))
+                    GFFField.Position((f.FieldDataReader.ReadSingle(), f.FieldDataReader.ReadSingle(), f.FieldDataReader.ReadSingle()))
                 | _, _ -> raise <| UnknownFieldType
 
             new GFFNamedField(label, fieldData)
