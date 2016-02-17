@@ -6,6 +6,7 @@ open InfinityAuroraEnginePlugins.CommonTypes
 open InfinityAuroraEnginePlugins.GFFFileTypes
 open InfinityAuroraEnginePlugins.IAResourceManager
 open InfinityAuroraEnginePlugins.JadeEmpireContext
+open InfinityAuroraEnginePlugins.KOTOR1Context
 open InfinityAuroraEnginePlugins.NWN1Context
 open InfinityAuroraEnginePlugins.TalkTable
 open InfinityAuroraEnginePlugins.TwoDA
@@ -31,9 +32,40 @@ type NWN1PluginSettings() =
     member val ExtractAll = "false" with get, set
     member this.ExtractAllBoolean = Boolean.Parse(this.ExtractAll)
 
+type JadeEmpirePluginSettings() = 
+    inherit AuroraPluginSettings()
+
+    [<CommandLine.Option("extract-dialogues", DefaultValue = "false", Required = false)>]
+    member val ExtractDialogues = "false" with get, set
+    member this.ExtractDialoguesBoolean = Boolean.Parse(this.ExtractDialogues)
+
+    [<CommandLine.Option("extract-2das", DefaultValue = "true", Required = false)>]
+    member val Extract2DAs = "true" with get, set
+    member this.Extract2DAsBoolean = Boolean.Parse(this.Extract2DAs)
+
+    [<CommandLine.Option("extract-all", DefaultValue = "false", Required = false)>]
+    member val ExtractAll = "false" with get, set
+    member this.ExtractAllBoolean = Boolean.Parse(this.ExtractAll)
+
+type KOTOR1PluginSettings() = 
+    inherit AuroraPluginSettings()
+
+    [<CommandLine.Option("extract-dialogues", DefaultValue = "false", Required = false)>]
+    member val ExtractDialogues = "false" with get, set
+    member this.ExtractDialoguesBoolean = Boolean.Parse(this.ExtractDialogues)
+
+    [<CommandLine.Option("extract-2das", DefaultValue = "true", Required = false)>]
+    member val Extract2DAs = "true" with get, set
+    member this.Extract2DAsBoolean = Boolean.Parse(this.Extract2DAs)
+
+    [<CommandLine.Option("extract-all", DefaultValue = "false", Required = false)>]
+    member val ExtractAll = "false" with get, set
+    member this.ExtractAllBoolean = Boolean.Parse(this.ExtractAll)
+
+
 type private ExtractionContext<'TalkTableString when 'TalkTableString :> ITalkTableString> = {
     gameResources: IGenericResource seq;
-    pluginSettings: NWN1PluginSettings;
+    pluginSettings: AuroraPluginSettings;
     db: LLDatabase;
     masculineOrNeuterTalkTable: ITalkTable<'TalkTableString>;
     feminineTalkTable: ITalkTable<'TalkTableString>;
@@ -58,10 +90,21 @@ type AuroraPlugin() =
             outStream <- Some(tw)
             ()
         member this.Name = "aurora"
-        member this.Parameters = [| new AuroraPluginSettings() :> Object; new NWN1PluginSettings() :> Object |]
+        member this.Parameters = 
+            [| 
+                new AuroraPluginSettings() :> Object; 
+                new NWN1PluginSettings() :> Object;
+                new JadeEmpirePluginSettings() :> Object;
+                new KOTOR1PluginSettings() :> Object
+            |]
     end
     interface IGameExtractorPlugin with
-        member this.SupportedGames = [| "Neverwinter Nights"; "Jade Empire" |]
+        member this.SupportedGames = 
+            [| 
+                "Neverwinter Nights"; 
+                "Jade Empire";
+                "Star Wars: Knights of the Old Republic"
+            |]
         member this.ExtractAll(game: string, path: string, db: LLDatabase, [<ParamArray>] args: string[]) = 
             let parser = new CommandLine.Parser(fun t -> 
                 t.HelpWriter <- System.Console.Out
@@ -74,6 +117,7 @@ type AuroraPlugin() =
                 match game with
                 | "Neverwinter Nights" -> this.ExtractNWN1(path, db, args)
                 | "Jade Empire" -> this.ExtractJadeEmpire(path, db, args)
+                | "Star Wars: Knights of the Old Republic" -> this.ExtractKOTOR1(path, db, args)
                 | g -> raise(UnknownGameException("unknown game " + g))
                 ()                
             else
@@ -354,7 +398,7 @@ type AuroraPlugin() =
 
         let extractionContext = {
             ExtractionContext.gameResources = context.Resources;
-            pluginSettings = pluginSettings;
+            pluginSettings = pluginSettings :> AuroraPluginSettings;
             db = db;
             masculineOrNeuterTalkTable = masculineOrNeuterTalkTable;
             feminineTalkTable = feminineTalkTable;
@@ -458,7 +502,7 @@ type AuroraPlugin() =
         let parser = new CommandLine.Parser(fun t ->
             t.HelpWriter <- System.Console.Out
             t.IgnoreUnknownArguments <- true)
-        let pluginSettings = new NWN1PluginSettings()
+        let pluginSettings = new JadeEmpirePluginSettings()
         if (not(parser.ParseArguments(args, pluginSettings))) then
             raise(exn("failed to parse Jade Empire configuration"))
 
@@ -483,7 +527,7 @@ type AuroraPlugin() =
 
         let extractionContext = {
             ExtractionContext.gameResources = context.Resources;
-            pluginSettings = pluginSettings;
+            pluginSettings = pluginSettings :> AuroraPluginSettings;
             db = db;
             masculineOrNeuterTalkTable = masculineOrNeuterTalkTable;
             feminineTalkTable = feminineTalkTable;
@@ -509,4 +553,130 @@ type AuroraPlugin() =
         db.CreateOrUpdateCards(allCards)
 
         this.LogWriteLine("Jade Empire extraction complete.") |> ignore
+        ()
+
+    member private this.ExtractKOTOR12DAs(xc: ExtractionContext<TalkTableV3String>) = 
+        let standaloneExtraction = [|
+                ("aiscripts",          this.ExtractGeneric2DA([|"name_strref";"description_strref"|]), "AI scripts");
+                ("ambientmusic",       this.ExtractGeneric2DA([|"description"|]), "ambient music");
+                ("ambientsound",       this.ExtractGeneric2DA([|"description"|]), "ambient sound");
+                ("appearance",         this.ExtractGeneric2DA([|"string_ref"|]), "appearance");
+                ("baseitems",          this.ExtractGeneric2DA([|"name"|]), "base items");
+                ("bindablekeys",       this.ExtractGeneric2DA([|"keynamestrref"|]), "bindable keys");
+                ("bodybag",            this.ExtractGeneric2DA([|"name"|]), "bodybags");
+                ("classes",            this.ExtractGeneric2DA([|"name"; "description"|]), "base items");
+                ("credits",            this.ExtractGeneric2DA([|"name"|]), "credits");
+                ("difficultyopt",      this.ExtractGeneric2DA([|"name"|]), "difficulty options");
+                ("encdifficulty",      this.ExtractGeneric2DA([|"strref"|]), "encounter difficulty");
+                ("feat",               this.ExtractGeneric2DA([|"name"; "description"|]), "feat");
+                ("feedbacktext",       this.ExtractGeneric2DA([|"strref"|]), "feedback text");
+                ("gender",             this.ExtractGeneric2DA([|"name"|]), "gender");
+                ("genericdoors",       this.ExtractGeneric2DA([|"strref"|]), "generic doors");
+                ("iprp_abilities",     this.ExtractGeneric2DA([|"name"|]), "item property: abilities");
+                ("iprp_acmodtype",     this.ExtractGeneric2DA([|"name"|]), "item property: AC mod types");
+                ("iprp_aligngrp",      this.ExtractGeneric2DA([|"name"|]), "item property: alignment group");
+                ("iprp_amount",        this.ExtractGeneric2DA([|"name"|]), "item property: amount");
+                ("iprp_bladecost",     this.ExtractGeneric2DA([|"name"|]), "item property: blade cost");
+                ("iprp_bonuscost",     this.ExtractGeneric2DA([|"name"|]), "item property: bonus cost");
+                ("iprp_chargecost",    this.ExtractGeneric2DA([|"name"|]), "item property: charge cost");
+                ("iprp_color",         this.ExtractGeneric2DA([|"name"|]), "item property: color");
+                ("iprp_combatdam",     this.ExtractGeneric2DA([|"name"|]), "item property: combat damage");
+                ("iprp_damagecost",    this.ExtractGeneric2DA([|"name"|]), "item property: damage cost");
+                ("iprp_damagetype",    this.ExtractGeneric2DA([|"name"|]), "item property: damage type");
+                ("iprp_damvulcost",    this.ExtractGeneric2DA([|"name"|]), "item property: damage vulnerability cost");
+                ("iprp_immuncost",     this.ExtractGeneric2DA([|"name"|]), "item property: immunity cost");
+                ("iprp_immunity",      this.ExtractGeneric2DA([|"name"|]), "item property: immunity");
+                ("iprp_lightcost",     this.ExtractGeneric2DA([|"name"|]), "item property: light cost");
+                ("iprp_meleecost",     this.ExtractGeneric2DA([|"name"|]), "item property: melee cost");
+                ("iprp_monsterhit",    this.ExtractGeneric2DA([|"name"|]), "item property: monster hit");
+                ("iprp_monstcost",     this.ExtractGeneric2DA([|"name"|]), "item property: monster cost");
+                ("iprp_neg5cost",      this.ExtractGeneric2DA([|"name"|]), "item property: negative 5 cost");
+                ("iprp_neg10cost",     this.ExtractGeneric2DA([|"name"|]), "item property: negative 10 cost");
+                ("iprp_onhit",         this.ExtractGeneric2DA([|"name"|]), "item property: on hit effect");
+                ("iprp_onhitdc",       this.ExtractGeneric2DA([|"name"|]), "item property: on hit DC");
+                ("iprp_onhitcost",     this.ExtractGeneric2DA([|"name"|]), "item property: on hit cost");
+                ("iprp_onhitdur",      this.ExtractGeneric2DA([|"name"|]), "item property: on hit duration");
+                ("iprp_paramtable",    this.ExtractGeneric2DA([|"name"|]), "item property: parameter table");
+                ("iprp_poison",        this.ExtractGeneric2DA([|"name"|]), "item property: poison");
+                ("iprp_protection",    this.ExtractGeneric2DA([|"name"|]), "item property: protection");
+                ("iprp_redcost",       this.ExtractGeneric2DA([|"name"|]), "item property: reduced cost");
+                ("iprp_rescost",       this.ExtractGeneric2DA([|"name"|]), "item property: resistance cost");
+                ("iprp_saveelement",   this.ExtractGeneric2DA([|"name"|]), "item property: save against element");
+                ("iprp_savingthrow",   this.ExtractGeneric2DA([|"name"|]), "item property: saving throw");
+                ("iprp_soakcost",      this.ExtractGeneric2DA([|"name"|]), "item property: soak cost");
+                ("iprp_srcost",        this.ExtractGeneric2DA([|"name"|]), "item property: SR cost");
+                ("iprp_walk",          this.ExtractGeneric2DA([|"name"|]), "item property: walk");
+                ("iprp_weightinc",     this.ExtractGeneric2DA([|"name"|]), "item property: weight increase");
+                ("iprp_weightcost",    this.ExtractGeneric2DA([|"name"|]), "item property: weight cost");
+                ("itemprops",          this.ExtractGeneric2DA([|"stringref"|]), "item properties");
+                ("itempropdef",        this.ExtractGeneric2DA([|"name"|]), "item property definitions");
+                ("keymap",             this.ExtractGeneric2DA([|"actionstrref"; "descstrref"|]), "keymap");
+                ("loadscreenhints",    this.ExtractGeneric2DA([|"gameplayhint"; "storyhint"|]), "loading screen hints");
+                ("masterfeats",        this.ExtractGeneric2DA([|"strref"|]), "master feats");
+                ("modulesave",         this.ExtractGeneric2DA([|"areaname"|]), "module save data");
+                ("movies",             this.ExtractGeneric2DA([|"strrefname"|]), "movies");
+                ("placeables",         this.ExtractGeneric2DA([|"strref"|]), "placeables");
+                ("planetary",          this.ExtractGeneric2DA([|"name"; "description"|]), "planetary map");
+                ("poison",             this.ExtractGeneric2DA([|"name"|]), "poison");
+                ("racialtypes",        this.ExtractGeneric2DA([|"name"|]), "racial types");
+                ("skills",             this.ExtractGeneric2DA([|"name"; "description"|]), "skills");
+                ("soundset",           this.ExtractGeneric2DA([|"strref"|]), "sound sets");
+                ("spells",             this.ExtractGeneric2DA([|"name"; "spelldesc"|]), "spells");
+                ("stringtokens",       this.ExtractGeneric2DA([|"default"; "strref1"; "strref2"|]), "string tokens");
+                ("texpacks",           this.ExtractGeneric2DA([|"strrefname"|]), "texture packs");
+                ("traps",              this.ExtractGeneric2DA([|"trapname"; "name"|]), "traps");
+                ("tutorial",           this.ExtractGeneric2DA([|"message0"; "message1"; "message2"|]), "tutorial");
+                ("tutorial_old",       this.ExtractGeneric2DA([|"message0"; "message1"; "message2"|]), "tutorial (old)");
+            |]
+
+        this.Extract2DAs(xc, standaloneExtraction)
+
+    member private this.ExtractKOTOR1(path: string, db: LLDatabase, args: string[]) = 
+        let parser = new CommandLine.Parser(fun t ->
+            t.HelpWriter <- System.Console.Out
+            t.IgnoreUnknownArguments <- true)
+        let pluginSettings = new KOTOR1PluginSettings()
+        if (not(parser.ParseArguments(args, pluginSettings))) then
+            raise(exn("failed to parse KOTOR1 configuration"))
+
+        this.LogWriteLine("Creating KOTOR1 context from " + path) |> ignore
+        let context = new KOTOR1Context(path)
+
+        // find the talk tables
+        let masculineOrNeuterTalkTable = TalkTableV3.FromFilePath(Path.Combine(path, "dialog.tlk"))
+        let gameEntry = {
+            GameRecord.Name = "Star Wars: Knights of the Old Republic";
+            ID = 0
+        }
+        let gameEntryWithId = { gameEntry with ID = db.CreateOrUpdateGame(gameEntry) }
+        this.LogWriteLine("Game entry updated.") |> ignore
+
+        let extractionContext = {
+            ExtractionContext.gameResources = context.Resources;
+            pluginSettings = pluginSettings :> AuroraPluginSettings;
+            db = db;
+            masculineOrNeuterTalkTable = masculineOrNeuterTalkTable;
+            feminineTalkTable = masculineOrNeuterTalkTable;
+            gameEntry = gameEntryWithId
+        }
+        
+        let extractedDialogueCards = 
+            if (pluginSettings.ExtractAllBoolean || pluginSettings.ExtractDialoguesBoolean) then
+                this.ExtractDialogues(extractionContext) |> Array.ofSeq
+            else
+                [||]
+
+        let extracted2DACards = 
+            if (pluginSettings.ExtractAllBoolean || pluginSettings.Extract2DAsBoolean) then
+                this.ExtractKOTOR12DAs(extractionContext)
+            else
+                [||]
+
+        // filter out empty cards.
+        let allCards = Array.concat([| extractedDialogueCards; extracted2DACards |]) |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
+
+        this.LogWriteLine("Adding extracted cards to DB.") |> ignore
+        db.CreateOrUpdateCards(allCards)
+
+        this.LogWriteLine("KOTOR1 extraction complete.") |> ignore
         ()

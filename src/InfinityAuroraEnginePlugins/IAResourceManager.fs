@@ -22,6 +22,9 @@ type IGenericResource =
         abstract member OriginDesc: string
     end
 
+let filenameForResource(r: IGenericResource): string = 
+    r.Name.Value + "." + CommonTypes.ExtensionForResType(r.ResourceType)
+
 type IAOverrideResource = 
     {
         resRef: ResRef;

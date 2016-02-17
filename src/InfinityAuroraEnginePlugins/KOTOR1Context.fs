@@ -1,21 +1,30 @@
-﻿module InfinityAuroraEnginePlugins.JadeEmpireContext
+﻿module InfinityAuroraEnginePlugins.KOTOR1Context
 
 open InfinityAuroraEnginePlugins.ArchiveFiles
 open InfinityAuroraEnginePlugins.IAResourceManager
 
 open System.IO
 
-type JadeEmpireContext(rootPath: string) = 
+type KOTOR1Context(rootPath: string) = 
     class
         let rm = new ResourceManager()
 
         let erfPaths = 
-            Directory.GetFiles(Path.Combine(rootPath, @"data\bips"), "*.mod", SearchOption.AllDirectories) |> 
-                Array.map(fun t -> t.Substring(rootPath.Length + 1))
+            [| 
+                [| Path.Combine(rootPath, @"patch.erf") |]
+                Directory.GetFiles(Path.Combine(rootPath, @"lips"), "*.mod", SearchOption.AllDirectories);
+                Directory.GetFiles(Path.Combine(rootPath, @"TexturePacks"), "*.erf", SearchOption.AllDirectories)
+            |] 
+            |> Array.collect(fun t -> t) 
+            |> Array.map(fun t -> t.Substring(rootPath.Length + 1))
 
         let rimPaths = 
-            Directory.GetFiles(Path.Combine(rootPath, @"data"), "*.rim", SearchOption.AllDirectories) |> 
-                Array.map(fun t -> t.Substring(rootPath.Length + 1))
+            [|
+                Directory.GetFiles(Path.Combine(rootPath, @"modules"), "*.rim", SearchOption.AllDirectories);
+                Directory.GetFiles(Path.Combine(rootPath, @"rims"), "*.rim", SearchOption.AllDirectories)
+            |]
+            |> Array.collect(fun t -> t)
+            |> Array.map(fun t -> t.Substring(rootPath.Length + 1))
 
         let keyPaths = [|
             @"chitin.key"

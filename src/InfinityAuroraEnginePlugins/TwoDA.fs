@@ -164,18 +164,17 @@ type TwoDAFile(columnHeaders: string array, defaultValue: string option, rowData
     static member private ReadNext2DABinaryString(br: BinaryReader, ?acc0: StringBuilder): char * string = 
         let acc = defaultArg acc0 (new StringBuilder())
         match char(br.ReadChar()) with
-        | c when (c = char 0) || (c = '\t') -> (c, acc.ToString())
+        | c when (c = char 0) || (c = '\t') || (c = '\n') || (c = '\r') -> (c, acc.ToString())
         | c -> TwoDAFile.ReadNext2DABinaryString(br, acc.Append(c))
 
     static member private Read2DABinaryColumnSet(br: BinaryReader, ?acc0: string list): string list = 
         let acc = defaultArg acc0 []
         match TwoDAFile.ReadNext2DABinaryString(br) with
         | ('\t', col) -> TwoDAFile.Read2DABinaryColumnSet(br, col :: acc)
-        | (c, col) when c = char 0 -> 
-            if (col <> "") then 
-                (col :: acc) |> List.rev
-            else
-                acc |> List.rev
+        | (c, col) when ((c = char 0) && (col.Length > 0)) -> 
+            TwoDAFile.Read2DABinaryColumnSet(br, col :: acc)
+        | (c, col) when ((c = char 0) && (col.Length = 0)) ->
+            acc |> List.rev
         | _ -> raise(exn("invalid 2DA binary file"))
 
     static member private Read2DABinary(br: BinaryReader): (string array * string option * string array array) = 
