@@ -13,4 +13,5 @@
       "../NWN1Context.fs"
       "../JadeEmpireContext.fs"
       "../KOTOR1Context.fs"
+      "../KOTOR2Context.fs"
       "../AuroraPlugin.fs"
