@@ -23,7 +23,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <WarningLevel>3</WarningLevel>
     <OtherFlags>--warnon:1182</OtherFlags>
-    <StartArguments>import --game="Star Wars: Knights of the Old Republic II" --game-dir="C:\Program Files (x86)\Steam\steamapps\common\Knights of the Old Republic II" --language-tag=en --extract-2das=true --extract-dialogues=true</StartArguments>
+    <StartArguments>export-anki --game-toexport="Star Wars: Knights of the Old Republic II" --export-path="C:\Users\ErikL\Documents\KOTOR2Export_650jedi.txt" --recognition-language=en --production-language=de --lesson-toexport="Dialogue: 650jedi"</StartArguments>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>

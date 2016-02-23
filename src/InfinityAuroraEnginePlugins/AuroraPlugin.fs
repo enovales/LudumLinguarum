@@ -13,6 +13,7 @@ open InfinityAuroraEnginePlugins.TalkTable
 open InfinityAuroraEnginePlugins.TwoDA
 open System
 open System.IO
+open System.Text.RegularExpressions
 
 type AuroraPluginSettings() = 
     [<CommandLine.Option("language-tag", DefaultValue = "en", Required = false)>]
@@ -821,10 +822,23 @@ type AuroraPlugin() =
             feminineTalkTable = masculineOrNeuterTalkTable;
             gameEntry = gameEntryWithId
         }
+
+        let findImplementationCommentsRegex = new Regex("\{.*\}")
+        let rec textWithoutImplementationComments(t: string): string = 
+            let rmatch = findImplementationCommentsRegex.Match(t)
+            if (rmatch.Success) then
+                textWithoutImplementationComments(t.Remove(rmatch.Index, rmatch.Length).Trim())
+            else
+                t
+
+        let removeImplementationComments(c: CardRecord): CardRecord = 
+            { c with Text = textWithoutImplementationComments(c.Text) }
         
         let extractedDialogueCards = 
             if (pluginSettings.ExtractAllBoolean || pluginSettings.ExtractDialoguesBoolean) then
-                this.ExtractDialogues(extractionContext) |> Array.ofSeq
+                this.ExtractDialogues(extractionContext) 
+                |> Seq.map removeImplementationComments 
+                |> Array.ofSeq
             else
                 [||]
 
