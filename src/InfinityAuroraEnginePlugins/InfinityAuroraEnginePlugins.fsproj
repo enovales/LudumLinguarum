@@ -57,10 +57,12 @@
     <Compile Include="NWN1Context.fs" />
     <Compile Include="JadeEmpireContext.fs" />
     <Compile Include="KOTOR1Context.fs" />
+    <Compile Include="KOTOR2Context.fs" />
     <Compile Include="AuroraPlugin.fs" />
     <None Include="Scripts\load-references-debug.fsx" />
     <None Include="Scripts\load-project-debug.fsx" />
     <None Include="Scripts\KOTOR1Script.fsx" />
+    <None Include="Scripts\KOTOR2Script.fsx" />
     <None Include="Scripts\JadeEmpireScript.fsx" />
   </ItemGroup>
   <ItemGroup>
