@@ -115,7 +115,18 @@ type GatherStringsTests() =
 
     [<Test>]
     member this.TestLinkedDialogue() = 
-        ()
+        let expected = 
+            [
+                (testStrings.[0], dialogueNodeKey(0, 0))
+            ]
+
+        // connect first sync struct to a link.
+        let link = 
+            {
+                syncStructs.[1] with IsLink = true
+            }
+        let connected = connectSyncStructs(syncStructs.[0], link)
+        Assert.AreEqual(expected, GatherStrings([], connected, 0, 0))
 
     [<Test>]
     member this.TestBranchingDialogue() = 
