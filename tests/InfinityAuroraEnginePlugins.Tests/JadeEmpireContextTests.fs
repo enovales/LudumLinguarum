@@ -52,7 +52,7 @@ type JadeEmpireContextTests() =
             dialoguesAndResources |> 
             Array.collect(fun (t, dialogueResource) -> 
                 let extracted = ExtractStringsFromDialogue(t, LanguageType.English, Gender.MasculineOrNeutral, englishTalkTable, englishTalkTable)
-                AugmentExtractedStringKeys(extracted, dialogueResource.Name, dialogueResource.OriginDesc, Gender.MasculineOrNeutral)
+                AugmentExtractedStringKeys(extracted, dialogueResource.Name, dialogueResource.OriginDesc, Gender.MasculineOrNeutral) |> Array.ofSeq
                 )
 
         let LLDatabase = new LLDatabase(":memory:")

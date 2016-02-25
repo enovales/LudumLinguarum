@@ -70,7 +70,7 @@ type DialogueTests() =
     [<Test; Explicit>]
     member this.TestWalkDialogueTree(): Unit = 
         let dialogue = LoadDialogue({ ResRef.Value = "nw_hen_bod"}, contextGerman.Resources)
-        let strings = dialogue.StartingList |> Array.mapi (fun i t -> GatherStrings([], t, 0, i) |> List.toArray) |> Array.concat
+        let strings = dialogue.StartingList |> Array.mapi (fun i t -> GatherStrings(t) |> List.toArray) |> Array.concat
         strings |> Array.map (fun (t, k) -> 
             System.Console.WriteLine(EvaluateString(t, englishTalkTable, englishTalkTable, LanguageType.English, Gender.MasculineOrNeutral))
             System.Console.WriteLine(EvaluateString(t, germanTalkTable, germanTalkTableF, LanguageType.German, Gender.MasculineOrNeutral))) |> ignore
@@ -84,7 +84,7 @@ type DialogueTests() =
         System.Console.WriteLine("loaded " + dialogues.Length.ToString() + " dialogues")
 
         dialogues |> 
-            Array.collect(fun t -> ExtractStringsFromDialogue(t, LanguageType.English, Gender.MasculineOrNeutral, englishTalkTable, englishTalkTable)) |> 
+            Array.collect(fun t -> ExtractStringsFromDialogue(t, LanguageType.English, Gender.MasculineOrNeutral, englishTalkTable, englishTalkTable) |> Array.ofList) |> 
             Array.map(fun t -> System.Console.WriteLine(t)) |>
             ignore
         ()

@@ -68,56 +68,56 @@ type GatherStringsTests() =
                 IsLink = false
                 LinkComment = None
             }
-        Assert.IsEmpty(GatherStrings([], d, 0, 0))
+        Assert.IsEmpty(GatherStrings(d))
 
     [<Test>]
     member this.TestSingleLineDialogue() = 
         let expected = 
             [
-                (testStrings.[0], dialogueNodeKey(0, 0))
+                (testStrings.[0], "0")
             ]
-        Assert.AreEqual(expected, GatherStrings([], syncStructs.[0], 0, 0))
+        Assert.AreEqual(expected, GatherStrings(syncStructs.[0]))
 
     [<Test>]
     member this.TestTwoLineDialogue() = 
         let expected = 
             [
-                (testStrings.[0], dialogueNodeKey(0, 0));
-                (testStrings.[1], dialogueNodeKey(1, 0))
+                (testStrings.[0], "0");
+                (testStrings.[1], "1")
             ]
-        Assert.AreEqual(expected, GatherStrings([], connectSyncStructs(syncStructs.[0], syncStructs.[1]), 0, 0))
+        Assert.AreEqual(expected, GatherStrings(connectSyncStructs(syncStructs.[0], syncStructs.[1])))
 
     [<Test>]
     member this.TestMultipleLineDialogue() = 
         let expected = 
             [
-                (testStrings.[0], dialogueNodeKey(0, 0))
-                (testStrings.[1], dialogueNodeKey(1, 0))
-                (testStrings.[2], dialogueNodeKey(2, 0))
+                (testStrings.[0], "0")
+                (testStrings.[1], "1")
+                (testStrings.[2], "2")
             ]
 
         let connected = connectSyncStructs(syncStructs.[0], connectSyncStructs(syncStructs.[1], syncStructs.[2]))
-        Assert.AreEqual(expected, GatherStrings([], connected, 0, 0))
+        Assert.AreEqual(expected, GatherStrings(connected))
 
     [<Test>]
     member this.TestMultipleAnswerDialogue() = 
         let expected = 
             [
-                (testStrings.[0], dialogueNodeKey(0, 0))
-                (testStrings.[1], dialogueNodeKey(1, 0))
-                (testStrings.[2], dialogueNodeKey(1, 1))
+                (testStrings.[0], "0")
+                (testStrings.[1], "1")
+                (testStrings.[2], "2")
             ]
 
         // connect answers in reverse order, because of the prepending
         let connected = connectSyncStructs(syncStructs.[0], syncStructs.[2])
         let bothConnected = connectSyncStructs(connected, syncStructs.[1])
-        Assert.AreEqual(expected, GatherStrings([], bothConnected, 0, 0))
+        Assert.AreEqual(expected, GatherStrings(bothConnected))
 
     [<Test>]
     member this.TestLinkedDialogue() = 
         let expected = 
             [
-                (testStrings.[0], dialogueNodeKey(0, 0))
+                (testStrings.[0], "0")
             ]
 
         // connect first sync struct to a link.
@@ -126,8 +126,5 @@ type GatherStringsTests() =
                 syncStructs.[1] with IsLink = true
             }
         let connected = connectSyncStructs(syncStructs.[0], link)
-        Assert.AreEqual(expected, GatherStrings([], connected, 0, 0))
+        Assert.AreEqual(expected, GatherStrings(connected))
 
-    [<Test>]
-    member this.TestBranchingDialogue() = 
-        ()
