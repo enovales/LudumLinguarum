@@ -16,6 +16,43 @@ type ImportConfiguration() =
     [<CommandLine.Option("game-dir", Required = true)>]
     member val GameDir = "" with get, set
 
+/// <summary>
+/// Configuration for the 'list-games' verb.
+/// </summary>
+type ListGamesConfiguration() = 
+    [<CommandLine.Option(Required = false)>]
+    member val FilterRegex = "" with get, set
+
+/// <summary>
+/// Configuration for the 'list-lessons' verb.
+/// </summary>
+type ListLessonsConfiguration() = 
+    [<CommandLine.Option(Required = false)>]
+    member val GameRegex = "" with get, set
+
+    [<CommandLine.Option(Required = false)>]
+    member val FilterRegex = "" with get, set
+
+/// <summary>
+/// Configuration for the 'delete-game' verb.
+/// </summary>
+type DeleteGameConfiguration() = 
+    [<CommandLine.Option(Required = true)>]
+    member val Game = "" with get, set
+
+/// <summary>
+/// Configuration for the 'delete-lessons' verb.
+/// </summary>
+type DeleteLessonsConfiguration() = 
+    [<CommandLine.Option(Required = true)>]
+    member val Game = "" with get, set
+
+    [<CommandLine.Option(Required = false)>]
+    member val FilterRegex = "" with get, set
+
+    [<CommandLine.Option(Required = false)>]
+    member val LessonName = "" with get, set
+
 type BaseLudumLinguarumConfiguration() = 
     [<CommandLine.Option("database-path", Required = false)>]
     member val DatabasePath = "" with get, set
@@ -38,6 +75,18 @@ type LudumLinguarumConfiguration() =
 
     [<CommandLine.VerbOption("scan-for-text", HelpText = "Scan for text in files in a path")>]
     member val TextScannerOptions = new DebugTools.TextScannerConfiguration() with get, set
+
+    [<CommandLine.VerbOption("list-games", HelpText = "List all imported games")>]
+    member val ListGamesOptions = new ListGamesConfiguration() with get, set
+
+    [<CommandLine.VerbOption("list-lessons", HelpText = "List lessons, filtering by game and lesson names")>]
+    member val ListLessonsOptions = new ListLessonsConfiguration() with get, set
+
+    [<CommandLine.VerbOption("delete-game", HelpText = "Delete a single game")>]
+    member val DeleteGameOptions = new DeleteGameConfiguration() with get, set
+
+    [<CommandLine.VerbOption("delete-lessons", HelpText = "Delete lessons for a game, filtered by name")>]
+    member val DeleteLessonsOptions = new DeleteLessonsConfiguration() with get, set
 
 let runImportAction(baseConfiguration: LudumLinguarumConfiguration, iPluginManager: IPluginManager, 
                     outputTextWriter: TextWriter, llDatabase: LLDatabase, argv: string array) = 
@@ -117,9 +166,11 @@ let main argv =
     let bundledPluginsPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
     let bundledPlugins = Directory.GetFiles(bundledPluginsPath, "*.dll", SearchOption.AllDirectories)
 
-    let commandLineParser = new CommandLine.Parser(fun t -> 
+    let commandLineParserSetupAction(t: CommandLine.ParserSettings) = 
         t.HelpWriter <- System.Console.Out
-        t.IgnoreUnknownArguments <- true)
+        t.IgnoreUnknownArguments <- true
+
+    let commandLineParser = new CommandLine.Parser(commandLineParserSetupAction)
 
     // This is kind of convoluted. First, we parse the base configuration with the verb removed, to pick up common options.
     // Then, we parse the regular configuration to decide which verb to use (and to pick up verb-specific options).
@@ -128,15 +179,15 @@ let main argv =
     let verbConfiguration = new LudumLinguarumConfiguration()
     let mutable selectedVerb = ""
     let chooseVerb = fun(c: string)(o: obj) -> selectedVerb <- c
-    let (baseSuccess, verbSuccess) = 
-        (commandLineParser.ParseArguments(argv, baseConfiguration), commandLineParser.ParseArguments(argv, verbConfiguration, new Action<string, obj>(chooseVerb)))
+    let baseSuccess = commandLineParser.ParseArguments(argv, baseConfiguration, new Action<string, obj>(chooseVerb))
+    let verbSuccess = commandLineParser.ParseArguments(argv, verbConfiguration, new Action<string, obj>(chooseVerb))
 
     match (baseSuccess, verbSuccess) with
     | (true, true) ->
         // if there was a command line file specified, read that file and use its contents as
         // the real set of command line arguments.
         let (finalBaseConfiguration, finalVerbConfiguration) = 
-            if (baseConfiguration.CommandFile <> "") then
+            if (not(String.IsNullOrWhiteSpace(baseConfiguration.CommandFile))) then
                 let commandFileConfigurationText = File.ReadAllText(baseConfiguration.CommandFile).Trim()
                 let commandFileArgv = commandFileConfigurationText.Split(' ')
                 let commandFileBaseConfiguration = new BaseLudumLinguarumConfiguration()
@@ -151,24 +202,30 @@ let main argv =
                 (baseConfiguration, verbConfiguration)
 
         let outputTextWriter = 
-            match finalBaseConfiguration.LogFile with
-            | "" -> System.Console.Out
-            | p -> new StreamWriter(p) :> TextWriter
-           
+            if (String.IsNullOrWhiteSpace(finalBaseConfiguration.LogFile)) then
+                System.Console.Out
+            else
+                new StreamWriter(finalBaseConfiguration.LogFile) :> TextWriter
+
+        let instantiatePluginType(t: Type) = 
+            try
+                iPluginManager.Instantiate(outputTextWriter, t, argv)
+            with
+            | ex -> 
+                outputTextWriter.WriteLine("Failed to load plugin " + t.AssemblyQualifiedName + ":" + Environment.NewLine + ex.ToString())
+                ()
+
+        let loadAndInstantiatePlugin(pluginFilename: string) = 
+            try
+                let loadedAssembly = Assembly.LoadFile(pluginFilename)
+                iPluginManager.Discover(loadedAssembly) 
+                |> Array.ofList 
+                |> Array.iter instantiatePluginType
+            with
+            | _ -> ()
+            
         try
-            bundledPlugins |> Array.iter(fun t -> 
-                try
-                    let loadedAssembly = Assembly.LoadFile(t)
-                    iPluginManager.Discover(loadedAssembly) |> Array.ofList |> 
-                    Array.iter (fun t ->
-                        try
-                            iPluginManager.Instantiate(outputTextWriter, t, argv)
-                        with
-                        | ex -> 
-                            outputTextWriter.WriteLine("Failed to load plugin " + t.AssemblyQualifiedName + ":" + Environment.NewLine + ex.ToString())
-                            ())
-                with
-                | _ -> ())
+            bundledPlugins |> Array.iter loadAndInstantiatePlugin
         with
         | ex ->
             outputTextWriter.WriteLine("Failed to load plugins: " + Environment.NewLine + ex.ToString())
