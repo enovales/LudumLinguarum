@@ -5,6 +5,7 @@ open LudumLinguarumPlugins
 open System
 open System.IO
 open System.Reflection
+open System.Text.RegularExpressions
 
 /// <summary>
 /// Generic configuration for game imports.
@@ -53,7 +54,10 @@ type DeleteLessonsConfiguration() =
     [<CommandLine.Option(Required = false)>]
     member val LessonName = "" with get, set
 
-type BaseLudumLinguarumConfiguration() = 
+/// <summary>
+/// Root configuration for the program.
+/// </summary>
+type LudumLinguarumConfiguration() = 
     [<CommandLine.Option("database-path", Required = false)>]
     member val DatabasePath = "" with get, set
 
@@ -63,10 +67,6 @@ type BaseLudumLinguarumConfiguration() =
     [<CommandLine.Option("log-file", Required = false)>]
     member val LogFile = "" with get, set
 
-/// <summary>
-/// Root configuration for the program.
-/// </summary>
-type LudumLinguarumConfiguration() = 
     [<CommandLine.VerbOption("import", HelpText = "Import localized content from a game")>]
     member val ImportOptions = new ImportConfiguration() with get, set
 
@@ -117,21 +117,65 @@ let runScanForTextAction(baseConfiguration: LudumLinguarumConfiguration, otw: Te
         )
     0
 
-let runListGamesAction(baseConfiguration: LudumLinguarumConfiguration, otw: TextWriter) = 
+/// <summary>
+/// Runs the 'list-games' action, using the optional filter regex.
+/// </summary>
+/// <param name="baseConfiguration">configuration for running the action</param>
+/// <param name="otw">output channel</param>
+/// <param name="db">database</param>
+let runListGamesAction(baseConfiguration: LudumLinguarumConfiguration, otw: TextWriter, db: LLDatabase) = 
+    let games = db.Games |> Array.map(fun t -> t.Name)
+    let filter = 
+        if (String.IsNullOrWhiteSpace(baseConfiguration.ListGamesOptions.FilterRegex)) then
+            (fun _ -> true)
+        else
+            let regex = new Regex(baseConfiguration.ListGamesOptions.FilterRegex)
+            (fun t -> regex.IsMatch(t))
+
+    games
+    |> Array.filter filter
+    |> Array.iter otw.WriteLine
     0
 
-let runListLessonsAction(baseConfiguration: LudumLinguarumConfiguration, otw: TextWriter) = 
+let runListLessonsAction(baseConfiguration: LudumLinguarumConfiguration, otw: TextWriter, db: LLDatabase) = 
+    let gameFilter = 
+        if (String.IsNullOrWhiteSpace(baseConfiguration.ListLessonsOptions.GameRegex)) then
+            (fun _ -> true)
+        else
+            let regex = new Regex(baseConfiguration.ListLessonsOptions.GameRegex)
+            (fun (t: GameRecord) -> regex.IsMatch(t.Name))
+
+    let allowedGameIds = 
+        db.Games
+        |> Array.filter gameFilter
+        |> Array.map(fun t -> t.ID)
+
+    let checkGameFilterForLesson(l: LessonRecord) = 
+        allowedGameIds |> Array.contains(l.GameID)
+
+    let lessonFilter = 
+        if (String.IsNullOrWhiteSpace(baseConfiguration.ListLessonsOptions.FilterRegex)) then
+            (fun _ -> true)
+        else
+            let regex = new Regex(baseConfiguration.ListLessonsOptions.FilterRegex)
+            (fun (t: LessonRecord) -> regex.IsMatch(t.Name))
+        
+    db.Lessons
+    |> Array.filter checkGameFilterForLesson
+    |> Array.filter lessonFilter
+    |> Array.map (fun l -> l.Name)
+    |> Array.iter otw.WriteLine
     0
 
-let runDeleteGameAction(baseConfiguration: LudumLinguarumConfiguration, otw: TextWriter) = 
+let runDeleteGameAction(baseConfiguration: LudumLinguarumConfiguration, otw: TextWriter, db: LLDatabase) = 
     0
 
-let runDeleteLessonsAction(baseConfiguration: LudumLinguarumConfiguration, otw: TextWriter) = 
+let runDeleteLessonsAction(baseConfiguration: LudumLinguarumConfiguration, otw: TextWriter, db: LLDatabase) = 
     0
 
-let processConfiguration(baseConfiguration: BaseLudumLinguarumConfiguration, verbConfiguration: LudumLinguarumConfiguration, iPluginManager: IPluginManager, outputTextWriter: TextWriter, selectedVerb: string, argv: string array) = 
+let processConfiguration(verbConfiguration: LudumLinguarumConfiguration, iPluginManager: IPluginManager, outputTextWriter: TextWriter, selectedVerb: string, argv: string array) = 
     let effectiveFLDBPath = 
-        match baseConfiguration.DatabasePath with
+        match verbConfiguration.DatabasePath with
         | "" -> Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), @"LudumLinguarum\LudumLinguarum.db3")
         | nonDefaultPath -> nonDefaultPath
 
@@ -154,13 +198,13 @@ let processConfiguration(baseConfiguration: BaseLudumLinguarumConfiguration, ver
         | "scan-for-text" ->
             runScanForTextAction(verbConfiguration, outputTextWriter)
         | "list-games" ->
-            runListGamesAction(verbConfiguration, outputTextWriter)
+            runListGamesAction(verbConfiguration, outputTextWriter, LLDatabase)
         | "list-lessons" ->
-            runListLessonsAction(verbConfiguration, outputTextWriter)
+            runListLessonsAction(verbConfiguration, outputTextWriter, LLDatabase)
         | "delete-game" ->
-            runDeleteGameAction(verbConfiguration, outputTextWriter)
+            runDeleteGameAction(verbConfiguration, outputTextWriter, LLDatabase)
         | "delete-lessons" ->
-            runDeleteLessonsAction(verbConfiguration, outputTextWriter)
+            runDeleteLessonsAction(verbConfiguration, outputTextWriter, LLDatabase)
         | _ ->
             System.Console.WriteLine("Error: no action specified")
             1
@@ -195,37 +239,34 @@ let main argv =
     // This is kind of convoluted. First, we parse the base configuration with the verb removed, to pick up common options.
     // Then, we parse the regular configuration to decide which verb to use (and to pick up verb-specific options).
 
-    let baseConfiguration = new BaseLudumLinguarumConfiguration()
     let verbConfiguration = new LudumLinguarumConfiguration()
     let mutable selectedVerb = ""
     let chooseVerb = fun(c: string)(o: obj) -> selectedVerb <- c
-    let baseSuccess = commandLineParser.ParseArguments(argv, baseConfiguration, new Action<string, obj>(chooseVerb))
     let verbSuccess = commandLineParser.ParseArguments(argv, verbConfiguration, new Action<string, obj>(chooseVerb))
 
-    match (baseSuccess, verbSuccess) with
-    | (true, true) ->
+    match verbSuccess with
+    | true ->
         // if there was a command line file specified, read that file and use its contents as
         // the real set of command line arguments.
-        let (finalBaseConfiguration, finalVerbConfiguration) = 
-            if (not(String.IsNullOrWhiteSpace(baseConfiguration.CommandFile))) then
-                let commandFileConfigurationText = File.ReadAllText(baseConfiguration.CommandFile).Trim()
+        let finalVerbConfiguration = 
+            if (not(String.IsNullOrWhiteSpace(verbConfiguration.CommandFile))) then
+                let commandFileConfigurationText = File.ReadAllText(verbConfiguration.CommandFile).Trim()
                 let commandFileArgv = commandFileConfigurationText.Split(' ')
-                let commandFileBaseConfiguration = new BaseLudumLinguarumConfiguration()
                 let commandFileVerbConfiguration = new LudumLinguarumConfiguration()
-                let (commandBaseSuccess, commandVerbSuccess) = 
-                    (commandLineParser.ParseArguments(commandFileArgv, commandFileBaseConfiguration), commandLineParser.ParseArguments(commandFileArgv, commandFileVerbConfiguration, new Action<string, obj>(chooseVerb)))
+                let commandVerbSuccess = 
+                    commandLineParser.ParseArguments(commandFileArgv, commandFileVerbConfiguration, new Action<string, obj>(chooseVerb))
 
-                match (commandBaseSuccess, commandVerbSuccess) with
-                | (true, true) -> (commandFileBaseConfiguration, commandFileVerbConfiguration)
+                match commandVerbSuccess with
+                | true -> commandFileVerbConfiguration
                 | _ -> raise(exn("Failed to parse configuration file"))
             else
-                (baseConfiguration, verbConfiguration)
+                verbConfiguration
 
         let outputTextWriter = 
-            if (String.IsNullOrWhiteSpace(finalBaseConfiguration.LogFile)) then
+            if (String.IsNullOrWhiteSpace(finalVerbConfiguration.LogFile)) then
                 System.Console.Out
             else
-                new StreamWriter(finalBaseConfiguration.LogFile) :> TextWriter
+                new StreamWriter(finalVerbConfiguration.LogFile) :> TextWriter
 
         let instantiatePluginType(t: Type) = 
             try
@@ -251,7 +292,7 @@ let main argv =
             outputTextWriter.WriteLine("Failed to load plugins: " + Environment.NewLine + ex.ToString())
             ()
 
-        let retVal = processConfiguration(finalBaseConfiguration, finalVerbConfiguration, iPluginManager, outputTextWriter, selectedVerb, argv)
+        let retVal = processConfiguration(finalVerbConfiguration, iPluginManager, outputTextWriter, selectedVerb, argv)
         outputTextWriter.Flush() |> ignore
         retVal
 
