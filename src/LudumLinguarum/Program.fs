@@ -117,6 +117,18 @@ let runScanForTextAction(baseConfiguration: LudumLinguarumConfiguration, otw: Te
         )
     0
 
+let runListGamesAction(baseConfiguration: LudumLinguarumConfiguration, otw: TextWriter) = 
+    0
+
+let runListLessonsAction(baseConfiguration: LudumLinguarumConfiguration, otw: TextWriter) = 
+    0
+
+let runDeleteGameAction(baseConfiguration: LudumLinguarumConfiguration, otw: TextWriter) = 
+    0
+
+let runDeleteLessonsAction(baseConfiguration: LudumLinguarumConfiguration, otw: TextWriter) = 
+    0
+
 let processConfiguration(baseConfiguration: BaseLudumLinguarumConfiguration, verbConfiguration: LudumLinguarumConfiguration, iPluginManager: IPluginManager, outputTextWriter: TextWriter, selectedVerb: string, argv: string array) = 
     let effectiveFLDBPath = 
         match baseConfiguration.DatabasePath with
@@ -141,6 +153,14 @@ let processConfiguration(baseConfiguration: BaseLudumLinguarumConfiguration, ver
             runExportAnkiAction(verbConfiguration, iPluginManager, outputTextWriter, LLDatabase, argv)
         | "scan-for-text" ->
             runScanForTextAction(verbConfiguration, outputTextWriter)
+        | "list-games" ->
+            runListGamesAction(verbConfiguration, outputTextWriter)
+        | "list-lessons" ->
+            runListLessonsAction(verbConfiguration, outputTextWriter)
+        | "delete-game" ->
+            runDeleteGameAction(verbConfiguration, outputTextWriter)
+        | "delete-lessons" ->
+            runDeleteLessonsAction(verbConfiguration, outputTextWriter)
         | _ ->
             System.Console.WriteLine("Error: no action specified")
             1
