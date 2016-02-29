@@ -15,9 +15,9 @@ type LLDatabaseTestData =
 type LLDatabaseTests() = 
     let mutable db: LLDatabase option = None
 
-    let setupTestData(db: LLDatabase): LLDatabaseTestData = 
+    let setupTestData(db: LLDatabase, gameName: string): LLDatabaseTestData = 
         let game = {
-            GameRecord.Name = "Test game";
+            GameRecord.Name = gameName;
             ID = 0
         }
         let gameWithId = { game with ID = db.AddGame(game) }
@@ -127,7 +127,7 @@ type LLDatabaseTests() =
 
     [<Test>]
     member this.TestGetCardsByLesson() = 
-        let testData = setupTestData(db.Value)
+        let testData = setupTestData(db.Value, "test game")
         let cardsForLesson = db.Value.CardsFromLesson(testData.TestLesson.ID)
         Assert.IsNotEmpty(cardsForLesson)
         Assert.AreEqual(testData.TestCardEn.ID, cardsForLesson.[0].ID)
@@ -136,7 +136,7 @@ type LLDatabaseTests() =
 
     [<Test>]
     member this.TestGetLanguagesForLesson() = 
-        let testData = setupTestData(db.Value)
+        let testData = setupTestData(db.Value, "test game")
         let languagesForLesson = db.Value.LanguagesForLesson(testData.TestLesson.ID)
         let expectedLanguages = ["en"; "de"]
         expectedLanguages |> List.iter (fun t -> Assert.IsTrue(languagesForLesson |> List.contains(t)))
@@ -144,7 +144,7 @@ type LLDatabaseTests() =
 
     [<Test>]
     member this.TestGetCardsByLessonAndLanguage() = 
-        let testData = setupTestData(db.Value)
+        let testData = setupTestData(db.Value, "test game")
         let results = db.Value.CardsFromLessonAndLanguageTag(testData.TestLesson, "en")
         Assert.IsNotEmpty(results)
         Assert.AreEqual(testData.TestCardEn.ID, results.[0].ID)
@@ -253,3 +253,37 @@ type LLDatabaseTests() =
 
         db.Value.DeleteCard({ ce with ID = cid})
         Assert.IsEmpty(db.Value.Cards)
+
+    [<Test>]
+    member this.TestDeleteLessonDeletesCards() = 
+        let testData = setupTestData(db.Value, "test game")
+
+        // set up additional test data
+        setupTestData(db.Value, "test game 2") |> ignore
+
+        db.Value.DeleteLesson(testData.TestLesson)
+
+        Assert.AreEqual(Some(testData.TestGame), db.Value.Games |> Array.tryFind(fun t -> t = testData.TestGame))
+        Assert.AreEqual(None, db.Value.Lessons |> Array.tryFind(fun t -> t = testData.TestLesson))
+        Assert.AreEqual(None, db.Value.Cards |> Array.tryFind(fun t -> t = testData.TestCardEn))
+        Assert.AreEqual(None, db.Value.Cards |> Array.tryFind(fun t -> t = testData.TestCardDe))
+        Assert.IsNotEmpty(db.Value.Games)
+        Assert.IsNotEmpty(db.Value.Lessons)
+        Assert.IsNotEmpty(db.Value.Cards)
+
+    [<Test>]
+    member this.DeleteGameDeletesLessonsAndCards() = 
+        let testData = setupTestData(db.Value, "test game")
+
+        // set up additional test data
+        setupTestData(db.Value, "test game 2") |> ignore
+
+        db.Value.DeleteGame(testData.TestGame)
+
+        Assert.AreEqual(None, db.Value.Games |> Array.tryFind(fun t -> t = testData.TestGame))
+        Assert.AreEqual(None, db.Value.Lessons |> Array.tryFind(fun t -> t = testData.TestLesson))
+        Assert.AreEqual(None, db.Value.Cards |> Array.tryFind(fun t -> t = testData.TestCardEn))
+        Assert.AreEqual(None, db.Value.Cards |> Array.tryFind(fun t -> t = testData.TestCardDe))
+        Assert.IsNotEmpty(db.Value.Games)
+        Assert.IsNotEmpty(db.Value.Lessons)
+        Assert.IsNotEmpty(db.Value.Cards)

@@ -172,14 +172,28 @@ type LLDatabase(dbPath: string) =
         (this.Games |> Array.find(fun t -> t.Name = g.Name)).ID
 
     member this.DeleteGame(g: GameRecord) = 
+        db.BeginTransaction()
+        this.DeleteGameInternal(g)
+        db.Commit()
+
+    member private this.DeleteGameInternal(g: GameRecord) =
         db.Delete(GameEntry.FromGameEntry(g)) |> ignore
+        this.Lessons |> Array.filter(fun l -> l.GameID = g.ID) |> Seq.iter this.DeleteLessonInternal
 
     member this.AddLesson(l: LessonRecord) = 
         db.Insert(LessonEntry.FromLessonEntry(l)) |> ignore
         (this.Lessons |> Array.find(fun t -> (t.Name = l.Name) && (t.GameID = l.GameID))).ID
 
     member this.DeleteLesson(l: LessonRecord) = 
+        db.BeginTransaction()
+        this.DeleteLessonInternal(l)
+        db.Commit()
+
+    member private this.DeleteLessonInternal(l: LessonRecord) = 
         db.Delete(LessonEntry.FromLessonEntry(l)) |> ignore
+
+        // delete cards for this lesson
+        this.Cards |> Array.filter(fun c -> c.LessonID = l.ID) |> Seq.iter this.DeleteCard
 
     member private this.UpdateCardWithHash(c: CardRecord) = 
         { c with KeyHash = calculateKeyHash(c.Key); GenderlessKeyHash = calculateKeyHash(c.GenderlessKey) }
@@ -198,8 +212,8 @@ type LLDatabase(dbPath: string) =
         this.AddCardInternal(c).ID
 
     member this.AddCards(c: CardRecord seq) = 
-        let cardsWithHashes = c |> Seq.map(fun t -> 
-            this.UpdateCardWithHash(t)) |> Seq.map(fun t -> CardEntry.FromCardEntry(t))
+        let cardsWithHashes = 
+            c |> Seq.map(fun t -> this.UpdateCardWithHash >> CardEntry.FromCardEntry) 
 
         db.RunInTransaction(fun _ -> db.InsertAll(cardsWithHashes) |> ignore)
 
@@ -208,7 +222,7 @@ type LLDatabase(dbPath: string) =
 
     member this.DeleteCards(cards: CardRecord seq) = 
         db.BeginTransaction()
-        cards |> Seq.iter(fun c -> this.DeleteCard(c))
+        cards |> Seq.iter this.DeleteCard
         db.Commit()
 
     member this.CreateOrUpdateGame(ge: GameRecord) = 
@@ -231,7 +245,7 @@ type LLDatabase(dbPath: string) =
 
     member this.CreateOrUpdateCard(ce: CardRecord) = 
         let existingEntry = db.Query<CardEntry>("select * from CardEntry where KeyHash = ? and LessonID = ?", calculateKeyHash(ce.Key), ce.LessonID) |> 
-                            Array.ofSeq |> Array.tryHead
+                            Seq.tryHead
 
         match existingEntry with
         | Some(ee) ->
@@ -242,18 +256,22 @@ type LLDatabase(dbPath: string) =
 
     member this.CreateOrUpdateCards(c: CardRecord seq) = 
         // the cards passed in, but with the KeyHash computed
-        let cardsWithHashes = c |> Seq.map (fun t -> this.UpdateCardWithHash(t)) |> Array.ofSeq
-        // cards with the same key hash and language tag that already exist in the db
-        let (newCards, existingCards) = cardsWithHashes |> Array.partition(fun card -> 
+        let cardsWithHashes = c |> Seq.map this.UpdateCardWithHash |> Array.ofSeq
+        let hasExistingCard(card: CardRecord) =
             db.Table<CardEntry>().Where(fun u -> 
-                (u.LessonID = card.LessonID) && (u.KeyHash = card.KeyHash) && (u.LanguageTag = card.LanguageTag)) |> Array.ofSeq |> Array.isEmpty)
+                (u.LessonID = card.LessonID) && (u.KeyHash = card.KeyHash) && (u.LanguageTag = card.LanguageTag)) |> Array.ofSeq |> Array.isEmpty
+
+        // cards with the same key hash and language tag that already exist in the db
+        let (newCards, existingCards) = cardsWithHashes |> Array.partition hasExistingCard
 
         // the cards that passed in which had existing entries, with the IDs of the existing entries
-        let cardsToUpdateWithIds = existingCards |> Array.map (fun card ->
-            { card with ID = (db.Table<CardEntry>().Where(fun u -> (u.KeyHash = card.KeyHash) && (u.LanguageTag = card.LanguageTag)) |> Array.ofSeq |> Array.head).ID })
+        let idOfExistingCard(card: CardRecord) = 
+            (db.Table<CardEntry>().Where(fun u -> (u.KeyHash = card.KeyHash) && (u.LanguageTag = card.LanguageTag)) |> Array.ofSeq |> Array.head).ID
+            
+        let cardsToUpdateWithIds = existingCards |> Array.map (fun c -> { c with ID = idOfExistingCard(c) })
 
-        db.UpdateAll(cardsToUpdateWithIds |> Seq.map(fun t -> CardEntry.FromCardEntry(t))) |> ignore
-        db.InsertAll(newCards |> Seq.map(fun t -> CardEntry.FromCardEntry(t))) |> ignore
+        db.UpdateAll(cardsToUpdateWithIds |> Seq.map CardEntry.FromCardEntry) |> ignore
+        db.InsertAll(newCards |> Seq.map CardEntry.FromCardEntry) |> ignore
 
 
     member this.CardsFromLesson(lid: int) = 
