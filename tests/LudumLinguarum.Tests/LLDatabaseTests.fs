@@ -198,3 +198,58 @@ type LLDatabaseTests() =
         let cid = db.Value.CreateOrUpdateCard(ce)
         Assert.IsNotEmpty(db.Value.Cards)
         Assert.AreEqual(cid, db.Value.Cards.[0].ID)
+
+    [<Test>]
+    member this.TestDeleteGame() = 
+        Assert.IsEmpty(db.Value.Games)
+
+        let testGameEntry = {
+            GameRecord.Name = "Test game";
+            ID = 0
+        }
+        let gid = db.Value.CreateOrUpdateGame(testGameEntry)
+
+        Assert.IsNotEmpty(db.Value.Games)
+        Assert.AreEqual(gid, db.Value.Games.[0].ID)
+
+        db.Value.DeleteGame({ testGameEntry with ID = gid })
+        Assert.IsEmpty(db.Value.Games)
+        ()
+
+    [<Test>]
+    member this.TestDeleteLesson() = 
+        let le = {
+            LessonRecord.Name = "Test entry";
+            GameID = 0;
+            ID = 0
+        }
+
+        let lid = db.Value.AddLesson(le)
+        Assert.IsNotEmpty(db.Value.Lessons)
+        Assert.AreEqual(lid, db.Value.Lessons.[0].ID)
+
+        db.Value.DeleteLesson({ le with ID = lid })
+        Assert.IsEmpty(db.Value.Lessons)
+
+    [<Test>]
+    member this.TestDeleteCard() = 
+        let ce = {
+            CardRecord.LessonID = 0;
+            Gender = "";
+            GenderlessKey = "";
+            GenderlessKeyHash = 0;
+            Key = "";
+            KeyHash = 0;
+            LanguageTag = "en";
+            ID = 0;
+            Reversible = true;
+            Text = "Test card";
+            SoundResource = ""
+        }
+
+        let cid = db.Value.AddCard(ce)
+        Assert.IsNotEmpty(db.Value.Cards)
+        Assert.AreEqual(cid, db.Value.Cards.[0].ID)
+
+        db.Value.DeleteCard({ ce with ID = cid})
+        Assert.IsEmpty(db.Value.Cards)

@@ -171,9 +171,15 @@ type LLDatabase(dbPath: string) =
         db.Insert(GameEntry.FromGameEntry(g)) |> ignore
         (this.Games |> Array.find(fun t -> t.Name = g.Name)).ID
 
+    member this.DeleteGame(g: GameRecord) = 
+        db.Delete(GameEntry.FromGameEntry(g)) |> ignore
+
     member this.AddLesson(l: LessonRecord) = 
         db.Insert(LessonEntry.FromLessonEntry(l)) |> ignore
         (this.Lessons |> Array.find(fun t -> (t.Name = l.Name) && (t.GameID = l.GameID))).ID
+
+    member this.DeleteLesson(l: LessonRecord) = 
+        db.Delete(LessonEntry.FromLessonEntry(l)) |> ignore
 
     member private this.UpdateCardWithHash(c: CardRecord) = 
         { c with KeyHash = calculateKeyHash(c.Key); GenderlessKeyHash = calculateKeyHash(c.GenderlessKey) }
@@ -196,6 +202,14 @@ type LLDatabase(dbPath: string) =
             this.UpdateCardWithHash(t)) |> Seq.map(fun t -> CardEntry.FromCardEntry(t))
 
         db.RunInTransaction(fun _ -> db.InsertAll(cardsWithHashes) |> ignore)
+
+    member this.DeleteCard(c: CardRecord) = 
+        db.Delete(CardEntry.FromCardEntry(c)) |> ignore
+
+    member this.DeleteCards(cards: CardRecord seq) = 
+        db.BeginTransaction()
+        cards |> Seq.iter(fun c -> this.DeleteCard(c))
+        db.Commit()
 
     member this.CreateOrUpdateGame(ge: GameRecord) = 
         let existingEntry = this.Games |> Array.tryFind(fun t -> t.Name = ge.Name)
