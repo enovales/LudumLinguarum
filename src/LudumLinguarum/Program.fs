@@ -168,9 +168,44 @@ let runListLessonsAction(baseConfiguration: LudumLinguarumConfiguration, otw: Te
     0
 
 let runDeleteGameAction(baseConfiguration: LudumLinguarumConfiguration, otw: TextWriter, db: LLDatabase) = 
+    let games = db.Games
+    let filter(g: GameRecord) = baseConfiguration.DeleteGameOptions.Game = g.Name
+    let deleteGame(g: GameRecord) = 
+        db.DeleteGame(g)
+        otw.WriteLine("deleted game [" + g.Name + "]")
+
+    games
+    |> Array.filter filter
+    |> Array.tryHead
+    |> Option.iter deleteGame
     0
 
 let runDeleteLessonsAction(baseConfiguration: LudumLinguarumConfiguration, otw: TextWriter, db: LLDatabase) = 
+    let games = db.Games
+    let filter(g: GameRecord) = baseConfiguration.DeleteLessonsOptions.Game = g.Name
+    let gameOpt = 
+        games
+        |> Array.filter filter
+        |> Array.tryHead
+
+    let lessonsForGameFilter(id: int)(l: LessonRecord) = 
+        l.GameID = id
+
+    let lessonNameFilter = 
+        if (String.IsNullOrWhiteSpace(baseConfiguration.DeleteLessonsOptions.FilterRegex)) then
+            (fun t -> t.Name = baseConfiguration.DeleteLessonsOptions.LessonName)
+        else
+            let regex = new Regex(baseConfiguration.DeleteLessonsOptions.FilterRegex)
+            (fun (t: LessonRecord) -> regex.IsMatch(t.Name))
+
+    let deleteLesson(l: LessonRecord) = 
+        db.DeleteLesson(l)
+        otw.WriteLine("Deleted lesson [" + l.Name + "]")
+
+    gameOpt
+    |> Option.map(fun t -> db.Lessons |> Array.filter(lessonsForGameFilter(t.ID)) |> Array.filter lessonNameFilter)
+    |> Option.iter(Array.iter deleteLesson)
+        
     0
 
 let processConfiguration(verbConfiguration: LudumLinguarumConfiguration, iPluginManager: IPluginManager, outputTextWriter: TextWriter, selectedVerb: string, argv: string array) = 
