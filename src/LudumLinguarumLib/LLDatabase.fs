@@ -13,7 +13,7 @@ type GameEntry() =
     member val ID = 0 with get, set
     member val Name = "" with get, set
 
-    member this.ToGameEntry() = 
+    member this.ToGameRecord() = 
         { GameRecord.ID = this.ID; Name = this.Name }
 
     static member FromGameRecord(ge: GameRecord) = 
@@ -34,7 +34,7 @@ type LessonEntry() =
     member val GameID = 0 with get, set
     member val Name = "" with get, set
 
-    member this.ToLessonEntry() = 
+    member this.ToLessonRecord() = 
         { LessonRecord.ID = this.ID; GameID = this.GameID; Name = this.Name }
 
     static member FromLessonRecord(le: LessonRecord) = 
@@ -160,10 +160,10 @@ type LLDatabase(dbPath: string) =
     let calculateKeyHash(key: string) = key.GetHashCode()
 
     member this.Games = 
-        db.Query<GameEntry>("select * from GameEntry") |> Seq.map(fun t -> t.ToGameEntry()) |> Array.ofSeq
+        db.Query<GameEntry>("select * from GameEntry") |> Seq.map(fun t -> t.ToGameRecord()) |> Array.ofSeq
 
     member this.Lessons = 
-        db.Query<LessonEntry>("select * from LessonEntry") |> Seq.map(fun t -> t.ToLessonEntry()) |> Array.ofSeq
+        db.Query<LessonEntry>("select * from LessonEntry") |> Seq.map(fun t -> t.ToLessonRecord()) |> Array.ofSeq
 
     member this.Cards = 
         db.Query<CardEntry>("select * from CardEntry") |> Seq.map(fun t -> t.ToCardRecord()) |> Array.ofSeq
