@@ -168,6 +168,9 @@ type LLDatabase(dbPath: string) =
     member this.Cards = 
         db.Query<CardEntry>("select * from CardEntry") |> Seq.map(fun t -> t.ToCardEntry()) |> Array.ofSeq
 
+    member private this.Compact() = 
+        db.Execute("VACUUM;") |> ignore
+
     member this.AddGame(g: GameRecord) = 
         db.Insert(GameEntry.FromGameEntry(g)) |> ignore
         (this.Games |> Array.find(fun t -> t.Name = g.Name)).ID
@@ -176,6 +179,7 @@ type LLDatabase(dbPath: string) =
         db.BeginTransaction()
         this.DeleteGameInternal(g)
         db.Commit()
+        this.Compact()
 
     member private this.DeleteGameInternal(g: GameRecord) =
         db.Delete(GameEntry.FromGameEntry(g)) |> ignore
@@ -189,11 +193,13 @@ type LLDatabase(dbPath: string) =
         db.BeginTransaction()
         this.DeleteLessonsInternal([| l |])
         db.Commit()
+        this.Compact()
 
     member this.DeleteLessons(l: LessonRecord array) = 
         db.BeginTransaction()
         this.DeleteLessonsInternal(l)
         db.Commit()
+        this.Compact()
 
     member private this.DeleteLessonsInternal(l: LessonRecord array) = 
         let lids = new SortedSet<int>(l |> Array.map(fun t -> t.ID))
@@ -225,15 +231,19 @@ type LLDatabase(dbPath: string) =
         db.RunInTransaction(fun _ -> db.InsertAll(cardsWithHashes) |> ignore)
 
     member this.DeleteCard(c: CardRecord) = 
-        db.Delete(CardEntry.FromCardEntry(c)) |> ignore
+        this.DeleteCardInternal(c)
+        this.Compact()
 
     member this.DeleteCards(cards: CardRecord seq) = 
         db.BeginTransaction()
         this.DeleteCardsInternal(cards)
         db.Commit()
 
-    member this.DeleteCardsInternal(cards: CardRecord seq) = 
-        cards |> Seq.iter this.DeleteCard
+    member private this.DeleteCardInternal(c: CardRecord) = 
+        db.Delete(CardEntry.FromCardEntry(c)) |> ignore
+
+    member private this.DeleteCardsInternal(cards: CardRecord seq) = 
+        cards |> Seq.iter this.DeleteCardInternal
 
     member this.CreateOrUpdateGame(ge: GameRecord) = 
         let existingEntry = this.Games |> Array.tryFind(fun t -> t.Name = ge.Name)
