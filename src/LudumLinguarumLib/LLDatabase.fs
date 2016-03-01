@@ -1,6 +1,7 @@
 ﻿module LLDatabase
 
 open SQLite
+open System.Collections.Generic
 
 type GameRecord = {
         ID: int;
@@ -178,7 +179,7 @@ type LLDatabase(dbPath: string) =
 
     member private this.DeleteGameInternal(g: GameRecord) =
         db.Delete(GameEntry.FromGameEntry(g)) |> ignore
-        this.Lessons |> Array.filter(fun l -> l.GameID = g.ID) |> Seq.iter this.DeleteLessonInternal
+        this.Lessons |> Array.filter(fun l -> l.GameID = g.ID) |> this.DeleteLessonsInternal
 
     member this.AddLesson(l: LessonRecord) = 
         db.Insert(LessonEntry.FromLessonEntry(l)) |> ignore
@@ -186,15 +187,21 @@ type LLDatabase(dbPath: string) =
 
     member this.DeleteLesson(l: LessonRecord) = 
         db.BeginTransaction()
-        this.DeleteLessonInternal(l)
+        this.DeleteLessonsInternal([| l |])
         db.Commit()
 
-    member private this.DeleteLessonInternal(l: LessonRecord) = 
-        db.Delete(LessonEntry.FromLessonEntry(l)) |> ignore
+    member this.DeleteLessons(l: LessonRecord array) = 
+        db.BeginTransaction()
+        this.DeleteLessonsInternal(l)
+        db.Commit()
+
+    member private this.DeleteLessonsInternal(l: LessonRecord array) = 
+        let lids = new SortedSet<int>(l |> Array.map(fun t -> t.ID))
+        l |> Array.iter(LessonEntry.FromLessonEntry >> db.Delete >> ignore)
 
         // delete cards for this lesson
-        this.Cards |> Array.filter(fun c -> c.LessonID = l.ID) |> Seq.iter this.DeleteCard
-
+        this.Cards |> Array.filter(fun c -> lids.Contains(c.LessonID)) |> this.DeleteCardsInternal
+        
     member private this.UpdateCardWithHash(c: CardRecord) = 
         { c with KeyHash = calculateKeyHash(c.Key); GenderlessKeyHash = calculateKeyHash(c.GenderlessKey) }
 
@@ -222,8 +229,11 @@ type LLDatabase(dbPath: string) =
 
     member this.DeleteCards(cards: CardRecord seq) = 
         db.BeginTransaction()
-        cards |> Seq.iter this.DeleteCard
+        this.DeleteCardsInternal(cards)
         db.Commit()
+
+    member this.DeleteCardsInternal(cards: CardRecord seq) = 
+        cards |> Seq.iter this.DeleteCard
 
     member this.CreateOrUpdateGame(ge: GameRecord) = 
         let existingEntry = this.Games |> Array.tryFind(fun t -> t.Name = ge.Name)
