@@ -83,6 +83,11 @@
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Numerics" />
+    <ProjectReference Include="..\..\src\LLsqlite-net\LLsqlite-net.csproj">
+      <Name>LLsqlite-net</Name>
+      <Project>{5399c00c-af4d-46de-ada4-c20e02d4b26b}</Project>
+      <Private>True</Private>
+    </ProjectReference>
     <ProjectReference Include="..\..\src\LudumLinguarumLib\LudumLinguarumLib.fsproj">
       <Name>LudumLinguarumLib</Name>
       <Project>{ba653ad5-b3e5-419f-9963-092c22519e80}</Project>

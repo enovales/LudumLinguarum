@@ -230,6 +230,7 @@ type GFFRawCExoLocString =
         stringCount: uint32;
         substrings: list<GFFRawCExoLocSubString>
     }
+    with
     static member FromBinaryReader(br: BinaryReader) = 
         let rawSizeOfOtherData = br.ReadUInt32()
         let rawStringRef = br.ReadUInt32()
@@ -240,6 +241,13 @@ type GFFRawCExoLocString =
             stringCount = rawStringCount;
             substrings = [ for i in 1u..rawStringCount -> GFFRawCExoLocSubString.FromBinaryReader(br) ]
         }
+    override this.ToString() = 
+        "GFFRawCExoLocString(" + 
+            "sizeOfOtherData = " + this.sizeOfOtherData.ToString() + 
+            ", stringRef = " + this.stringRef.ToString() + 
+            ", stringCount = " + this.stringCount.ToString() + 
+            ", substrings = " + this.substrings.ToString() + 
+            ")"
 
 type GFFResRef = 
     {
