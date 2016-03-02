@@ -11,20 +11,27 @@ type OneOffGamesPlugin() =
     let mutable outStream: TextWriter option = None
     let kof2002Name = "The King of Fighters 2002 Unlimited Match"
     let kof98Name = "The King of Fighters '98 Ultimate Match"
+    let jetSetRadioName = "Jet Set Radio"
+
     interface IPlugin with
         member this.Load(tw: TextWriter, [<ParamArray>] args: string[]) = 
             ()
         member this.Name = "oneoffgames"
         member this.Parameters = [||]
     interface IGameExtractorPlugin with
-        member this.SupportedGames: string array = [||]
+        member this.SupportedGames: string array = 
+            [|
+                kof2002Name;
+                kof98Name
+                jetSetRadioName
+            |]
         member this.ExtractAll(game: string, path: string, db: LLDatabase, [<ParamArray>] args: string[]) = 
             this.LogWriteLine("Searching for game handler for '" + game + "'") |> ignore
             let handlerMapping = 
                 [|
-                    ("The King of Fighters 2002 Unlimited Match", XUI.ExtractKOF2002);
-                    ("The King of Fighters '98 Ultimate Match", XUI.ExtractKOF98);
-                    ("Jet Set Radio", JetSetRadio.JetSetRadio.ExtractJetSetRadio)
+                    (kof2002Name, XUI.ExtractKOF2002);
+                    (kof98Name, XUI.ExtractKOF98);
+                    (jetSetRadioName, JetSetRadio.JetSetRadio.ExtractJetSetRadio)
                 |] |> Map.ofArray
 
             if (handlerMapping |> Map.containsKey(game)) then
