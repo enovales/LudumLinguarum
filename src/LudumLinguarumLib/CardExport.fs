@@ -72,7 +72,9 @@ type AnkiExporter(iPluginManager: IPluginManager, outputTextWriter: TextWriter,
                     "\ty"
                 else
                     "\t"
-            sw.WriteLine(recogText + "\t" + prodText + reverseText)
+            let tagText = 
+                "\t" + lesson.Name
+            sw.WriteLine(recogText + "\t" + prodText + reverseText + tagText)
 
         let (recognitionCards, productionCards) = 
             this.GenerateRecognitionAndProductionCardSets(lesson, config.RecognitionLanguage, config.ProductionLanguage)
@@ -107,7 +109,8 @@ type AnkiExporter(iPluginManager: IPluginManager, outputTextWriter: TextWriter,
 
         match (LLDatabase.Games |> Array.tryFind(fun t -> t.Name = game)) with
         | Some(g) -> 
-            // prefer the regex over using the name
+            // Prefer the regex over using the name. If no name is specified, then 
+            // export all lessons for the game.
             let lessonFilter = 
                 match (lesson, lessonRegex) with
                 | (_, Some(regex)) -> filterLessonsRegex(g.ID, new Regex(regex))
