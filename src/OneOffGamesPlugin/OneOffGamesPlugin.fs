@@ -12,6 +12,7 @@ type OneOffGamesPlugin() =
     let kof2002Name = "The King of Fighters 2002 Unlimited Match"
     let kof98Name = "The King of Fighters '98 Ultimate Match"
     let jetSetRadioName = "Jet Set Radio"
+    let skullsOfTheShogunName = "Skulls of the Shogun"
 
     interface IPlugin with
         member this.Load(tw: TextWriter, [<ParamArray>] args: string[]) = 
@@ -21,9 +22,10 @@ type OneOffGamesPlugin() =
     interface IGameExtractorPlugin with
         member this.SupportedGames: string array = 
             [|
-                kof2002Name;
+                kof2002Name
                 kof98Name
                 jetSetRadioName
+                skullsOfTheShogunName
             |]
         member this.ExtractAll(game: string, path: string, db: LLDatabase, [<ParamArray>] args: string[]) = 
             this.LogWriteLine("Searching for game handler for '" + game + "'") |> ignore
@@ -32,6 +34,7 @@ type OneOffGamesPlugin() =
                     (kof2002Name, XUI.ExtractKOF2002);
                     (kof98Name, XUI.ExtractKOF98);
                     (jetSetRadioName, JetSetRadio.JetSetRadio.ExtractJetSetRadio)
+                    (skullsOfTheShogunName, SimpleGames.ExtractSkullsOfTheShogun)
                 |] |> Map.ofArray
 
             if (handlerMapping |> Map.containsKey(game)) then
