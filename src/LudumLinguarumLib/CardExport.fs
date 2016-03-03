@@ -2,14 +2,19 @@
 
 open LLDatabase
 open LudumLinguarumPlugins
+open System
 open System.IO
+open System.Text.RegularExpressions
 
 type AnkiExporterConfiguration() = 
-    [<CommandLine.Option("game-toexport", Required = true)>]
+    [<CommandLine.Option("game", Required = true)>]
     member val GameToExport = "" with get, set
 
-    [<CommandLine.Option("lesson-toexport", Required = false)>]
+    [<CommandLine.Option("lesson", Required = false)>]
     member val LessonToExport = "" with get, set
+
+    [<CommandLine.Option("lesson-regex", Required = false)>]
+    member val LessonRegexToExport = "" with get, set
 
     [<CommandLine.Option("export-path", Required = true)>]
     member val ExportPath = "" with get, set
@@ -67,7 +72,9 @@ type AnkiExporter(iPluginManager: IPluginManager, outputTextWriter: TextWriter,
                     "\ty"
                 else
                     "\t"
-            sw.WriteLine(recogText + "\t" + prodText + reverseText)
+            let tagText = 
+                "\t\"" + lesson.Name + "\""
+            sw.WriteLine(recogText + "\t" + prodText + reverseText + tagText)
 
         let (recognitionCards, productionCards) = 
             this.GenerateRecognitionAndProductionCardSets(lesson, config.RecognitionLanguage, config.ProductionLanguage)
@@ -89,21 +96,35 @@ type AnkiExporter(iPluginManager: IPluginManager, outputTextWriter: TextWriter,
             finalPairing |> Array.iter(fun (r, p) -> writeCard(r, p)))
         ()
 
-    member private this.RunGameExport(game: string, lesson: string option) = 
+    member private this.RunGameExport(game: string, lesson: string option, lessonRegex: string option) = 
+        let filterGame(gid: int)(l: LessonRecord) = 
+            (l.GameID = gid)
+        let filterLessonsNoWildcard(gid: int, name: string)(l: LessonRecord) = 
+            filterGame(gid)(l) && (l.Name = name)
+        let filterLessonsWildcard(gid: int, name: string)(l: LessonRecord) = 
+            let rootName = name.Substring(0, name.IndexOf('*'))
+            filterGame(gid)(l) && (l.Name.StartsWith(rootName, StringComparison.CurrentCultureIgnoreCase))
+        let filterLessonsRegex(gid: int, regex: Regex)(l: LessonRecord) = 
+            filterGame(gid)(l) && (regex.IsMatch(l.Name))
+
         match (LLDatabase.Games |> Array.tryFind(fun t -> t.Name = game)) with
         | Some(g) -> 
-            let lessonsToExport = 
-                match lesson with
-                | Some(l) when not(l.Contains("*")) -> 
-                    LLDatabase.Lessons |> Array.tryFind(fun t -> (t.GameID = g.ID) && (t.Name = l)) |> Option.toArray
-                | Some(l) when l.Contains("*") ->
-                    // wildcard
-                    let rootName = l.Substring(0, l.IndexOf('*'))
-                    LLDatabase.Lessons |> Array.filter(fun t -> (t.GameID = g.ID) && t.Name.StartsWith(rootName))
-                | _ -> LLDatabase.Lessons |> Array.filter(fun t -> t.GameID = g.ID)
+            // Prefer the regex over using the name. If no name is specified, then 
+            // export all lessons for the game.
+            let lessonFilter = 
+                match (lesson, lessonRegex) with
+                | (_, Some(regex)) -> filterLessonsRegex(g.ID, new Regex(regex))
+                | (Some(l), _) when not(l.Contains("*")) -> filterLessonsNoWildcard(g.ID, l)
+                | (Some(l), _) -> filterLessonsWildcard(g.ID, l)
+                | _ -> filterGame(g.ID)
+
+            let lessonsToExport = LLDatabase.Lessons |> Array.filter lessonFilter
+            let reportLessonExport(l: LessonRecord) =
+                outputTextWriter.WriteLine("Exporting lesson [" + l.Name + "]")
+                l
 
             use outStream = new StreamWriter(config.ExportPath)
-            lessonsToExport |> Array.iter(this.RunLessonExport(g, outStream))
+            lessonsToExport |> Array.iter(reportLessonExport >> this.RunLessonExport(g, outStream))
         | _ -> 
             outputTextWriter.WriteLine("Couldn't find entry for game '" + game + "'")
         ()
@@ -113,5 +134,10 @@ type AnkiExporter(iPluginManager: IPluginManager, outputTextWriter: TextWriter,
             match config.LessonToExport with
             | "" -> None
             | l -> Some(l)
-        this.RunGameExport(config.GameToExport, lessonParam)
+        let regexParam = 
+            match config.LessonRegexToExport with
+            | "" -> None
+            | l -> Some(l)
+
+        this.RunGameExport(config.GameToExport, lessonParam, regexParam)
         ()

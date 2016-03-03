@@ -105,7 +105,7 @@ type SyncStructDialogueNode =
     | Index of uint32
 and AugmentedSyncStruct = {
         Active: ResRef option;
-        DialogueNode: SyncStructDialogueNode option;
+        mutable DialogueNode: SyncStructDialogueNode option;
         IsLink: bool;
         LinkComment: GFFRawCExoString option;
     }
@@ -126,11 +126,11 @@ and AugmentedSyncStruct = {
                 LinkComment = s.LinkComment
             }
         member this.Fixup(ds: DialogueStruct array) = 
-            { this with 
-                   DialogueNode = match this.DialogueNode with 
-                                  | Some(SyncStructDialogueNode.Index i) -> Some(SyncStructDialogueNode.Node ds.[int i])
-                                  | _ -> None
-            }
+            match this.DialogueNode with
+            | Some(SyncStructDialogueNode.Index i) ->
+                this.DialogueNode <- Some(SyncStructDialogueNode.Node ds.[int i])
+            | _ -> ()
+
     end
 and DialogueStruct = {
         Animation: uint32 option;
@@ -181,11 +181,9 @@ and DialogueStruct = {
 
             retval
 
-        member self.Fixup(d: Dialogue, isPlayer: bool) = 
-            let nextList = if (isPlayer) then d.EntryList else d.ReplyList
-            {
-                self with Next = self.Next |> List.map (fun r -> r.Fixup(nextList))
-            }
+        member self.Fixup(nextList: DialogueStruct array) = 
+            self.Next |> List.iter(fun r -> r.Fixup(nextList))
+
     end
 and Dialogue = {
         DelayEntry: uint32 option;
@@ -199,22 +197,23 @@ and Dialogue = {
     }
     with
         static member FromSerialized(d: SerializedDialogue) =
-            let firstCut = {
+            let entryList = d.EntryList.Value |> List.map (fun r -> DialogueStruct.FromSerialized(r, false)) |> List.toArray
+            let replyList = d.ReplyList.Value |> List.map (fun r -> DialogueStruct.FromSerialized(r, true)) |> List.toArray
+            let startingList = d.StartingList.Value |> List.map (fun s -> AugmentedSyncStruct.FromSerialized(s)) |> List.toArray
+
+            entryList |> Array.iter (fun e -> e.Fixup(replyList))
+            replyList |> Array.iter (fun e -> e.Fixup(entryList))
+            startingList |> Array.iter (fun e -> e.Fixup(entryList))
+
+            {
                 Dialogue.DelayEntry = d.DelayEntry;
                 DelayReply = d.DelayReply;
                 EndConverAbort = d.EndConverAbort;
-                EntryList = d.EntryList.Value |> List.map (fun r -> DialogueStruct.FromSerialized(r, false)) |> List.toArray
+                EntryList = entryList
                 EndConversation = d.EndConversation;
                 PreventZoomIn = d.PreventZoomIn;
-                ReplyList = d.ReplyList.Value |> List.map (fun r -> DialogueStruct.FromSerialized(r, true)) |> List.toArray
-                StartingList = d.StartingList.Value |> List.map (fun s -> AugmentedSyncStruct.FromSerialized(s)) |> List.toArray
-            }
-
-            // fixup indices
-            { firstCut with 
-                EntryList = firstCut.EntryList |> Array.map (fun e -> e.Fixup(firstCut, false));
-                ReplyList = firstCut.ReplyList |> Array.map (fun e -> e.Fixup(firstCut, true)); 
-                StartingList = firstCut.StartingList |> Array.map (fun e -> e.Fixup(firstCut.EntryList));
+                ReplyList = replyList
+                StartingList = startingList
             }
     end
 
@@ -236,31 +235,35 @@ let SyncStructString(s: AugmentedSyncStruct, tMasculine: TalkTableV3, tFeminine:
 
 let dialogueNodeKey(depth, slot) = "depth " + depth.ToString() + " slot " + slot.ToString()
 
-/// <summary>
-/// Walks the dialogue tree and returns list of tuples containing the localized string, and a key
-/// that's a unique identifier for where this string sits in the dialogue tree. Note that this key
-/// string does not include the name of the dialogue or any externally-visible information.
-/// </summary>
-/// <param name="acc">accumulated results</param>
-/// <param name="n">the node being visited</param>
-/// <param name="depth">depth in the dialogue tree -- used to construct the key</param>
-/// <param name="slot">slot of this sync struct -- used to construct the key</param>
-let rec GatherStrings(acc: (GFFRawCExoLocString * string) list, n: AugmentedSyncStruct, depth: int, slot: int): (GFFRawCExoLocString * string) list = 
+let rec GatherNonLinkNodesWithText(acc: AugmentedSyncStruct list, n: AugmentedSyncStruct): AugmentedSyncStruct list = 
     match n.IsLink with
     | true -> acc
     | false -> 
         match n.DialogueNode with
         | Some(SyncStructDialogueNode.Node dn) when n.Text.IsSome -> 
-            (n.Text.Value, dialogueNodeKey(depth, slot)) :: (dn.Next |> List.mapi (fun i next -> GatherStrings(acc, next, depth + 1, i)) |> List.concat)
+            n :: (dn.Next |> List.mapi(fun i next -> GatherNonLinkNodesWithText(acc, next)) |> List.concat)
         | Some(SyncStructDialogueNode.Node dn) -> 
-            dn.Next |> List.mapi (fun i next -> GatherStrings(acc, next, depth + 1, i)) |> List.concat
+            dn.Next |> List.mapi (fun i next -> GatherNonLinkNodesWithText(acc, next)) |> List.concat
         | _ -> acc
 
+let gatherStringForSyncStruct(i: int)(n: AugmentedSyncStruct) = 
+    match n.DialogueNode with
+    | Some(SyncStructDialogueNode.Node dn) -> 
+        (n.Text.Value, i.ToString())
+    | _ -> failwith "should not be called with non dialogue nodes"
+
+let GatherStrings(n: AugmentedSyncStruct): (GFFRawCExoLocString * string) list = 
+    let nodes = GatherNonLinkNodesWithText([], n)
+    nodes |> List.mapi gatherStringForSyncStruct
+
 let ExtractStringsFromDialogue<'T when 'T :> ITalkTableString>(dialogue: Dialogue, l: LanguageType, g: Gender, maleOrNeuterTalkTable: ITalkTable<'T>, femaleTalkTable: ITalkTable<'T>) =
-    let strings = dialogue.StartingList |> Array.mapi (fun i t -> GatherStrings([], t, 0, i) |> List.toArray) |> Array.concat
+    let strings = 
+        dialogue.StartingList 
+        |> Array.map GatherStrings 
+        |> List.concat
     strings |> 
-        Array.map (fun (t, k) -> (EvaluateString(t, maleOrNeuterTalkTable, femaleTalkTable, l, g), k)) |> 
-        Array.filter(fun (t, k) -> t.IsSome) |> Array.map (fun (t, k) -> (t.Value, k))
+        List.map (fun (t, k) -> (EvaluateString(t, maleOrNeuterTalkTable, femaleTalkTable, l, g), k)) |> 
+        List.filter(fun (t, k) -> t.IsSome) |> List.map (fun (t, k) -> (t.Value, k))
 
 /// <summary>
 /// Utility function to augment the extracted strings and keys with extra information about the dialogue
@@ -269,9 +272,9 @@ let ExtractStringsFromDialogue<'T when 'T :> ITalkTableString>(dialogue: Dialogu
 /// <param name="sk">tuples of strings and keys</param>
 /// <param name="dialogueResref">resref of the dialogue from which this data came</param>
 /// <param name="containerString">string describing the resource container (KEY/BIF, ERF, or override) containing this dialogue</param>
-let AugmentExtractedStringKeys(sk: (string * string) array, dialogueResref: ResRef, containerString: string, 
+let AugmentExtractedStringKeys(sk: (string * string) seq, dialogueResref: ResRef, containerString: string, 
                                gender: Gender) = 
-    sk |> Array.map (fun (s, k) -> 
+    sk |> Seq.map (fun (s, k) -> 
         let genderedKey = "c " + containerString + " d " + dialogueResref.Value + " g " + gender.ToString() + " " + k
         let genderlessKey = "c " + containerString + " d " + dialogueResref.Value + " " + k
         (s, genderedKey, genderlessKey, gender.ToString()))

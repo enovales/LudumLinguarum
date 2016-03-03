@@ -64,6 +64,7 @@
     <Content Include="InfinityAuroraEnginePlugins.Tests.dll.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Compile Include="GFFFileTypesTests.fs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />

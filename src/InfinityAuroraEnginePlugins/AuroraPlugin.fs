@@ -176,7 +176,7 @@ type AuroraPlugin() =
             let extractedM = ExtractStringsFromDialogue(t, languageType, Gender.MasculineOrNeutral, xc.masculineOrNeuterTalkTable, xc.feminineTalkTable)
             let extractedF = 
                 if (xc.masculineOrNeuterTalkTable = xc.feminineTalkTable) then 
-                    [| |]
+                    []
                 else
                     ExtractStringsFromDialogue(t, languageType, Gender.Feminine, xc.masculineOrNeuterTalkTable, xc.feminineTalkTable)
 
@@ -186,10 +186,12 @@ type AuroraPlugin() =
 
             let augmentedM = 
                 AugmentExtractedStringKeys(extractedM, dialogueResource.Name, dialogueResource.OriginDesc, Gender.MasculineOrNeutral) 
-                |> Array.map zipWithLessonEntry
+                |> Seq.map zipWithLessonEntry
+                |> Array.ofSeq
             let augmentedF = 
                 AugmentExtractedStringKeys(extractedF, dialogueResource.Name, dialogueResource.OriginDesc, Gender.Feminine) 
-                |> Array.map zipWithLessonEntry
+                |> Seq.map zipWithLessonEntry
+                |> Array.ofSeq
 
             Array.concat([|augmentedM; augmentedF|] |> Array.toSeq)
 
