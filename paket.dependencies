@@ -5,6 +5,7 @@ source https://nuget.org/api/v2
 nuget CommandLineParser
 github praeclarum/sqlite-net
 nuget sqlite
+nuget nunrar
 
 group Build
   source https://nuget.org/api/v2

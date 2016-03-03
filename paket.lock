@@ -3,6 +3,7 @@ NUGET
   remote: https://www.nuget.org/api/v2
   specs:
     CommandLineParser (1.9.71)
+    nunrar (1.0.1)
     sqlite (3.8.4.2)
       sqlite.redist (>= 3.8.4.2)
     sqlite.redist (3.8.4.2)
