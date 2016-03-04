@@ -13,6 +13,7 @@ type OneOffGamesPlugin() =
     let kof98Name = "The King of Fighters '98 Ultimate Match"
     let jetSetRadioName = "Jet Set Radio"
     let skullsOfTheShogunName = "Skulls of the Shogun"
+    let magicalDropVName = "Magical Drop V"
 
     interface IPlugin with
         member this.Load(tw: TextWriter, [<ParamArray>] args: string[]) = 
@@ -26,6 +27,7 @@ type OneOffGamesPlugin() =
                 kof98Name
                 jetSetRadioName
                 skullsOfTheShogunName
+                magicalDropVName
             |]
         member this.ExtractAll(game: string, path: string, db: LLDatabase, [<ParamArray>] args: string[]) = 
             this.LogWriteLine("Searching for game handler for '" + game + "'") |> ignore
@@ -35,6 +37,7 @@ type OneOffGamesPlugin() =
                     (kof98Name, XUI.ExtractKOF98);
                     (jetSetRadioName, JetSetRadio.JetSetRadio.ExtractJetSetRadio)
                     (skullsOfTheShogunName, SimpleGames.ExtractSkullsOfTheShogun)
+                    (magicalDropVName, SimpleGames.ExtractMagicalDropV)
                 |] |> Map.ofArray
 
             if (handlerMapping |> Map.containsKey(game)) then
