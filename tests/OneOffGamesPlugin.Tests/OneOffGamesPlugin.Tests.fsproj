@@ -58,6 +58,7 @@
     <Content Include="OneOffGamesPlugin.Tests.dll.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Compile Include="SimpleGamesTests.fs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />
