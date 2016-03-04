@@ -7,6 +7,9 @@ open System
 open System.IO
 open System.Xml.Linq
 
+(***************************************************************************)
+(************************** Skulls of the Shogun ***************************)
+(***************************************************************************)
 let ExtractSkullsOfTheShogun(path: string, db: LLDatabase, g: GameRecord, args: string array) = 
     let lessonEntry = {
         LessonRecord.GameID = g.ID;
@@ -18,8 +21,22 @@ let ExtractSkullsOfTheShogun(path: string, db: LLDatabase, g: GameRecord, args: 
     |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
     |> db.CreateOrUpdateCards
 
-let private generateMagicalDropVStringMap(cleanedXml: string): Map<string, string> = 
-    Map.empty
+(***************************************************************************)
+(***************************** Magical Drop V ******************************)
+(***************************************************************************)
+let internal sanitizeMagicalDropVXml(x: string) = 
+    x.Replace("&", "&amp;").Replace("<string placeholder>", "")
+
+let internal sanitizeMagicalDropVFormatStrings(x: string) = 
+    x.Replace("\\n", " ")
+
+let internal generateMagicalDropVStringMap(cleanedXml: string): Map<string, string> = 
+    use stringReader = new StringReader(cleanedXml)
+    let xel = XElement.Load(stringReader)
+    xel.Descendants(XName.Get("content")) 
+    |> Array.ofSeq 
+    |> Array.collect(fun t -> t.Descendants() |> Array.ofSeq) 
+    |> Array.map (fun t -> (t.Name.LocalName, t.Value |> sanitizeMagicalDropVFormatStrings)) |> Map.ofArray
 
 let ExtractMagicalDropV(path: string, db: LLDatabase, g: GameRecord, args: string array) = 
     let filePaths = 
@@ -36,15 +53,26 @@ let ExtractMagicalDropV(path: string, db: LLDatabase, g: GameRecord, args: strin
     let filePathsAndLanguages = 
         [| "de"; "en"; "es"; "fr"; "it"; "ja" |] |> Array.zip(filePaths)
 
-    // replace unescaped entities and other garbage
-    let fixupRawXml(x: string) = 
-        x.Replace("&", "&amp;").Replace("<string placeholder>", "")
+    let lessonStoryEntry = {
+        LessonRecord.GameID = g.ID;
+        ID = 0;
+        Name = "Story Text"
+    }
+    let lessonUIEntry = { lessonStoryEntry with Name = "UI Text" }
+    let lessonStoryEntryWithId = { lessonStoryEntry with ID = db.CreateOrUpdateLesson(lessonStoryEntry) }
+    let lessonUIEntryWithId = { lessonUIEntry with ID = db.CreateOrUpdateLesson(lessonUIEntry) }
 
     let generateCardsForLocalization(locPath: string, lang: string) = 
-        let cleanedXml = File.ReadAllText(locPath) |> fixupRawXml
-        use stringReader = new StringReader(cleanedXml)
-        let xel = XElement.Load(stringReader)
-        xel.DescendantNodes
-        [||]
+        let cleanedXml = File.ReadAllText(locPath) |> sanitizeMagicalDropVXml
+        let (storyStrings, nonStoryStrings) = 
+            generateMagicalDropVStringMap(cleanedXml)
+            |> Map.partition(fun k t -> (k.StartsWith("story", StringComparison.InvariantCultureIgnoreCase) || k.StartsWith("ID_storyintro")))
 
-    ()
+        [|
+            storyStrings |> AssemblyResourceTools.createCardRecordForStrings(lessonStoryEntryWithId.ID, "storytext", lang)
+            nonStoryStrings |> AssemblyResourceTools.createCardRecordForStrings(lessonUIEntryWithId.ID, "uitext", lang)
+        |] |> Array.concat
+
+    filePathsAndLanguages |> Array.collect generateCardsForLocalization
+    |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
+    |> db.CreateOrUpdateCards
