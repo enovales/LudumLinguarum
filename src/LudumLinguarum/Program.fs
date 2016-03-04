@@ -124,16 +124,23 @@ let runScanForTextAction(baseConfiguration: LudumLinguarumConfiguration, otw: Te
 /// <param name="otw">output channel</param>
 /// <param name="db">database</param>
 let runListGamesAction(baseConfiguration: LudumLinguarumConfiguration, otw: TextWriter, db: LLDatabase) = 
-    let games = db.Games |> Array.map(fun t -> t.Name)
+    let games = db.Games
     let filter = 
         if (String.IsNullOrWhiteSpace(baseConfiguration.ListGamesOptions.FilterRegex)) then
-            (fun _ -> true)
+            fun _ -> true
         else
             let regex = new Regex(baseConfiguration.ListGamesOptions.FilterRegex)
-            (fun t -> regex.IsMatch(t))
+            fun (t: GameRecord) -> regex.IsMatch(t.Name)
 
-    games
-    |> Array.filter filter
+    let eligibleGames = games |> Array.filter filter
+    let languagesForGame(g: GameRecord) = 
+        db.Lessons 
+        |> Array.filter (fun l -> l.GameID = g.ID)
+        |> Array.collect(db.LanguagesForLesson >> Array.ofList)
+        |> Array.distinct
+    
+    eligibleGames
+    |> Array.map(fun t -> "[" + t.Name + "], [" + String.Join(", ", languagesForGame(t)) + "]")
     |> Array.iter otw.WriteLine
     0
 
