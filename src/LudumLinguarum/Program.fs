@@ -25,6 +25,13 @@ type ListGamesConfiguration() =
     member val FilterRegex = "" with get, set
 
 /// <summary>
+/// Configuration for the 'list-supported-games' verb.
+/// </summary>
+type ListSupportedGamesConfiguration() = 
+    class
+    end
+
+/// <summary>
 /// Configuration for the 'list-lessons' verb.
 /// </summary>
 type ListLessonsConfiguration() = 
@@ -78,6 +85,9 @@ type LudumLinguarumConfiguration() =
 
     [<CommandLine.VerbOption("list-games", HelpText = "List all imported games")>]
     member val ListGamesOptions = new ListGamesConfiguration() with get, set
+
+    [<CommandLine.VerbOption("list-supported-games", HelpText = "List all games supported for extraction")>]
+    member val ListSupportedGamesOptions = new ListSupportedGamesConfiguration() with get, set
 
     [<CommandLine.VerbOption("list-lessons", HelpText = "List lessons, filtering by game and lesson names")>]
     member val ListLessonsOptions = new ListLessonsConfiguration() with get, set
@@ -141,6 +151,13 @@ let runListGamesAction(baseConfiguration: LudumLinguarumConfiguration, otw: Text
     
     eligibleGames
     |> Array.map(fun t -> "[" + t.Name + "], [" + String.Join(", ", languagesForGame(t)) + "]")
+    |> Array.iter otw.WriteLine
+    0
+
+let runListSupportedGamesAction(baseConfiguration: LudumLinguarumConfiguration,  iPluginManager: IPluginManager, otw: TextWriter) = 
+    otw.WriteLine("Supported games:")
+    iPluginManager.SupportedGames
+    |> Array.sort
     |> Array.iter otw.WriteLine
     0
 
@@ -241,6 +258,8 @@ let processConfiguration(verbConfiguration: LudumLinguarumConfiguration, iPlugin
             runScanForTextAction(verbConfiguration, outputTextWriter)
         | "list-games" ->
             runListGamesAction(verbConfiguration, outputTextWriter, LLDatabase)
+        | "list-supported-games" ->
+            runListSupportedGamesAction(verbConfiguration, iPluginManager, outputTextWriter)
         | "list-lessons" ->
             runListLessonsAction(verbConfiguration, outputTextWriter, LLDatabase)
         | "delete-game" ->
