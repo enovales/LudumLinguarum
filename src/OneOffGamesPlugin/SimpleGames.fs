@@ -5,6 +5,7 @@ open LLDatabase
 open OneOffGamesUtils
 open System
 open System.IO
+open System.Text.RegularExpressions
 open System.Xml.Linq
 
 (***************************************************************************)
@@ -76,3 +77,36 @@ let ExtractMagicalDropV(path: string, db: LLDatabase, g: GameRecord, args: strin
     filePathsAndLanguages |> Array.collect generateCardsForLocalization
     |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
     |> db.CreateOrUpdateCards
+
+(***************************************************************************)
+(******************************** Audiosurf ********************************)
+(***************************************************************************)
+let ExtractAudiosurf(path: string, db: LLDatabase, g: GameRecord, args: string array) = 
+    let lessonEntry = {
+        LessonRecord.GameID = g.ID;
+        ID = 0;
+        Name = "Game Text"
+    }
+    let lessonEntryWithId = { lessonEntry with ID = db.CreateOrUpdateLesson(lessonEntry) }
+
+    let languageFiles = Directory.GetFiles(Path.Combine(path, @"engine\LanguagePacks"), "aslang_*.xml", SearchOption.AllDirectories)
+    let languageRegex = new Regex("(aslang_)(..).+")
+
+    let languageForFile(p: string) =
+        languageRegex.Match(p).Groups.[2].Value.ToLowerInvariant()
+
+    let languageFilesAndLanguages = (languageFiles |> Array.map languageForFile) |> Array.zip languageFiles
+    let generateCardsForLanguage(filePath: string, lang: string) = 
+        use streamReader = new StreamReader(filePath)
+        let xel = XElement.Load(streamReader)
+        xel.Descendants(XName.Get("S")) 
+        |> Seq.map (fun t -> (t.Attribute(XName.Get("EN")).Value, t.Value.Trim()))
+        |> Map.ofSeq
+        |> AssemblyResourceTools.createCardRecordForStrings(lessonEntryWithId.ID, "gametext", lang)
+
+    languageFilesAndLanguages
+    |> Array.collect generateCardsForLanguage
+    |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
+    |> db.CreateOrUpdateCards
+
+    ()
