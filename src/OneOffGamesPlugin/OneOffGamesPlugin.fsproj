@@ -52,6 +52,7 @@
     <Compile Include="Data.fs" />
     <Compile Include="XUIGames.fs" />
     <Compile Include="JetSetRadio.fs" />
+    <Compile Include="Magicka.fs" />
     <Compile Include="SimpleGames.fs" />
     <Compile Include="OneOffGamesPlugin.fs" />
     <Compile Include="AssemblyInfoStatic.fs" />
