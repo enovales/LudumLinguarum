@@ -74,7 +74,8 @@ let ExtractMagicalDropV(path: string, db: LLDatabase, g: GameRecord, args: strin
             nonStoryStrings |> AssemblyResourceTools.createCardRecordForStrings(lessonUIEntryWithId.ID, "uitext", lang)
         |] |> Array.concat
 
-    filePathsAndLanguages |> Array.collect generateCardsForLocalization
+    filePathsAndLanguages 
+    |> Array.collect generateCardsForLocalization
     |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
     |> db.CreateOrUpdateCards
 
