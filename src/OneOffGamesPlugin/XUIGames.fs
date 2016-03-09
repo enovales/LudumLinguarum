@@ -45,7 +45,7 @@ type XUI =
                     })
                 else
                     None
-                )) |> Array.collect(fun t -> t) |> Array.collect(fun t -> t |> Option.toArray)
+                )) |> Array.collect id |> Array.collect Option.toArray
 
     static member ExtractKOF2002(path: string, db: LLDatabase, gameEntryWithId: GameRecord, args: string[]) = 
         let lessonEntry = {
@@ -62,7 +62,6 @@ type XUI =
         let allCards = extractedCards |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
 
         db.CreateOrUpdateCards(allCards)
-
         ()
 
     static member ExtractKOF98(path: string, db: LLDatabase, gameEntryWithId: GameRecord, args: string[]) = 
