@@ -16,6 +16,7 @@ type OneOffGamesPlugin() =
     let magicalDropVName = "Magical Drop V"
     let audiosurfName = "Audiosurf"
     let bastionName = "Bastion"
+    let magickaName = "Magicka"
 
     interface IPlugin with
         member this.Load(tw: TextWriter, [<ParamArray>] args: string[]) = 
@@ -32,6 +33,7 @@ type OneOffGamesPlugin() =
                 magicalDropVName
                 audiosurfName
                 bastionName
+                magickaName
             |]
         member this.ExtractAll(game: string, path: string, db: LLDatabase, [<ParamArray>] args: string[]) = 
             this.LogWriteLine("Searching for game handler for '" + game + "'") |> ignore
@@ -44,6 +46,7 @@ type OneOffGamesPlugin() =
                     (magicalDropVName, SimpleGames.ExtractMagicalDropV)
                     (audiosurfName, SimpleGames.ExtractAudiosurf)
                     (bastionName, SimpleGames.ExtractBastion)
+                    (magickaName, Magicka.ExtractMagicka)
                 |] |> Map.ofArray
 
             if (handlerMapping |> Map.containsKey(game)) then
