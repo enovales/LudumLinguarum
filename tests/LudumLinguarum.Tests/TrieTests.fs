@@ -14,18 +14,6 @@ type TrieTests() =
             |], false)
         |])
 
-    [<TestFixtureSetUp>]
-    member this.SetUpTestFixture() = ()
-
-    [<TestFixtureTearDown>]
-    member this.TearDownTestFixture() = ()
-
-    [<SetUp>]
-    member this.SetUpTest() = ()
-
-    [<TearDown>]
-    member this.TearDownTest() = ()
-
     [<Test>]
     member this.TestBuildTrieFromEmptyArray() = 
         Assert.AreEqual(Trie.Root([||]), Trie.Build([||]))

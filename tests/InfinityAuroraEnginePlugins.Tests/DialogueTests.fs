@@ -22,18 +22,6 @@ type DialogueTests() =
     let germanTalkTable = TalkTableV3.FromFilePath(@"C:\GOG Games\Neverwinter Nights Diamond Edition (German)\dialog.tlk")
     let germanTalkTableF = TalkTableV3.FromFilePath(@"C:\GOG Games\Neverwinter Nights Diamond Edition (German)\dialogF.tlk")
 
-    [<TestFixtureSetUp>]
-    member this.SetUpTestFixture() = ()
-
-    [<TestFixtureTearDown>] 
-    member this.TearDownTestFixture() = ()
-
-    [<SetUp>]
-    member this.SetUpTest() = ()
-
-    [<TearDown>]
-    member this.TearDownTest() = ()
-
     [<Test; Explicit>]
     member this.CheckLoadedGFF(): Unit = 
         let gff = LoadGFF({ ResRef.Value = "nw_hen_bod"}, ResType.Dlg, contextGerman.Resources)

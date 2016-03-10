@@ -13,20 +13,11 @@ type AuroraPluginTests() =
     let mutable plugin: AuroraPlugin = new AuroraPlugin()
     let mutable db: LLDatabase = new LLDatabase(":memory:")
 
-    [<TestFixtureSetUp>]
-    member this.SetUpTestFixture() = ()
-
-    [<TestFixtureTearDown>] 
-    member this.TearDownTestFixture() = ()
-
     [<SetUp>]
     member this.SetUpTest() = 
         plugin <- new AuroraPlugin()
         db <- new LLDatabase(":memory:")
         ()
-
-    [<TearDown>]
-    member this.TearDownTest() = ()
 
     [<Test; Explicit>]
     member this.TestExtractNWN1() = 

@@ -11,19 +11,6 @@ open System.IO
 type GFFTests() = 
     let keyFilePath = @"C:\GOG Games\Neverwinter Nights Diamond Edition (German)\chitin.key"
 
-    [<TestFixtureSetUp>]
-    member this.SetUpTestFixture() = ()
-
-    [<TestFixtureTearDown>] 
-    member this.TearDownTestFixture() = ()
-
-    [<SetUp>]
-    member this.SetUpTest() = ()
-
-    [<TearDown>]
-    member this.TearDownTest() = ()
-
-
     [<Test; Explicit>]
     member this.TestLoadGFF(): Unit = 
         let bifSet = BIFSet.FromKEYPath(keyFilePath)

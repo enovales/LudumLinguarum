@@ -66,20 +66,11 @@ type LLDatabaseTests() =
             TestCardDe = cardDeWithId
         }
 
-    [<TestFixtureSetUp>]
-    member this.SetUpTestFixture() = ()
-
-    [<TestFixtureTearDown>]
-    member this.TearDownTestFixture() = ()
-
     [<SetUp>]
     member this.SetUpTest() = 
         System.Console.WriteLine(System.IO.Directory.GetCurrentDirectory())
         db <- Some(new LLDatabase(":memory:"))
         ()
-
-    [<TearDown>]
-    member this.TearDownTest() = ()
 
     [<Test>]
     member this.TestAddGame() =

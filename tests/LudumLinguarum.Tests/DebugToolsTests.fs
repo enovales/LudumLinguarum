@@ -9,20 +9,8 @@ open System.Text
 type RabinFingerprintHasherTests() = 
     let hashBase = 101
 
-    [<TestFixtureSetUp>]
-    member this.SetUpTestFixture() = ()
-
-    [<TestFixtureTearDown>]
-    member this.TearDownTestFixture() = ()
-
-    [<SetUp>]
-    member this.SetUpTest() = ()
-
-    [<TearDown>]
-    member this.TearDownTest() = ()
-
     [<Test>]
-    member this.TestSeedEmptyString() = 
+    member this.``Seeding with an empty array``() = 
         let expected = {
             RabinFingerprintHasher.ba = [||];
             startIndex = int64 0;
@@ -38,7 +26,7 @@ type RabinFingerprintHasherTests() =
         Assert.AreEqual(expected.hashBase, computed.hashBase)
 
     [<Test>]
-    member this.TestSeedSingleCharString() = 
+    member this.``Seeding with a single byte``() = 
         let expected = {
             RabinFingerprintHasher.ba = Encoding.UTF8.GetBytes("A");
             startIndex = int64 0;
@@ -54,7 +42,7 @@ type RabinFingerprintHasherTests() =
         Assert.AreEqual(expected.hashBase, computed.hashBase)
 
     [<Test>]
-    member this.TestSeedTwoCharString() = 
+    member this.``Seeding with two bytes``() = 
         let expected = {
             RabinFingerprintHasher.ba = Encoding.UTF8.GetBytes("AB");
             startIndex = int64 0;
@@ -72,83 +60,72 @@ type RabinFingerprintHasherTests() =
 
 [<TestFixture>]
 type FixedLengthRabinKarpStringScannerTests() = 
-    let strings = [|
-            "abcd";
+    let strings = 
+        [|
+            "abcd"
             "abab"
         |]
     let stringLength = strings.[0].Length
     let hashBase = 101
 
-    [<TestFixtureSetUp>]
-    member this.SetUpTestFixture() = ()
-
-    [<TestFixtureTearDown>]
-    member this.TearDownTestFixture() = ()
-
-    [<SetUp>]
-    member this.SetUpTest() = ()
-
-    [<TearDown>]
-    member this.TearDownTest() = ()
-
     [<Test>]
-    member this.TestScanEmptyString() = 
+    member this.``Scanning an empty string``() = 
         let rkss = new FixedLengthRabinKarpStringScanner(Encoding.UTF8.GetBytes(""), strings, stringLength, RabinFingerprintHasher.Seed([||], 0, hashBase))
         let expected = []
         let actual = rkss.GetStrings()
         Assert.AreEqual(expected, actual)
         
     [<Test>]
-    member this.TestScanNotLongEnoughString() = 
+    member this.``Scanning a string that's not long enough to match any of the strings in the dictionary``() = 
         let rkss = new FixedLengthRabinKarpStringScanner(Encoding.UTF8.GetBytes("aaa"), strings, stringLength, RabinFingerprintHasher.Seed([||], 0, hashBase))
         let expected = []
         let actual = rkss.GetStrings()
         Assert.AreEqual(expected, actual)
         
     [<Test>]
-    member this.TestScanExactString() = 
+    member this.``Scanning a string that's an exact match for one of the strings in the dictionary``() = 
         let rkss = new FixedLengthRabinKarpStringScanner(Encoding.UTF8.GetBytes("abcd"), strings, stringLength, RabinFingerprintHasher.Seed([||], 0, hashBase))
         let expected = [ { StringOffsetPair.o = int64 0; s = "abcd" }]
         let actual = rkss.GetStrings()
         Assert.AreEqual(expected, actual)
         
     [<Test>]
-    member this.TestScanLongerString() = 
+    member this.``Scanning a string that matches one of the strings in the dictionary, and has some excess``() = 
         let rkss = new FixedLengthRabinKarpStringScanner(Encoding.UTF8.GetBytes("abcdefgh"), strings, stringLength, RabinFingerprintHasher.Seed([||], 0, hashBase))
         let expected = [ { StringOffsetPair.o = int64 0; s = "abcd" }]
         let actual = rkss.GetStrings()
         Assert.AreEqual(expected, actual)
 
     [<Test>]
-    member this.TestScanStringInMiddle() = 
+    member this.``Scanning a string where a match exists in the middle of the string``() = 
         let rkss = new FixedLengthRabinKarpStringScanner(Encoding.UTF8.GetBytes("efghabcdijkl"), strings, stringLength, RabinFingerprintHasher.Seed([||], 0, hashBase))
         let expected = [ { StringOffsetPair.o = int64 4; s = "abcd" }]
         let actual = rkss.GetStrings()
         Assert.AreEqual(expected, actual)
 
     [<Test>]
-    member this.TestScanStringAtEnd() = 
+    member this.``Scanning a string where a match exists at the end of the string``() = 
         let rkss = new FixedLengthRabinKarpStringScanner(Encoding.UTF8.GetBytes("efghabcd"), strings, stringLength, RabinFingerprintHasher.Seed([||], 0, hashBase))
         let expected = [ { StringOffsetPair.o = int64 4; s = "abcd" }]
         let actual = rkss.GetStrings()
         Assert.AreEqual(expected, actual)
         
     [<Test>]
-    member this.TestScanTwoStrings() = 
+    member this.``Scanning a string with two non-overlapping matches``() = 
         let rkss = new FixedLengthRabinKarpStringScanner(Encoding.UTF8.GetBytes("abcdabab"), strings, stringLength, RabinFingerprintHasher.Seed([||], 0, hashBase))
         let expected = [ { StringOffsetPair.o = int64 0; s = "abcd" }; { StringOffsetPair.o = int64 4; s = "abab" }] |> Set.ofList
         let actual = rkss.GetStrings() |> Set.ofList
         Assert.AreEqual(expected, actual)
     
     [<Test>]
-    member this.TestScanOverlappingStrings() = 
+    member this.``Scanning a string with two overlapping matches``() = 
         let rkss = new FixedLengthRabinKarpStringScanner(Encoding.UTF8.GetBytes("ababcd"), strings, stringLength, RabinFingerprintHasher.Seed([||], 0, hashBase))
         let expected = [ { StringOffsetPair.o = int64 0; s = "abab" }; { StringOffsetPair.o = int64 2; s = "abcd" }] |> Set.ofList
         let actual = rkss.GetStrings() |> Set.ofList
         Assert.AreEqual(expected, actual)
         
     [<Test>]
-    member this.TestScanStringsWithSameHash() = 
+    member this.``Scanning a string with two matches, where their dictionary entries have the same hash``() = 
         let rkss = new FixedLengthRabinKarpStringScanner(Encoding.UTF8.GetBytes("ababcd"), strings, stringLength, new MapHasher([| ("abab", int64 1); ("abcd", int64 1) |]))
         let expected = [ { StringOffsetPair.o = int64 0; s = "abab" }; { StringOffsetPair.o = int64 2; s = "abcd" }] |> Set.ofList
         let actual = rkss.GetStrings() |> Set.ofList
@@ -166,36 +143,24 @@ type RabinKarpStringScannerTests() =
     let hasher = RabinFingerprintHasher.Seed([||], 0, hashBase)
     let scanner(d: byte array) = new RabinKarpStringScanner(d, stringsToMatch, hasher)
 
-    [<TestFixtureSetUp>]
-    member this.SetUpTestFixture() = ()
-
-    [<TestFixtureTearDown>]
-    member this.TearDownTestFixture() = ()
-
-    [<SetUp>]
-    member this.SetUpTest() = ()
-
-    [<TearDown>]
-    member this.TearDownTest() = ()
-
     [<Test>]
-    member this.TestScanEmptyString() = 
+    member this.``Scanning an empty string``() = 
         Assert.IsEmpty(scanner(Encoding.UTF8.GetBytes("")).GetStrings())
 
     [<Test>]
-    member this.TestScanStringWithMinimalMatch() = 
+    member this.``Scanning a string with a minimal match``() = 
         Assert.AreEqual([| { StringOffsetPair.o = int64 0; s = "ab" } |], scanner(Encoding.UTF8.GetBytes("ab")).GetStrings())
 
     [<Test>]
-    member this.TestScanStringWithContainedSpans() = 
+    member this.``Scanning a string with contained spans, and matching the longest one``() = 
         Assert.AreEqual([| { StringOffsetPair.o = int64 0; s = "abcd" } |], scanner(Encoding.UTF8.GetBytes("abcd")).GetStrings())
 
     [<Test>]
-    member this.TestScanStringWithTwoMatches() = 
+    member this.``Scanning a string with two matches``() = 
         Assert.AreEqual([| { StringOffsetPair.o = int64 0; s = "ab" }; { StringOffsetPair.o = int64 2; s = "ghi" } |] |> Set.ofArray, scanner(Encoding.UTF8.GetBytes("abghi")).GetStrings() |> Set.ofArray)
 
     [<Test>]
-    member this.TestScanStringWithOverlappingMatches() = 
+    member this.``Scanning a string with overlapping matches``() = 
         Assert.AreEqual([| { StringOffsetPair.o = int64 0; s = "abcd" }; { StringOffsetPair.o = int64 2; s = "cdef" } |] |> Set.ofArray, scanner(Encoding.UTF8.GetBytes("abcdef")).GetStrings() |> Set.ofArray)
 
 [<TestFixture>]
@@ -215,36 +180,24 @@ type StreamStringScannerTests() =
 
     let emptyStream() = None
 
-    [<TestFixtureSetUp>]
-    member this.SetUpTestFixture() = ()
-
-    [<TestFixtureTearDown>]
-    member this.TearDownTestFixture() = ()
-
-    [<SetUp>]
-    member this.SetUpTest() = ()
-
-    [<TearDown>]
-    member this.TearDownTest() = ()
-
     [<Test>]
-    member this.TestScanEmptyString() = 
+    member this.``Scanning an empty string``() = 
         Assert.AreEqual(None, (new StreamStringScanner(emptyStream, testContainsTrie)).GetString())
 
     [<Test>]
-    member this.TestScanFoundString() = 
+    member this.``Scanning a string with a single match``() = 
         Assert.AreEqual(Some("ab"), (new StreamStringScanner(readNextChar(new StringReader("ab")), testContainsTrie)).GetString())
 
     [<Test>]
-    member this.TestScanFoundStringWithoutSuffix() = 
+    member this.``Scanning a string with a match, and some extra characters beyond the match``() = 
         Assert.AreEqual(Some("ab"), (new StreamStringScanner(readNextChar(new StringReader("aba")), testContainsTrie)).GetString())
 
     [<Test>]
-    member this.TestScanFoundCaseInsensitiveStrings() = 
+    member this.``Case insensitivity of matching``() = 
         Assert.AreEqual(Some("AB"), (new StreamStringScanner(readNextChar(new StringReader("ABA")), testContainsTrie)).GetString())
 
     [<Test>]
-    member this.TestScanNotFoundString() = 
+    member this.``Scanning a string with no matches``() = 
         Assert.AreEqual(None, (new StreamStringScanner(readNextChar(new StringReader("a")), testContainsTrie)).GetString())
 
 [<TestFixture>]
@@ -265,18 +218,6 @@ type TextScannerTests() =
     do
         minimalStringConfig.MinimumLength <- 1
         tooLongStringConfig.MinimumLength <- 10
-
-    [<TestFixtureSetUp>]
-    member this.SetUpTestFixture() = ()
-
-    [<TestFixtureTearDown>]
-    member this.TearDownTestFixture() = ()
-
-    [<SetUp>]
-    member this.SetUpTest() = ()
-
-    [<TearDown>]
-    member this.TearDownTest() = ()
 
     [<Test>]
     member this.TestGetNoStringsFromEmptyFile() = 

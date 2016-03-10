@@ -48,19 +48,6 @@ DEFAULT: foo
 1 4.0 5.0 6.0
 2 7.0 8.0 9.0"""
 
-    [<TestFixtureSetUp>]
-    member this.SetUpTestFixture() = ()
-
-    [<TestFixtureTearDown>] 
-    member this.TearDownTestFixture() = ()
-
-    [<SetUp>]
-    member this.SetUpTest() = ()
-
-    [<TearDown>]
-    member this.TearDownTest() = ()
-
-
     [<Test>]
     member this.TestLoadTwoDA(): Unit = 
         let twoDA = TwoDAFile.FromString(sample2DAText)

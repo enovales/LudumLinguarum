@@ -4,7 +4,7 @@ open NUnit.Framework
 open System.Globalization
 
 [<TestFixture>]
-type XUIGamesTests = 
+type XUIGamesTests() = 
     [<Test>]
     member this.``The languageForXUITag function returns the tag for all language tags except 'jp'``() = 
         Assert.AreEqual("en", XUIGames.languageForXUITag("en"))
@@ -44,9 +44,9 @@ type XUIGamesTests =
     member this.``The extractXUITabDelimited function creates a set of cards for all data lines``() = 
         let lines =
             [|
-                "key,category,en,jp"
-                "a,1,enstring1,jpstring1"
-                "b,2,enstring2,jpstring2"
+                "key\tcategory\ten\tjp"
+                "a\t1\tenstring1\tjpstring1"
+                "b\t2\tenstring2\tjpstring2"
             |]
 
         let result = XUIGames.extractXUITabDelimited(lines, 0)

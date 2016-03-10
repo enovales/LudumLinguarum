@@ -25,18 +25,6 @@ type SrtToolsTests() =
 
     let languageToEncoding(l: string) = Encoding.UTF8
 
-    [<TestFixtureSetUp>]
-    member this.SetUpTestFixture() = ()
-
-    [<TestFixtureTearDown>]
-    member this.TearDownTestFixture() = ()
-
-    [<SetUp>]
-    member this.SetUpTest() = ()
-
-    [<TearDown>]
-    member this.TearDownTest() = ()
-
     /// <summary>
     /// Test parsing of a single .srt entry.
     /// </summary>

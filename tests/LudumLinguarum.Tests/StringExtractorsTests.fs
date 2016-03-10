@@ -13,18 +13,6 @@ type StringExtractorsTests() =
     let stringMapStreamGenerator(sm: Map<string, string>)(e: CSVExtractorEntry): Stream = 
         new MemoryStream(Encoding.UTF8.GetBytes(sm.Item(e.RelativePath))) :> Stream
 
-    [<TestFixtureSetUp>]
-    member this.SetUpTestFixture() = ()
-
-    [<TestFixtureTearDown>]
-    member this.TearDownTestFixture() = ()
-
-    [<SetUp>]
-    member this.SetUpTest() = ()
-
-    [<TearDown>]
-    member this.TearDownTest() = ()
-
     [<Test>]
     member this.TestWithoutEntries() = 
         let extractor = new CSVExtractor([||] |> Seq.ofArray, failStreamGeneration)

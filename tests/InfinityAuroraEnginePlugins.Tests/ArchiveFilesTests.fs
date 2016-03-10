@@ -10,18 +10,6 @@ type ArchiveFilesTests() =
     let keyFilePath = @"C:\GOG Games\Neverwinter Nights Diamond Edition (German)\chitin.key"
     let rootDataPath = @"C:\GOG Games\Neverwinter Nights Diamond Edition (German)\"
 
-    [<TestFixtureSetUp>]
-    member this.SetUpTestFixture() = ()
-
-    [<TestFixtureTearDown>] 
-    member this.TearDownTestFixture() = ()
-
-    [<SetUp>]
-    member this.SetUpTest() = ()
-
-    [<TearDown>]
-    member this.TearDownTest() = ()
-
     [<Test; Explicit>]
     member this.TestExtractNWN(): Unit = 
         let keyFile = KEYFile.FromFilePath(keyFilePath)

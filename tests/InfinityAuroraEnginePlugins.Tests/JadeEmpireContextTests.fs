@@ -19,18 +19,6 @@ type JadeEmpireContextTests() =
     let germanTalkTable = TalkTableV4.FromFilePath(@"C:\TempGameCopies\Jade Empire (German)\dialog.tlk")
     let germanTalkTableF = TalkTableV4.FromFilePath(@"C:\TempGameCopies\Jade Empire (German)\dialogF.tlk")
 
-    [<TestFixtureSetUp>]
-    member this.SetUpTestFixture() = ()
-
-    [<TestFixtureTearDown>] 
-    member this.TearDownTestFixture() = ()
-
-    [<SetUp>]
-    member this.SetUpTest() = ()
-
-    [<TearDown>]
-    member this.TearDownTest() = ()
-
     [<Test; Explicit>]
     member this.TryCreatingContext(): Unit = 
         let contextGerman = new JadeEmpireContext(rootPathGerman)

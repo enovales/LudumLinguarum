@@ -11,10 +11,13 @@ let internal languageForXUITag(c: string) =
     | x -> x
 
 let internal languageTagsForHeaderRow(headerRow: string array) = 
-    headerRow 
-    |> Array.skip(2) 
-    |> Array.filter(String.IsNullOrWhiteSpace >> not)
-    |> Array.map languageForXUITag    
+    if ((headerRow |> Array.length) > 2) then
+        headerRow 
+        |> Array.skip(2) 
+        |> Array.filter(String.IsNullOrWhiteSpace >> not)
+        |> Array.map languageForXUITag    
+    else
+        [||]
 
 let internal makeCardsForLanguageTags(cardKey: string, lessonId: int)(language: string, text: string) = 
     {
