@@ -54,12 +54,6 @@
     <Compile Include="AssemblyInfo.fs" />
     <None Include="paket.references" />
     <Compile Include="ArchiveFilesTests.fs" />
-    <Compile Include="AuroraPluginTests.fs" />
-    <Compile Include="DialogueTests.fs" />
-    <Compile Include="GFFTests.fs" />
-    <Compile Include="JadeEmpireContextTests.fs" />
-    <Compile Include="NWN1ContextTests.fs" />
-    <Compile Include="TalkTableTests.fs" />
     <Compile Include="TwoDATests.fs" />
     <Content Include="InfinityAuroraEnginePlugins.Tests.dll.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

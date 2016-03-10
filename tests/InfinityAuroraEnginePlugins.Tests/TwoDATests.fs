@@ -6,7 +6,6 @@ open System.IO
 
 [<TestFixture>]
 type TwoDATests() = 
-    let sample2DABinaryFilePath = @"c:\JadeEmpireExtract2DAs\1000cutsas.2da"
     let sample2DAText = 
         """2DA V2.0
 DEFAULT: foo
@@ -107,20 +106,4 @@ DEFAULT: foo
         let twoDA = TwoDAFile.FromString(sample2DATextWithFloats)
         Assert.AreEqual(Some(5.0f), twoDA.ValueFloat(1, 1))
 
-    [<Test; Explicit>]
-    member this.Test2DABinaryRead(): Unit = 
-        let twoDA = TwoDAFile.FromFile(sample2DABinaryFilePath)
-        Assert.IsTrue(twoDA.RowCount > 0)
-        Assert.IsTrue(twoDA.ColumnCount > 0)
-        
-        // try and retrieve every data cell
-        let dataCells =
-            [
-                for i in 1..twoDA.RowCount do
-                    yield [
-                        for j in 1..twoDA.ColumnCount do
-                            yield twoDA.Value(i - 1, j - 1)
-                    ]
-            ]
-
-        ()
+    // TODO: add binary 2DA read test, using test data
