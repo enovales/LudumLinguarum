@@ -66,23 +66,14 @@ type LLDatabaseTests() =
             TestCardDe = cardDeWithId
         }
 
-    [<TestFixtureSetUp>]
-    member this.SetUpTestFixture() = ()
-
-    [<TestFixtureTearDown>]
-    member this.TearDownTestFixture() = ()
-
     [<SetUp>]
     member this.SetUpTest() = 
         System.Console.WriteLine(System.IO.Directory.GetCurrentDirectory())
         db <- Some(new LLDatabase(":memory:"))
         ()
 
-    [<TearDown>]
-    member this.TearDownTest() = ()
-
     [<Test>]
-    member this.TestAddGame() =
+    member this.``Adding a game``() =
         let testGameEntry = {
             GameRecord.Name = "Test game";
             ID = 0
@@ -94,7 +85,7 @@ type LLDatabaseTests() =
         ()
 
     [<Test>]
-    member this.TestAddLesson() = 
+    member this.``Adding a lesson``() = 
         let le = {
             LessonRecord.Name = "Test entry";
             GameID = 0;
@@ -106,7 +97,7 @@ type LLDatabaseTests() =
         Assert.AreEqual(lid, db.Value.Lessons.[0].ID)
 
     [<Test>]
-    member this.TestAddCard() = 
+    member this.``Adding a card``() = 
         let ce = {
             CardRecord.LessonID = 0;
             Gender = "";
@@ -126,7 +117,7 @@ type LLDatabaseTests() =
         Assert.AreEqual(cid, db.Value.Cards.[0].ID)
 
     [<Test>]
-    member this.TestGetCardsByLesson() = 
+    member this.``Getting cards by lesson``() = 
         let testData = setupTestData(db.Value, "test game")
         let cardsForLesson = db.Value.CardsFromLesson(testData.TestLesson.ID)
         Assert.IsNotEmpty(cardsForLesson)
@@ -135,7 +126,7 @@ type LLDatabaseTests() =
         ()
 
     [<Test>]
-    member this.TestGetLanguagesForLesson() = 
+    member this.``Getting available languages for a lesson``() = 
         let testData = setupTestData(db.Value, "test game")
         let languagesForLesson = db.Value.LanguagesForLesson(testData.TestLesson.ID)
         let expectedLanguages = ["en"; "de"]
@@ -143,7 +134,7 @@ type LLDatabaseTests() =
         ()
 
     [<Test>]
-    member this.TestGetCardsByLessonAndLanguage() = 
+    member this.``Getting cards by lesson and language``() = 
         let testData = setupTestData(db.Value, "test game")
         let results = db.Value.CardsFromLessonAndLanguageTag(testData.TestLesson, "en")
         Assert.IsNotEmpty(results)
@@ -152,7 +143,7 @@ type LLDatabaseTests() =
         ()
 
     [<Test>]
-    member this.TestCreateOrUpdateGame() = 
+    member this.``CreateOrUpdateGame``() = 
         Assert.IsEmpty(db.Value.Games)
 
         let testGameEntry = {
@@ -166,7 +157,7 @@ type LLDatabaseTests() =
         ()
 
     [<Test>]
-    member this.TestCreateOrUpdateLesson() = 
+    member this.``CreateOrUpdateLesson``() = 
         Assert.IsEmpty(db.Value.Lessons)
         let le = {
             LessonRecord.Name = "Test entry";
@@ -179,7 +170,7 @@ type LLDatabaseTests() =
         Assert.AreEqual(lid, db.Value.Lessons.[0].ID)
 
     [<Test>]
-    member this.TestCreateOrUpdateCard() = 
+    member this.``CreateOrUpdateCard``() = 
         Assert.IsEmpty(db.Value.Cards)
         let ce = {
             CardRecord.LessonID = 0
@@ -200,7 +191,7 @@ type LLDatabaseTests() =
         Assert.AreEqual(cid, db.Value.Cards.[0].ID)
 
     [<Test>]
-    member this.TestDeleteGame() = 
+    member this.``Deleting a game``() = 
         Assert.IsEmpty(db.Value.Games)
 
         let testGameEntry = {
@@ -217,7 +208,7 @@ type LLDatabaseTests() =
         ()
 
     [<Test>]
-    member this.TestDeleteLesson() = 
+    member this.``Deleting a lesson``() = 
         let le = {
             LessonRecord.Name = "Test entry";
             GameID = 0;
@@ -232,7 +223,7 @@ type LLDatabaseTests() =
         Assert.IsEmpty(db.Value.Lessons)
 
     [<Test>]
-    member this.TestDeleteCard() = 
+    member this.``Deleting a card``() = 
         let ce = {
             CardRecord.LessonID = 0;
             Gender = "";
@@ -255,7 +246,7 @@ type LLDatabaseTests() =
         Assert.IsEmpty(db.Value.Cards)
 
     [<Test>]
-    member this.TestDeleteLessonDeletesCards() = 
+    member this.``Deleting a lesson deletes all cards associated with it``() = 
         let testData = setupTestData(db.Value, "test game")
 
         // set up additional test data
@@ -272,7 +263,7 @@ type LLDatabaseTests() =
         Assert.IsNotEmpty(db.Value.Cards)
 
     [<Test>]
-    member this.DeleteGameDeletesLessonsAndCards() = 
+    member this.``Deleting a game deletes all lessons and cards associated with it``() = 
         let testData = setupTestData(db.Value, "test game")
 
         // set up additional test data

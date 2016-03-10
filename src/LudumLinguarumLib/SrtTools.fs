@@ -152,9 +152,9 @@ type SrtBlockExtractor(entries: SrtBlockExtractorEntry seq, entryGenerator: SrtB
             match s with
             | (fn: string, entries: SrtBlockExtractorEntry list) -> 
                 let srtEntries = entryGenerator(entries |> List.head)
-                List.unfold (readNext(srtEntries)) entries |> List.toArray |> Array.collect(fun t -> t)
+                List.unfold (readNext(srtEntries)) entries |> List.toArray |> Array.collect id
 
-        entriesByFile |> (Array.map extractEntriesForFile) |> Array.collect(fun t -> t) |> Seq.ofArray
+        entriesByFile |> (Array.collect extractEntriesForFile) |> Seq.ofArray
 
 let convertSrtBlockExtractedEntriesToCardRecords(lid: int)(extracted: SrtBlockExtractedEntry seq): CardRecord seq =
     let createCardRecordForEntry(e: SrtBlockExtractedEntry) = 

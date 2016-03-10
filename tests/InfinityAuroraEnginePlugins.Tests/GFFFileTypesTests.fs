@@ -60,7 +60,7 @@ type GatherStringsTests() =
         }
 
     [<Test>]
-    member this.TestInvalidDialogue() =
+    member this.``GatherStrings() on invalid dialogue returns nothing``() =
         let d = 
             {
                 AugmentedSyncStruct.Active = None
@@ -71,7 +71,7 @@ type GatherStringsTests() =
         Assert.IsEmpty(GatherStrings(d))
 
     [<Test>]
-    member this.TestSingleLineDialogue() = 
+    member this.``GatherStrings() on a single-line dialogue``() = 
         let expected = 
             [
                 (testStrings.[0], "0")
@@ -79,7 +79,7 @@ type GatherStringsTests() =
         Assert.AreEqual(expected, GatherStrings(syncStructs.[0]))
 
     [<Test>]
-    member this.TestTwoLineDialogue() = 
+    member this.``GatherStrings() on a two-line dialogue``() = 
         let expected = 
             [
                 (testStrings.[0], "0");
@@ -88,7 +88,7 @@ type GatherStringsTests() =
         Assert.AreEqual(expected, GatherStrings(connectSyncStructs(syncStructs.[0], syncStructs.[1])))
 
     [<Test>]
-    member this.TestMultipleLineDialogue() = 
+    member this.``GatherStrings() on a multiple line dialogue``() = 
         let expected = 
             [
                 (testStrings.[0], "0")
@@ -100,7 +100,7 @@ type GatherStringsTests() =
         Assert.AreEqual(expected, GatherStrings(connected))
 
     [<Test>]
-    member this.TestMultipleAnswerDialogue() = 
+    member this.``GatherStrings() on a dialogue with multiple answers on a node``() = 
         let expected = 
             [
                 (testStrings.[0], "0")
@@ -114,7 +114,7 @@ type GatherStringsTests() =
         Assert.AreEqual(expected, GatherStrings(bothConnected))
 
     [<Test>]
-    member this.TestLinkedDialogue() = 
+    member this.``GatherStrings() doesn't follow links in the dialogue``() = 
         let expected = 
             [
                 (testStrings.[0], "0")

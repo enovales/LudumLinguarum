@@ -64,6 +64,7 @@
     <None Include="Scripts\KOTOR1Script.fsx" />
     <None Include="Scripts\KOTOR2Script.fsx" />
     <None Include="Scripts\JadeEmpireScript.fsx" />
+    <None Include="Scripts\NWN1Script.fsx" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\LudumLinguarumLib\LudumLinguarumLib.fsproj">

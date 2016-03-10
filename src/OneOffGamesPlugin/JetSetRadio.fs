@@ -405,9 +405,9 @@ type StringBlockExtractor(entries: StringBlockExtractorEntry seq, streamGenerato
                 use file = streamGenerator(entries |> List.head)
                 let br = new BinaryReader(file)
 
-                List.unfold (readNext(br)) (None, entries) |> List.toArray |> Array.collect(fun t -> t)
+                List.unfold (readNext(br)) (None, entries) |> List.toArray |> Array.collect id
 
-        entriesByFile |> (Array.map extractEntriesForFile) |> Array.collect(fun t -> t) |> Seq.ofArray
+        entriesByFile |> (Array.collect extractEntriesForFile) |> Seq.ofArray
 
 let convertStringBlockExtractedEntriesToCardRecords(lid: int)(extracted: StringBlockExtractedEntry seq): CardRecord seq =
     let createCardRecordForEntry(e: StringBlockExtractedEntry) = 
