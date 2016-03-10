@@ -220,23 +220,23 @@ type TextScannerTests() =
         tooLongStringConfig.MinimumLength <- 10
 
     [<Test>]
-    member this.TestGetNoStringsFromEmptyFile() = 
+    member this.``Scanning an empty file returns no strings``() = 
         Assert.IsEmpty(minimalScanner.ScanBytes([||]))
 
     [<Test>]
-    member this.TestGetNoStringsFromValidFile() = 
+    member this.``Matching no strings from a valid file``() = 
         Assert.IsEmpty(minimalScanner.ScanBytes(Encoding.UTF8.GetBytes("12345")))
 
     [<Test>]
-    member this.TestGetSingleString() = 
+    member this.``Matching a single string``() = 
         Assert.AreEqual([| { FoundString.offset = int64 0; value = "ab" } |], minimalScanner.ScanBytes(Encoding.UTF8.GetBytes("ab")))
 
     [<Test>]
-    member this.TestGetCaseInsensitiveString() = 
+    member this.``Matching is case insensitive``() = 
         Assert.AreEqual([| { FoundString.offset = int64 0; value = "AB" } |], minimalScanner.ScanBytes(Encoding.UTF8.GetBytes("AB")))
 
     [<Test>]
-    member this.TestGetMultipleStrings() = 
+    member this.``Matching multiple strings``() = 
         let expected = [|
                 { FoundString.offset = int64 0; value = "ab" };
                 { FoundString.offset = int64 2; value = "ab" }
@@ -244,9 +244,9 @@ type TextScannerTests() =
         Assert.AreEqual(expected, minimalScanner.ScanBytes(Encoding.UTF8.GetBytes("abab")))
 
     [<Test>]
-    member this.TestGetLongestString() = 
+    member this.``Returning the longest possible match``() = 
         Assert.AreEqual([| { FoundString.offset = int64 0; value = "abc" } |], minimalScanner.ScanBytes(Encoding.UTF8.GetBytes("abc")))
 
     [<Test>]
-    member this.TestSkipShortStrings() = 
+    member this.``Skip strings that are shorter than the configured minimum``() = 
         Assert.AreEqual([||], tooLongScanner.ScanBytes(Encoding.UTF8.GetBytes("ab")))

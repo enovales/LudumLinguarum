@@ -14,12 +14,12 @@ type StringExtractorsTests() =
         new MemoryStream(Encoding.UTF8.GetBytes(sm.Item(e.RelativePath))) :> Stream
 
     [<Test>]
-    member this.TestWithoutEntries() = 
+    member this.``Extracting without any extraction entries``() = 
         let extractor = new CSVExtractor([||] |> Seq.ofArray, failStreamGeneration)
         Assert.IsEmpty(extractor.Extract())
 
     [<Test>]
-    member this.TestSingleExtraction() = 
+    member this.``Extracting with a single entry``() = 
         let sampleStream = stringStreamGenerator("single")
         let sampleEntry = {
                 CSVExtractorEntry.Id = int64 0
@@ -37,7 +37,7 @@ type StringExtractorsTests() =
         Assert.AreEqual(expected, actual)
 
     [<Test>]
-    member this.TestMultipleExtractions() = 
+    member this.``Extracting with multiple entries``() = 
         let sampleStreamMap = stringMapStreamGenerator(Map([| ("abc", "def"); ("ghi", "jkl") |]))
         let sampleEntry1 = {
                 CSVExtractorEntry.Id = int64 0
