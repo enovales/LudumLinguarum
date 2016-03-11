@@ -60,6 +60,7 @@
     </Content>
     <Compile Include="SimpleGamesTests.fs" />
     <Compile Include="XUIGamesTests.fs" />
+    <Compile Include="WormsArmageddonTests.fs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />
