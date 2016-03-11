@@ -103,4 +103,31 @@
       </ItemGroup>
     </When>
   </Choose>
+  <Choose>
+    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.5.2'">
+      <ItemGroup>
+        <Reference Include="OpenXmlPowerTools">
+          <HintPath>..\..\packages\OpenXmlPowerTools\lib\OpenXmlPowerTools.dll</HintPath>
+          <Private>True</Private>
+          <Paket>True</Paket>
+        </Reference>
+      </ItemGroup>
+    </When>
+  </Choose>
+  <Choose>
+    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.5.2'">
+      <ItemGroup>
+        <Reference Include="DocumentFormat.OpenXml">
+          <HintPath>..\..\packages\OpenXMLSDK-MOT\lib\DocumentFormat.OpenXml.dll</HintPath>
+          <Private>True</Private>
+          <Paket>True</Paket>
+        </Reference>
+        <Reference Include="System.IO.Packaging">
+          <HintPath>..\..\packages\OpenXMLSDK-MOT\lib\System.IO.Packaging.dll</HintPath>
+          <Private>True</Private>
+          <Paket>True</Paket>
+        </Reference>
+      </ItemGroup>
+    </When>
+  </Choose>
 </Project>
