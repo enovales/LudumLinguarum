@@ -15,7 +15,7 @@ type KOTOR1Context(rootPath: string) =
                 Directory.GetFiles(Path.Combine(rootPath, @"lips"), "*.mod", SearchOption.AllDirectories);
                 Directory.GetFiles(Path.Combine(rootPath, @"TexturePacks"), "*.erf", SearchOption.AllDirectories)
             |] 
-            |> Array.collect(fun t -> t) 
+            |> Array.collect id
             |> Array.map(fun t -> t.Substring(rootPath.Length + 1))
 
         let rimPaths = 
@@ -23,7 +23,7 @@ type KOTOR1Context(rootPath: string) =
                 Directory.GetFiles(Path.Combine(rootPath, @"modules"), "*.rim", SearchOption.AllDirectories);
                 Directory.GetFiles(Path.Combine(rootPath, @"rims"), "*.rim", SearchOption.AllDirectories)
             |]
-            |> Array.collect(fun t -> t)
+            |> Array.collect id
             |> Array.map(fun t -> t.Substring(rootPath.Length + 1))
 
         let keyPaths = [|

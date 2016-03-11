@@ -2,7 +2,6 @@
 
 open LLDatabase
 open LudumLinguarumPlugins
-open XUIGames
 open System
 open System.IO
 open System.Reflection
@@ -39,8 +38,8 @@ type OneOffGamesPlugin() =
             this.LogWriteLine("Searching for game handler for '" + game + "'") |> ignore
             let handlerMapping = 
                 [|
-                    (kof2002Name, XUI.ExtractKOF2002);
-                    (kof98Name, XUI.ExtractKOF98);
+                    (kof2002Name, XUIGames.ExtractKOF2002);
+                    (kof98Name, XUIGames.ExtractKOF98);
                     (jetSetRadioName, JetSetRadio.JetSetRadio.ExtractJetSetRadio)
                     (skullsOfTheShogunName, SimpleGames.ExtractSkullsOfTheShogun)
                     (magicalDropVName, SimpleGames.ExtractMagicalDropV)

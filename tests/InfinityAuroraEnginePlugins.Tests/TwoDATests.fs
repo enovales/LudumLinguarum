@@ -6,7 +6,6 @@ open System.IO
 
 [<TestFixture>]
 type TwoDATests() = 
-    let sample2DABinaryFilePath = @"c:\JadeEmpireExtract2DAs\1000cutsas.2da"
     let sample2DAText = 
         """2DA V2.0
 DEFAULT: foo
@@ -48,28 +47,15 @@ DEFAULT: foo
 1 4.0 5.0 6.0
 2 7.0 8.0 9.0"""
 
-    [<TestFixtureSetUp>]
-    member this.SetUpTestFixture() = ()
-
-    [<TestFixtureTearDown>] 
-    member this.TearDownTestFixture() = ()
-
-    [<SetUp>]
-    member this.SetUpTest() = ()
-
-    [<TearDown>]
-    member this.TearDownTest() = ()
-
-
     [<Test>]
-    member this.TestLoadTwoDA(): Unit = 
+    member this.``Loading a simple 2DA``(): Unit = 
         let twoDA = TwoDAFile.FromString(sample2DAText)
         Assert.AreEqual(3, twoDA.RowCount)
         Assert.AreEqual(3, twoDA.ColumnCount)
         ()
 
     [<Test>]
-    member this.TestExtractByRowColumnIndices(): Unit = 
+    member this.``Extracting by row and column indices``(): Unit = 
         let twoDA = TwoDAFile.FromString(sample2DAText)
         Assert.AreEqual("a", twoDA.Value(0, 0))
         Assert.AreEqual("b", twoDA.Value(0, 1))
@@ -82,7 +68,7 @@ DEFAULT: foo
         Assert.AreEqual("i", twoDA.Value(2, 2))
 
     [<Test>]
-    member this.TestExtractByColumnName(): Unit = 
+    member this.``Extracting by column name``(): Unit = 
         let twoDA = TwoDAFile.FromString(sample2DAText)
         Assert.AreEqual("a", twoDA.Value(0, "COLUMN1"))
         Assert.AreEqual("b", twoDA.Value(0, "COLUMN2"))
@@ -95,45 +81,29 @@ DEFAULT: foo
         Assert.AreEqual("i", twoDA.Value(2, "COLUMN3"))
 
     [<Test>]
-    member this.TestDefaultValue(): Unit = 
+    member this.``Default value is used for indices outside the bounds of the 2DA``(): Unit = 
         let twoDA = TwoDAFile.FromString(sample2DAText)
         Assert.AreEqual("foo", twoDA.Value(900, 400))
 
     [<Test>]
-    member this.TestEmptyValue(): Unit = 
+    member this.``Empty value is returned for ***``(): Unit = 
         let twoDA = TwoDAFile.FromString(sample2DATextWithEmpty)
         Assert.AreEqual("", twoDA.Value(0, 1))
 
     [<Test>]
-    member this.TestQuotedValue(): Unit = 
+    member this.``Quoted cell values in 2DAs``(): Unit = 
         let twoDA = TwoDAFile.FromString(sample2DATextWithQuotes)
         Assert.AreEqual("This has quotes", twoDA.Value(0, 0))
         Assert.AreEqual("This has quotes too", twoDA.Value(1, 2))
 
     [<Test>]
-    member this.TestIntValue(): Unit = 
+    member this.``Extracting integer values``(): Unit = 
         let twoDA = TwoDAFile.FromString(sample2DATextWithInts)
         Assert.AreEqual(Some(5), twoDA.ValueInt(1, 1))
 
     [<Test>]
-    member this.TestFloatValue(): Unit = 
+    member this.``Extracting float values``(): Unit = 
         let twoDA = TwoDAFile.FromString(sample2DATextWithFloats)
         Assert.AreEqual(Some(5.0f), twoDA.ValueFloat(1, 1))
 
-    [<Test; Explicit>]
-    member this.Test2DABinaryRead(): Unit = 
-        let twoDA = TwoDAFile.FromFile(sample2DABinaryFilePath)
-        Assert.IsTrue(twoDA.RowCount > 0)
-        Assert.IsTrue(twoDA.ColumnCount > 0)
-        
-        // try and retrieve every data cell
-        let dataCells =
-            [
-                for i in 1..twoDA.RowCount do
-                    yield [
-                        for j in 1..twoDA.ColumnCount do
-                            yield twoDA.Value(i - 1, j - 1)
-                    ]
-            ]
-
-        ()
+    // TODO: add binary 2DA read test, using test data
