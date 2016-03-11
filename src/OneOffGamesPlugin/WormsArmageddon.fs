@@ -83,7 +83,7 @@ let extractStringsFromLines(lessonID: int)(lines: string array, language: string
 
     finalState.Complete
     |> Array.ofList
-    |> Array.map(fun (k, v) -> (k, v.Replace(@"\n", "")))
+    |> Array.map(fun (k, v) -> (k, v.Replace(@"\n", "").Replace("\t", "").Trim()))
     |> Map.ofArray
     |> AssemblyResourceTools.createCardRecordForStrings(lessonID, "gametext", language)
 
