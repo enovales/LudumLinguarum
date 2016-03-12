@@ -53,6 +53,7 @@
     <Compile Include="XUIGames.fs" />
     <Compile Include="JetSetRadio.fs" />
     <Compile Include="WormsArmageddon.fs" />
+    <Compile Include="PuzzleQuest2.fs" />
     <Compile Include="SimpleGames.fs" />
     <Compile Include="OneOffGamesPlugin.fs" />
     <Compile Include="AssemblyInfoStatic.fs" />
