@@ -1,5 +1,6 @@
 ﻿module PuzzleQuest2
 
+open ICSharpCode.SharpZipLib.Zip
 open LLDatabase
 open System
 open System.IO
@@ -25,11 +26,11 @@ let internal generateCardsForXml(lessonID: int, language: string, keyRoot: strin
     use stringReader = new StringReader(xmlContent)
     let xel = XElement.Load(stringReader)
 
-    xel.Descendants(XName.Get("TextLibrary"))
-    |> Array.ofSeq
-    |> Array.collect(fun t -> t.Descendants(XName.Get("Text")) |> Array.ofSeq)
-    |> Array.map(generateKVForTextElement(keyRoot))
-    |> Map.ofArray
+    // the element is the TextLibrary node
+    xel.Descendants()
+    |> Seq.filter(fun t -> t.Name.LocalName = "Text")
+    |> Seq.map(generateKVForTextElement(keyRoot))
+    |> Map.ofSeq
     |> AssemblyResourceTools.createCardRecordForStrings(lessonID, keyRoot, language)
 
 /// <summary>
@@ -39,11 +40,25 @@ let internal generateCardsForXml(lessonID: int, language: string, keyRoot: strin
 /// <param name="lessonsMap">the map of directory paths (inside the zip) to lesson records</param>
 /// <param name="zipPath">path to the zip file to process</param>
 let internal generateCardsForAssetZip(languageMap: Map<string, string>, lessonsMap: Map<string, LessonRecord>)(zipPath: string): CardRecord array = 
+    let zipFile = new ZipFile(zipPath)
+
     let generateCardsForLessons(language: string)(lessonDir: string, lesson: LessonRecord) = 
-        // TODO: open all XML files under the directory, and read the contents
-        let files: string array = [| |]
-        files
-        |> Seq.map(fun f -> "")
+        // open all XML files under the directory, and read the contents
+        let isXmlFileInLessonDir(ze: ZipEntry) = 
+            ze.IsFile 
+            && ze.Name.StartsWith(lessonDir, StringComparison.InvariantCultureIgnoreCase)
+            && Path.GetExtension(ze.Name).ToLowerInvariant() = ".xml"
+
+        let zipEntries = 
+            seq { for i in 0..(int zipFile.Count - 1) do yield zipFile.EntryByIndex(i) }
+            |> Seq.filter isXmlFileInLessonDir
+
+        let getTextForZipEntry(ze: ZipEntry) = 
+            use sr = new StreamReader(zipFile.GetInputStream(ze))
+            sr.ReadToEnd()
+
+        zipEntries
+        |> Seq.map getTextForZipEntry
         |> Seq.collect(generateCardsForXml(lesson.ID, language, lesson.Name))
         |> Array.ofSeq
 

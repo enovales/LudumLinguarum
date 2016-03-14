@@ -8,6 +8,7 @@ nuget sqlite
 nuget nunrar
 nuget OpenXMLSDK-MOT
 nuget OpenXmlPowerTools
+github icsharpcode/SharpZipLib
 
 group Build
   source https://nuget.org/api/v2
