@@ -57,6 +57,22 @@ type CardRecord = {
         LanguageTag: string;
         Reversible: bool
     }
+    with
+        override this.ToString() = 
+            "CardRecord("
+            + "ID = " + this.ID.ToString() + ", "
+            + "LessonID = " + this.LessonID.ToString() + ", "
+            + "Text = " + this.Text.ToString() + ", "
+            + "Gender = " + this.Gender.ToString() + ", "
+            + "Key = " + this.Key.ToString() + ", "
+            + "GenderlessKey = " + this.GenderlessKey.ToString () + ", "
+            + "KeyHash = " + this.KeyHash.ToString() + ", "
+            + "GenderlessKeyHash = " + this.GenderlessKeyHash.ToString() + ", "
+            + "SoundResource = " + this.SoundResource.ToString() + ", "
+            + "LanguageTag = " + this.LanguageTag.ToString() + ", "
+            + "Reversible = " + this.Reversible.ToString() + ", "
+            + ")"
+
 
 type CardEntry() = 
     [<PrimaryKey; AutoIncrement>]

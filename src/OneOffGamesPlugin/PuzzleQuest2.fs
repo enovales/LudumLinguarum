@@ -4,16 +4,28 @@ open ICSharpCode.SharpZipLib.Zip
 open LLDatabase
 open System
 open System.IO
+open System.Text
 open System.Xml.Linq
 
 /// <summary>
 /// Generates a key-value pair from a Text XML element in a PQ2 localization
 /// file, which will later be transformed into a card.
 /// </summary>
-/// <param name="keyRoot">root to add onto key</param>
 /// <param name="el">the XML element</param>
-let internal generateKVForTextElement(keyRoot: string)(el: XElement) = 
-    (keyRoot + el.Attribute(XName.Get("tag")).Value, el.Value)
+let internal generateKVForTextElement(el: XElement) = 
+    (el.Attribute(XName.Get("tag")).Value, el.Value)
+
+let internal generateCardsForXElement(lessonID: int, language: string, keyRoot: string)(xel: XElement) = 
+    // the element is the TextLibrary node
+    xel.Descendants()
+    |> Seq.filter(fun t -> t.Name.LocalName = "Text")
+    |> Seq.map generateKVForTextElement
+    |> Map.ofSeq
+    |> AssemblyResourceTools.createCardRecordForStrings(lessonID, keyRoot, language)    
+
+let internal generateCardsForXmlStream(lessonID: int, language: string, keyRoot: string)(stream: Stream) = 
+    let xel = XElement.Load(stream)
+    generateCardsForXElement(lessonID, language, keyRoot)(xel)
 
 /// <summary>
 /// Generates a set of cards for a single localization XML file.
@@ -25,13 +37,7 @@ let internal generateKVForTextElement(keyRoot: string)(el: XElement) =
 let internal generateCardsForXml(lessonID: int, language: string, keyRoot: string)(xmlContent: string) = 
     use stringReader = new StringReader(xmlContent)
     let xel = XElement.Load(stringReader)
-
-    // the element is the TextLibrary node
-    xel.Descendants()
-    |> Seq.filter(fun t -> t.Name.LocalName = "Text")
-    |> Seq.map(generateKVForTextElement(keyRoot))
-    |> Map.ofSeq
-    |> AssemblyResourceTools.createCardRecordForStrings(lessonID, keyRoot, language)
+    generateCardsForXElement(lessonID, language, keyRoot)(xel)
 
 /// <summary>
 /// Generates a set of cards for a single asset zip from PQ2.
@@ -53,13 +59,12 @@ let internal generateCardsForAssetZip(languageMap: Map<string, string>, lessonsM
             seq { for i in 0..(int zipFile.Count - 1) do yield zipFile.EntryByIndex(i) }
             |> Seq.filter isXmlFileInLessonDir
 
-        let getTextForZipEntry(ze: ZipEntry) = 
-            use sr = new StreamReader(zipFile.GetInputStream(ze))
-            sr.ReadToEnd()
+        let getStreamForZipEntry(ze: ZipEntry) = 
+            zipFile.GetInputStream(ze)
 
         zipEntries
-        |> Seq.map getTextForZipEntry
-        |> Seq.collect(generateCardsForXml(lesson.ID, language, lesson.Name))
+        |> Seq.map getStreamForZipEntry
+        |> Seq.collect(generateCardsForXmlStream(lesson.ID, language, lesson.Name))
         |> Array.ofSeq
 
     let generateCardsForLanguage(dir: string, language: string): CardRecord array = 

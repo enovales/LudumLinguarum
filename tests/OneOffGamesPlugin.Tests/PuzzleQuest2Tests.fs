@@ -10,8 +10,8 @@ type PuzzleQuest2Tests() =
     member this.``Calling generateKVForTextElement returns a pair of the 'tag' element, and the value``() = 
         let contents: obj array = [| new XAttribute(XName.Get("tag"), "[GAME_TAG]"); "content" |]
         let el = new XElement(XName.Get("Text"), contents)
-        let expected = ("keyroot[GAME_TAG]", "content")
-        Assert.AreEqual(expected, PuzzleQuest2.generateKVForTextElement("keyroot")(el))
+        let expected = ("[GAME_TAG]", "content")
+        Assert.AreEqual(expected, PuzzleQuest2.generateKVForTextElement(el))
 
     [<Test>]
     member this.``Calling generateCardsForXml returns a card for an XML document with a single localized string``() = 
