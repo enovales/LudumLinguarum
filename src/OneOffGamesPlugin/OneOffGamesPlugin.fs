@@ -17,6 +17,7 @@ type OneOffGamesPlugin() =
     let bastionName = "Bastion"
     let wormsArmageddonName = "Worms Armageddon"
     let puzzleQuest2Name = "Puzzle Quest 2"
+    let pillarsOfEternityName = "Pillars of Eternity"
 
     interface IPlugin with
         member this.Load(tw: TextWriter, [<ParamArray>] args: string[]) = 
@@ -35,6 +36,7 @@ type OneOffGamesPlugin() =
                 bastionName
                 wormsArmageddonName
                 puzzleQuest2Name
+                pillarsOfEternityName
             |]
         member this.ExtractAll(game: string, path: string, db: LLDatabase, [<ParamArray>] args: string[]) = 
             this.LogWriteLine("Searching for game handler for '" + game + "'") |> ignore
@@ -49,6 +51,7 @@ type OneOffGamesPlugin() =
                     (bastionName, SimpleGames.ExtractBastion)
                     (wormsArmageddonName, WormsArmageddon.ExtractWormsArmageddon)
                     (puzzleQuest2Name, PuzzleQuest2.ExtractPuzzleQuest2)
+                    (pillarsOfEternityName, PillarsOfEternity.ExtractPillarsOfEternity)
                 |] |> Map.ofArray
 
             if (handlerMapping |> Map.containsKey(game)) then
