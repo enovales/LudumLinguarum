@@ -6,11 +6,11 @@ open LLDatabase
 open System
 open System.IO
 
-let internal getFirstTwoColumnsForWorksheet()
+let internal getFirstTwoColumnsForWorksheet() = ()
 
 let internal generateCardsForWorkbook(worksheetPath: string) = 
     let workbook = new Workbook(File.ReadAllText(worksheetPath))
-    workbook.Sheets.GetEnumerator() |> 
+    //workbook.Sheets.GetEnumerator() |> 
     [||]
 
 let internal generateCardsForLanguage(languagePath: string) = 

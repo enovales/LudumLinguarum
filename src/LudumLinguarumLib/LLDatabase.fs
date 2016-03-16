@@ -57,6 +57,22 @@ type CardRecord = {
         LanguageTag: string;
         Reversible: bool
     }
+    with
+        override this.ToString() = 
+            "CardRecord("
+            + "ID = " + this.ID.ToString() + ", "
+            + "LessonID = " + this.LessonID.ToString() + ", "
+            + "Text = " + this.Text.ToString() + ", "
+            + "Gender = " + this.Gender.ToString() + ", "
+            + "Key = " + this.Key.ToString() + ", "
+            + "GenderlessKey = " + this.GenderlessKey.ToString () + ", "
+            + "KeyHash = " + this.KeyHash.ToString() + ", "
+            + "GenderlessKeyHash = " + this.GenderlessKeyHash.ToString() + ", "
+            + "SoundResource = " + this.SoundResource.ToString() + ", "
+            + "LanguageTag = " + this.LanguageTag.ToString() + ", "
+            + "Reversible = " + this.Reversible.ToString() + ", "
+            + ")"
+
 
 type CardEntry() = 
     [<PrimaryKey; AutoIncrement>]
@@ -277,17 +293,26 @@ type LLDatabase(dbPath: string) =
     member this.CreateOrUpdateCards(c: CardRecord seq) = 
         // the cards passed in, but with the KeyHash computed
         let cardsWithHashes = c |> Seq.map this.UpdateCardWithHash |> Array.ofSeq
-        let hasExistingCard(card: CardRecord) =
-            db.Table<CardEntry>().Where(fun u -> 
-                (u.LessonID = card.LessonID) && (u.KeyHash = card.KeyHash) && (u.LanguageTag = card.LanguageTag)) |> Array.ofSeq |> Array.isEmpty
+
+        let keyHashMap = this.Cards |> Array.groupBy(fun t -> t.KeyHash) |> Map.ofArray
+        let checkLessonIDAndLanguage(key: CardRecord)(checking: CardRecord) = 
+            (key.LessonID = checking.LessonID) && (key.LanguageTag = checking.LanguageTag)
+
+        let hasExistingCard(card: CardRecord) = 
+            match keyHashMap |> Map.containsKey(card.KeyHash) with
+            | true when keyHashMap.Item(card.KeyHash) |> Array.exists(checkLessonIDAndLanguage(card)) -> true
+            | _ -> false
+                
+        let idOfExistingCard(card: CardRecord) = 
+            let cardList = keyHashMap.Item(card.KeyHash)
+
+            match cardList |> Array.tryFind(checkLessonIDAndLanguage(card)) with
+            | Some(found) -> found.ID
+            | _ -> failwith "shouldn't happen"
 
         // cards with the same key hash and language tag that already exist in the db
-        let (newCards, existingCards) = cardsWithHashes |> Array.partition hasExistingCard
+        let (existingCards, newCards) = cardsWithHashes |> Array.partition hasExistingCard
 
-        // the cards that passed in which had existing entries, with the IDs of the existing entries
-        let idOfExistingCard(card: CardRecord) = 
-            (db.Table<CardEntry>().Where(fun u -> (u.KeyHash = card.KeyHash) && (u.LanguageTag = card.LanguageTag)) |> Array.ofSeq |> Array.head).ID
-            
         let cardsToUpdateWithIds = existingCards |> Array.map (fun c -> { c with ID = idOfExistingCard(c) })
 
         db.UpdateAll(cardsToUpdateWithIds |> Seq.map CardEntry.FromCardRecord) |> ignore

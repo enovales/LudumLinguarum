@@ -27,7 +27,7 @@ let ExtractStringsFromAssemblies
 
     let generateCardsForLanguage(language: string, a: Assembly, resourcesName: string) = 
         AssemblyResourceTools.extractResourcesFromAssemblyViaResourceReader(a, CultureInfo.GetCultureInfo(language), resourcesName)
-        |> AssemblyResourceTools.createCardRecordForStrings(lessonId, cardKeyRoot, language)
+        |> AssemblyResourceTools.createCardRecordForStrings(lessonId, cardKeyRoot, language, "masculine")
 
     // set up default assembly resolution during reflection-only loads.
     let provideAssembly(o: obj)(args: ResolveEventArgs): Assembly = 

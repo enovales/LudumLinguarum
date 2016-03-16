@@ -33,14 +33,14 @@ let extractResourcesFromAssemblyViaResourceReader(a: Assembly, c: CultureInfo, r
     let strings = collectStringResources(e, [])
     strings |> Map.ofList
 
-let createCardRecordForStrings(lid: int, keyRoot: string, language: string)(strings: Map<string, string>) = 
+let createCardRecordForStrings(lid: int, keyRoot: string, language: string, gender: string)(strings: Map<string, string>) = 
     let createCardRecordForMapEntry (k, v) = 
         {
             CardRecord.ID = 0
             LessonID = lid
             Text = v
-            Gender = "masculine"
-            Key = keyRoot + k
+            Gender = gender
+            Key = keyRoot + k + gender
             GenderlessKey = keyRoot + k
             KeyHash = 0
             GenderlessKeyHash = 0

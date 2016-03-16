@@ -21,7 +21,7 @@ type ImportConfiguration() =
 /// Configuration for the 'list-games' verb.
 /// </summary>
 type ListGamesConfiguration() = 
-    [<CommandLine.Option(Required = false)>]
+    [<CommandLine.Option("filter-regex", Required = false)>]
     member val FilterRegex = "" with get, set
 
 /// <summary>
@@ -35,10 +35,10 @@ type ListSupportedGamesConfiguration() =
 /// Configuration for the 'list-lessons' verb.
 /// </summary>
 type ListLessonsConfiguration() = 
-    [<CommandLine.Option(Required = false)>]
+    [<CommandLine.Option("game-regex", Required = false)>]
     member val GameRegex = "" with get, set
 
-    [<CommandLine.Option(Required = false)>]
+    [<CommandLine.Option("filter-regex", Required = false)>]
     member val FilterRegex = "" with get, set
 
 /// <summary>
@@ -55,10 +55,10 @@ type DeleteLessonsConfiguration() =
     [<CommandLine.Option(Required = true)>]
     member val Game = "" with get, set
 
-    [<CommandLine.Option(Required = false)>]
+    [<CommandLine.Option("game-regex", Required = false)>]
     member val FilterRegex = "" with get, set
 
-    [<CommandLine.Option(Required = false)>]
+    [<CommandLine.Option("lesson-name", Required = false)>]
     member val LessonName = "" with get, set
 
 /// <summary>

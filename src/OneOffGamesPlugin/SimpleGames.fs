@@ -70,8 +70,8 @@ let ExtractMagicalDropV(path: string, db: LLDatabase, g: GameRecord, args: strin
             |> Map.partition(fun k t -> (k.StartsWith("story", StringComparison.InvariantCultureIgnoreCase) || k.StartsWith("ID_storyintro")))
 
         [|
-            storyStrings |> AssemblyResourceTools.createCardRecordForStrings(lessonStoryEntryWithId.ID, "storytext", lang)
-            nonStoryStrings |> AssemblyResourceTools.createCardRecordForStrings(lessonUIEntryWithId.ID, "uitext", lang)
+            storyStrings |> AssemblyResourceTools.createCardRecordForStrings(lessonStoryEntryWithId.ID, "storytext", lang, "masculine")
+            nonStoryStrings |> AssemblyResourceTools.createCardRecordForStrings(lessonUIEntryWithId.ID, "uitext", lang, "masculine")
         |] |> Array.concat
 
     filePathsAndLanguages 
@@ -103,7 +103,7 @@ let ExtractAudiosurf(path: string, db: LLDatabase, g: GameRecord, args: string a
         xel.Descendants(XName.Get("S")) 
         |> Seq.map (fun t -> (t.Attribute(XName.Get("EN")).Value, t.Value.Trim()))
         |> Map.ofSeq
-        |> AssemblyResourceTools.createCardRecordForStrings(lessonEntryWithId.ID, "gametext", lang)
+        |> AssemblyResourceTools.createCardRecordForStrings(lessonEntryWithId.ID, "gametext", lang, "masculine")
 
     languageFilesAndLanguages
     |> Array.collect generateCardsForLanguage
@@ -156,7 +156,7 @@ let ExtractBastion(path: string, db: LLDatabase, g: GameRecord, args: string arr
             |> Map.filter(fun k _ -> not(String.IsNullOrWhiteSpace(k)))
             |> AssemblyResourceTools.createCardRecordForStrings(
                 lessonSubtitlesEntryWithId.ID, 
-                "subtitle_" + Path.GetFileNameWithoutExtension(subtitlePath) + "_", language)
+                "subtitle_" + Path.GetFileNameWithoutExtension(subtitlePath) + "_", language, "masculine")
 
         files
         |> Array.collect subtitlesForFile
@@ -192,7 +192,7 @@ let ExtractBastion(path: string, db: LLDatabase, g: GameRecord, args: string arr
         |> Array.ofSeq 
         |> Array.collect generateStringsForElement
         |> Map.ofArray
-        |> AssemblyResourceTools.createCardRecordForStrings(lessonGameTextEntryWithId.ID, "gametext", language)
+        |> AssemblyResourceTools.createCardRecordForStrings(lessonGameTextEntryWithId.ID, "gametext", language, "masculine")
 
     // LaunchText.xml handling
     let generateCardsForLaunchText = 
@@ -204,7 +204,7 @@ let ExtractBastion(path: string, db: LLDatabase, g: GameRecord, args: string arr
             el.Descendants(XName.Get("Text"))
             |> Seq.map generateStringsForTextElement
             |> Map.ofSeq
-            |> AssemblyResourceTools.createCardRecordForStrings(lessonGameTextEntryWithId.ID, "launchtext", language)
+            |> AssemblyResourceTools.createCardRecordForStrings(lessonGameTextEntryWithId.ID, "launchtext", language, "masculine")
 
         let helpTextPath = Path.Combine(path, @"Content\Game\Text\LaunchText.xml")
         use reader = new StreamReader(helpTextPath)
