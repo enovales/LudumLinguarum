@@ -85,7 +85,7 @@ let extractStringsFromLines(lessonID: int)(lines: string array, language: string
     |> Array.ofList
     |> Array.map(fun (k, v) -> (k, v.Replace(@"\n", "").Replace("\t", "").Trim()))
     |> Map.ofArray
-    |> AssemblyResourceTools.createCardRecordForStrings(lessonID, "gametext", language)
+    |> AssemblyResourceTools.createCardRecordForStrings(lessonID, "gametext", language, "masculine")
 
 let ExtractWormsArmageddon(path: string, db: LLDatabase, g: GameRecord, args: string array) = 
     let lessonGameTextEntry = {

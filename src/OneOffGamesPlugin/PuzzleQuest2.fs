@@ -21,7 +21,7 @@ let internal generateCardsForXElement(lessonID: int, language: string, keyRoot: 
     |> Seq.filter(fun t -> t.Name.LocalName = "Text")
     |> Seq.map generateKVForTextElement
     |> Map.ofSeq
-    |> AssemblyResourceTools.createCardRecordForStrings(lessonID, keyRoot, language)    
+    |> AssemblyResourceTools.createCardRecordForStrings(lessonID, keyRoot, language, "masculine")
 
 let internal generateCardsForXmlStream(lessonID: int, language: string, keyRoot: string)(stream: Stream) = 
     let xel = XElement.Load(stream)
