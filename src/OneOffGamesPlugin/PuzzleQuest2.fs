@@ -51,20 +51,29 @@ let internal generateCardsForAssetZip(languageMap: Map<string, string>, lessonsM
     let generateCardsForLessons(language: string)(lessonDir: string, lesson: LessonRecord) = 
         // open all XML files under the directory, and read the contents
         let isXmlFileInLessonDir(ze: ZipEntry) = 
-            ze.IsFile 
-            && ze.Name.StartsWith(lessonDir, StringComparison.InvariantCultureIgnoreCase)
-            && Path.GetExtension(ze.Name).ToLowerInvariant() = ".xml"
+            let isFile = ze.IsFile
+            let fileDir = Path.GetDirectoryName(ze.Name.Replace('/', Path.DirectorySeparatorChar).Replace('\\', Path.DirectorySeparatorChar)).Trim(Path.DirectorySeparatorChar)
+
+            // unify path separators
+            let lessonDirUnifiedPathSeps = lessonDir.Replace('/', Path.DirectorySeparatorChar).Replace('\\', Path.DirectorySeparatorChar).Trim(Path.DirectorySeparatorChar)
+            let isInLessonDir = fileDir = lessonDirUnifiedPathSeps
+
+            let hasXmlExtension = Path.GetExtension(ze.Name).ToLowerInvariant() = ".xml"
+            isFile && isInLessonDir && hasXmlExtension 
 
         let zipEntries = 
             seq { for i in 0..(int zipFile.Count - 1) do yield zipFile.EntryByIndex(i) }
             |> Seq.filter isXmlFileInLessonDir
 
         let getStreamForZipEntry(ze: ZipEntry) = 
-            zipFile.GetInputStream(ze)
+            use zipStream = zipFile.GetInputStream(ze)
+            let memoryStream = new MemoryStream()
+            zipStream.CopyTo(memoryStream)
+            memoryStream.Seek(int64 0, SeekOrigin.Begin) |> ignore
+            memoryStream
 
         zipEntries
-        |> Seq.map getStreamForZipEntry
-        |> Seq.collect(generateCardsForXmlStream(lesson.ID, language, lesson.Name))
+        |> Seq.collect(getStreamForZipEntry >> generateCardsForXmlStream(lesson.ID, language, lesson.Name))
         |> Array.ofSeq
 
     let generateCardsForLanguage(dir: string, language: string): CardRecord array = 
@@ -111,13 +120,13 @@ let ExtractPuzzleQuest2(path: string, db: LLDatabase, g: GameRecord, args: strin
         |> Map.ofArray
 
     // load zips in reverse order, so the call to distinct will preserve the most recent ones
-    let cardKey(c: CardRecord) = c.Key
+    let cardKeyAndLanguage(c: CardRecord) = c.LanguageTag + c.Key
     [|
         "Patch1.zip"
         "Assets.zip"
     |]
     |> Array.collect((fun p -> Path.Combine(path, p)) >> generateCardsForAssetZip(languageMap, lessonsMap))
-    |> Array.distinctBy cardKey
+    |> Array.distinctBy cardKeyAndLanguage
     |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
     |> db.CreateOrUpdateCards
 
