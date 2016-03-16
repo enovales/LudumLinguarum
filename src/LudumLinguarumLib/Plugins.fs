@@ -20,12 +20,6 @@ type NullPlugin() =
         member this.Name = "Null"
         member this.Parameters = [| new Object() |]
 
-type TestPlugin() =
-    interface IPlugin with
-        member this.Load(_: TextWriter, [<ParamArray>] args: string[]): unit = printfn "test plugin loaded"
-        member this.Name = "Test"
-        member this.Parameters = [| new Object() |]
-
 [<Interface>]
 type IGameExtractorPlugin = 
     inherit IPlugin
