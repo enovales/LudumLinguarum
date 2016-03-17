@@ -24,7 +24,7 @@
     <WarningLevel>3</WarningLevel>
     <OtherFlags>--warnon:1182</OtherFlags>
     <StartArguments>delete-game --game="Star Wars: Knights of the Old Republic II"</StartArguments>
-    <StartArguments>import --game="Puzzle Chronicles" --game-dir="C:\Program Files (x86)\Steam\steamapps\common\Puzzle Chronicles"</StartArguments>
+    <StartArguments>import --game="Orcs Must Die!" --game-dir="C:\Program Files (x86)\Steam\steamapps\common\Orcs Must Die!"</StartArguments>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
