@@ -16,6 +16,7 @@ type OneOffGamesPlugin() =
     let audiosurfName = "Audiosurf"
     let bastionName = "Bastion"
     let wormsArmageddonName = "Worms Armageddon"
+    let puzzleChroniclesName = "Puzzle Chronicles"
     let puzzleQuest2Name = "Puzzle Quest 2"
     let pillarsOfEternityName = "Pillars of Eternity"
 
@@ -35,6 +36,7 @@ type OneOffGamesPlugin() =
                 audiosurfName
                 bastionName
                 wormsArmageddonName
+                puzzleChroniclesName
                 puzzleQuest2Name
                 pillarsOfEternityName
             |]
@@ -50,7 +52,8 @@ type OneOffGamesPlugin() =
                     (audiosurfName, SimpleGames.ExtractAudiosurf)
                     (bastionName, SimpleGames.ExtractBastion)
                     (wormsArmageddonName, WormsArmageddon.ExtractWormsArmageddon)
-                    (puzzleQuest2Name, PuzzleQuest2.ExtractPuzzleQuest2)
+                    (puzzleChroniclesName, PuzzleQuestGames.ExtractPuzzleChronicles)
+                    (puzzleQuest2Name, PuzzleQuestGames.ExtractPuzzleQuest2)
                     (pillarsOfEternityName, PillarsOfEternity.ExtractPillarsOfEternity)
                 |] |> Map.ofArray
 

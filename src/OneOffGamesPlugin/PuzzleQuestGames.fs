@@ -1,4 +1,4 @@
-﻿module PuzzleQuest2
+﻿module PuzzleQuestGames
 
 open ICSharpCode.SharpZipLib.Zip
 open LLDatabase
@@ -123,6 +123,44 @@ let ExtractPuzzleQuest2(path: string, db: LLDatabase, g: GameRecord, args: strin
     let cardKeyAndLanguage(c: CardRecord) = c.LanguageTag + c.Key
     [|
         "Patch1.zip"
+        "Assets.zip"
+    |]
+    |> Array.collect((fun p -> Path.Combine(path, p)) >> generateCardsForAssetZip(languageMap, lessonsMap))
+    |> Array.distinctBy cardKeyAndLanguage
+    |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
+    |> db.CreateOrUpdateCards
+
+    ()
+
+let ExtractPuzzleChronicles(path: string, db: LLDatabase, g: GameRecord, args: string array) = 
+    let configuredLessonCreator = createLesson(g.ID, db)
+    let languageMap = 
+        [|
+            ("English_eu", "en-gb")
+            ("English_us", "en")
+            ("French_eu", "fr")
+            ("French_us", "fr-ca")
+            ("German_eu", "de")
+            ("Italian_eu", "it")
+            ("Spanish_eu", "es")
+            ("Spanish_us", "es-mx")
+        |]
+        |> Map.ofArray
+
+    // create lessons for each of the subdirectories in the asset zips
+    let lessonsMap = 
+        [|
+            ("", "Game Text")
+            ("NIS", "NIS")
+            ("Quests", "Quests")
+            ("Tutorials", "Tutorials")
+        |]
+        |> Array.map(fun (k, v) -> (k, configuredLessonCreator(v)))
+        |> Map.ofArray
+
+    // load zips in reverse order, so the call to distinct will preserve the most recent ones
+    let cardKeyAndLanguage(c: CardRecord) = c.LanguageTag + c.Key
+    [|
         "Assets.zip"
     |]
     |> Array.collect((fun p -> Path.Combine(path, p)) >> generateCardsForAssetZip(languageMap, lessonsMap))
