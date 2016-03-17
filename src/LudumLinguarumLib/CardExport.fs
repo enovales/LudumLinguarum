@@ -72,9 +72,7 @@ type AnkiExporter(iPluginManager: IPluginManager, outputTextWriter: TextWriter,
                     "\ty"
                 else
                     "\t"
-            let tagText = 
-                "\t\"" + lesson.Name + "\""
-            sw.WriteLine(recogText + "\t" + prodText + reverseText + tagText)
+            sw.WriteLine(recogText + "\t" + prodText + reverseText)
 
         let (recognitionCards, productionCards) = 
             this.GenerateRecognitionAndProductionCardSets(lesson, config.RecognitionLanguage, config.ProductionLanguage)
