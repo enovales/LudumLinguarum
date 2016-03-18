@@ -1,30 +1,59 @@
 ﻿module Magicka
 
-open DocumentFormat.OpenXml
-open DocumentFormat.OpenXml.Packaging
-open DocumentFormat.OpenXml.Spreadsheet
 open LLDatabase
-open OpenXmlPowerTools
 open System
 open System.IO
+open System.Xml.Linq
 
-let internal getFirstTwoColumnsForWorksheet(doc: SpreadsheetDocument)(ws: WorksheetPart): (string * string) array = 
-    ws.Rows() 
-    |> Seq.skip(1) 
-    |> Seq.mapi(fun i r -> 
-        let idCell = WorksheetAccessor.GetCellValue(doc, ws, 1, i + 1)
-        let valueCell = WorksheetAccessor.GetCellValue(doc, ws, 2, i + 1)
-        (idCell.ToString(), valueCell.ToString())
-    )
+let internal getStringForCell(cellElement: XElement): string = 
+    let dataOption = 
+        cellElement.Descendants(XName.Get("Data")) 
+        |> Seq.tryHead 
+        |> Option.map (fun e -> e.Value)
+
+    match dataOption with
+    | Some(d) -> d
+    | _ -> ""
+
+let internal getFirstTwoCellsForRow(rowElement: XElement): XElement list = 
+    rowElement.Descendants(XName.Get("Cell")) |> Seq.take(2) |> List.ofSeq
+
+let internal getFirstTwoColumnsForWorksheet(worksheetElement: XElement): (string * string) array = 
+    // skip header row
+    let rows = worksheetElement.Descendants(XName.Get("Row")) |> Seq.skip(1)
+
+    let cellsToStrings(cells: XElement list) =
+        match cells with
+        | [idCell; valueCell] -> (getStringForCell(idCell), getStringForCell(valueCell))
+        | _ -> failwith "unexpected number of cells"
+
+    rows
+    |> Seq.map(getFirstTwoCellsForRow >> cellsToStrings)
     |> Array.ofSeq
 
-let internal generateCardsForWorkbook(language: string)(lessonID: int, worksheetPath: string) = 
-    let spreadsheet = SpreadsheetDocument.Open(worksheetPath, false)
-    
-    spreadsheet.WorkbookPart.WorksheetParts 
-    |> Seq.collect (getFirstTwoColumnsForWorksheet(spreadsheet))
-    |> Map.ofSeq
-    |> AssemblyResourceTools.createCardRecordForStrings(lessonID, Path.GetFileNameWithoutExtension(worksheetPath), language, "masculine")
+let internal generateCardsForWorkbook(language: string)(lessonID: int, doc: XElement) = 
+    let makeTupleOfWorksheetAndName(worksheetElement: XElement) = 
+        (worksheetElement, worksheetElement.Attribute(XName.Get("ss:Name")).Value)
+
+    doc.Descendants(XName.Get("Worksheet"))
+    |> Seq.map makeTupleOfWorksheetAndName
+    |> Seq.collect (fun (ws, name) -> AssemblyResourceTools.createCardRecordForStrings(lessonID, name, language, "masculine")(getFirstTwoColumnsForWorksheet(ws) |> Map.ofSeq))
+    |> Array.ofSeq
+
+let internal generateCardsForXmlStream(lesson: LessonRecord, language: string, stream: Stream) = 
+    let xel = XElement.Load(stream)
+    generateCardsForWorkbook(language)(lesson.ID, xel)
+
+/// <summary>
+/// Generates a set of cards for a single localization XML file.
+/// </summary>
+/// <param name="lessonID">lesson ID to use for generated cards</param>
+/// <param name="language">the language of this content</param>
+/// <param name="xmlContent">the XML content to parse</param>
+let internal generateCardsForXml(lessonID: int, language: string)(xmlContent: string) = 
+    use stringReader = new StringReader(xmlContent)
+    let xel = XElement.Load(stringReader)
+    generateCardsForWorkbook(language)(lessonID, xel)
 
 let internal generateCardsForLanguage(db: LLDatabase, gameID: int)(languagePath: string) = 
     // TODO: map three character languages to two
@@ -42,7 +71,7 @@ let internal generateCardsForLanguage(db: LLDatabase, gameID: int)(languagePath:
         |> Map.ofArray
 
     let language = languageMap.Item(Path.GetFileName(languagePath))
-    let makeLessonForFile(fp: string): (int * string) = 
+    let makeLessonForFile(fp: string): (LessonRecord * string * Stream) = 
         let rootName = Path.GetFileNameWithoutExtension(fp)
         let prefixToRemove = "Magicka_"
         let lessonName = 
@@ -58,11 +87,20 @@ let internal generateCardsForLanguage(db: LLDatabase, gameID: int)(languagePath:
                 Name = lessonName
             }
         let createdLessonRecord = { lessonRecord with ID = db.CreateOrUpdateLesson(lessonRecord) }
-        (createdLessonRecord.ID, fp)
+        (createdLessonRecord, fp, new MemoryStream(File.ReadAllBytes(fp)) :> Stream)
+
+    let wrappedGenerateCardsForXmlStream(lesson: LessonRecord, language: string, stream: Stream) = 
+        try
+            try
+                generateCardsForXmlStream(lesson, language, stream)
+            with
+            | ex -> [||]
+        finally
+            stream.Dispose()
 
     Directory.GetFiles(languagePath, "*.loctable.xml")
     |> Array.map makeLessonForFile
-    |> Array.collect(generateCardsForWorkbook(language))
+    |> Array.collect(wrappedGenerateCardsForXmlStream)
 
 let ExtractMagicka(path: string, db: LLDatabase, g: GameRecord, args: string array) = 
     let threeCharLanguages = Directory.GetDirectories(Path.Combine(path, @"Content\Languages"))
