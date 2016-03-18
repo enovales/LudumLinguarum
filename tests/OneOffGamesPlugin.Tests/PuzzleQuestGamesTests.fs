@@ -1,23 +1,23 @@
-﻿module PuzzleQuest2Tests
+﻿module PuzzleQuestGamesTests
 
 open LLDatabase
 open NUnit.Framework
 open System.Xml.Linq
 
 [<TestFixture>]
-type PuzzleQuest2Tests() = 
+type PuzzleQuestGamesTests() = 
     [<Test>]
     member this.``Calling generateKVForTextElement returns a pair of the 'tag' element, and the value``() = 
         let contents: obj array = [| new XAttribute(XName.Get("tag"), "[GAME_TAG]"); "content" |]
         let el = new XElement(XName.Get("Text"), contents)
         let expected = ("[GAME_TAG]", "content")
-        Assert.AreEqual(expected, PuzzleQuest2.generateKVForTextElement(el))
+        Assert.AreEqual(expected, PuzzleQuestGames.generateKVForTextElement(el))
 
     [<Test>]
     member this.``Calling generateCardsForXml returns a card for an XML document with a single localized string``() = 
         let xml = """<TextLibrary><Text tag="[GAME_TAG]">content</Text></TextLibrary>"""
         let lessonID = 0
-        let generated = PuzzleQuest2.generateCardsForXml(lessonID, "en", "keyroot")(xml)
+        let generated = PuzzleQuestGames.generateCardsForXml(lessonID, "en", "keyroot")(xml)
         let expected =
             [|
                 {

@@ -1,24 +1,23 @@
-﻿module PuzzleQuest2
+﻿module OrcsMustDie
 
 open ICSharpCode.SharpZipLib.Zip
 open LLDatabase
 open System
 open System.IO
-open System.Text
 open System.Xml.Linq
 
 /// <summary>
-/// Generates a key-value pair from a Text XML element in a PQ2 localization
+/// Generates a key-value pair from a String XML element in a OMD localization
 /// file, which will later be transformed into a card.
 /// </summary>
 /// <param name="el">the XML element</param>
 let internal generateKVForTextElement(el: XElement) = 
-    (el.Attribute(XName.Get("tag")).Value, el.Value)
+    (el.Attribute(XName.Get("_locID")).Value, el.Value)
 
 let internal generateCardsForXElement(lessonID: int, language: string, keyRoot: string)(xel: XElement) = 
     // the element is the TextLibrary node
     xel.Descendants()
-    |> Seq.filter(fun t -> t.Name.LocalName = "Text")
+    |> Seq.filter(fun t -> t.Name.LocalName = "String")
     |> Seq.map generateKVForTextElement
     |> Map.ofSeq
     |> AssemblyResourceTools.createCardRecordForStrings(lessonID, keyRoot, language, "masculine")
@@ -40,12 +39,12 @@ let internal generateCardsForXml(lessonID: int, language: string, keyRoot: strin
     generateCardsForXElement(lessonID, language, keyRoot)(xel)
 
 /// <summary>
-/// Generates a set of cards for a single asset zip from PQ2.
+/// Generates a set of cards for a single asset zip from OMD.
 /// </summary>
 /// <param name="languageMap">the map of directory names to language codes</param>
-/// <param name="lessonsMap">the map of directory paths (inside the zip) to lesson records</param>
+/// <param name="lesson">the lesson record for the game text</param>
 /// <param name="zipPath">path to the zip file to process</param>
-let internal generateCardsForAssetZip(languageMap: Map<string, string>, lessonsMap: Map<string, LessonRecord>)(zipPath: string): CardRecord array = 
+let internal generateCardsForAssetZip(languageMap: Map<string, string>, lesson: LessonRecord)(zipPath: string): CardRecord array = 
     let zipFile = new ZipFile(zipPath)
 
     let generateCardsForLessons(language: string)(lessonDir: string, lesson: LessonRecord) = 
@@ -76,15 +75,9 @@ let internal generateCardsForAssetZip(languageMap: Map<string, string>, lessonsM
         |> Seq.collect(getStreamForZipEntry >> generateCardsForXmlStream(lesson.ID, language, lesson.Name))
         |> Array.ofSeq
 
-    let generateCardsForLanguage(dir: string, language: string): CardRecord array = 
-        lessonsMap
-        |> Map.toArray
-        |> Array.map (fun (lessonDir, lesson) -> (Path.Combine(dir, lessonDir), lesson))
-        |> Array.collect(generateCardsForLessons(language))
-
     languageMap
     |> Map.toArray
-    |> Array.collect generateCardsForLanguage
+    |> Array.collect(fun (dir: string, language: string) -> generateCardsForLessons(language)(dir, lesson))
 
 let internal createLesson(gameID: int, db: LLDatabase)(title: string): LessonRecord = 
     let lessonEntry = {
@@ -94,38 +87,37 @@ let internal createLesson(gameID: int, db: LLDatabase)(title: string): LessonRec
     }
     { lessonEntry with ID = db.CreateOrUpdateLesson(lessonEntry) }
 
-let ExtractPuzzleQuest2(path: string, db: LLDatabase, g: GameRecord, args: string array) = 
+let ExtractOrcsMustDie(path: string, db: LLDatabase, g: GameRecord, args: string array) = 
     let configuredLessonCreator = createLesson(g.ID, db)
     let languageMap = 
         [|
-            ("English", "en")
-            ("French", "fr")
-            ("German", "de")
-            ("Italian", "it")
-            ("Spanish", "es")
+            (@"Localization\de", "de")
+            (@"Localization\default", "en")
+            (@"Localization\es", "es")
+            (@"Localization\fr", "fr")
+            (@"Localization\it", "it")
+            (@"Localization\ja", "ja")
+            (@"Localization\pl", "pl")
+            (@"Localization\pt", "pt")
+            (@"Localization\ru", "ru")
         |]
         |> Map.ofArray
 
-    // create lessons for each of the subdirectories in the asset zips
-    let lessonsMap = 
-        [|
-            ("", "Game Text")
-            ("Conversations", "Conversations")
-            ("Levels", "Levels")
-            ("NIS", "NIS")
-            ("pc", "PC")
-            ("Tutorials", "Tutorials")
-        |]
-        |> Array.map(fun (k, v) -> (k, configuredLessonCreator(v)))
-        |> Map.ofArray
+    // create a single lesson for the game, because there isn't that much text
+    let lessonEntry = {
+        LessonRecord.GameID = g.ID;
+        ID = 0;
+        Name = "Game Text"
+    }
+    let lessonEntryWithId = { lessonEntry with ID = db.CreateOrUpdateLesson(lessonEntry) }
 
     // load zips in reverse order, so the call to distinct will preserve the most recent ones
     let cardKeyAndLanguage(c: CardRecord) = c.LanguageTag + c.Key
     [|
-        "Patch1.zip"
-        "Assets.zip"
+        "data.zip"
+        "datademo.zip"
     |]
-    |> Array.collect((fun p -> Path.Combine(path, p)) >> generateCardsForAssetZip(languageMap, lessonsMap))
+    |> Array.collect((fun p -> Path.Combine(path, p)) >> generateCardsForAssetZip(languageMap, lessonEntryWithId))
     |> Array.distinctBy cardKeyAndLanguage
     |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
     |> db.CreateOrUpdateCards

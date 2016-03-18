@@ -61,8 +61,9 @@
     <Compile Include="SimpleGamesTests.fs" />
     <Compile Include="XUIGamesTests.fs" />
     <Compile Include="WormsArmageddonTests.fs" />
-    <Compile Include="PuzzleQuest2Tests.fs" />
+    <Compile Include="PuzzleQuestGamesTests.fs" />
     <Compile Include="PillarsOfEternityTests.fs" />
+    <Compile Include="OrcsMustDieTests.fs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />
