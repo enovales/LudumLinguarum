@@ -4,9 +4,6 @@ NUGET
   specs:
     CommandLineParser (1.9.71)
     nunrar (1.0.1)
-    OpenXmlPowerTools (4.1.3)
-      OpenXMLSDK-MOT (>= 2.6.0.0)
-    OpenXMLSDK-MOT (2.6.0)
     sqlite (3.8.4.2)
       sqlite.redist (>= 3.8.4.2)
     sqlite.redist (3.8.4.2)
