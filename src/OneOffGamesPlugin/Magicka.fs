@@ -44,19 +44,19 @@ let rec internal stripFormattingCodes(key: string, value: string): (string * str
     | true -> stripFormattingCodes(key, value.Remove(r.Index, r.Length))
     | _ -> (key, value)
 
-let internal generateCardsForWorkbook(language: string)(lessonID: int, doc: XElement) = 
+let internal generateCardsForWorkbook(language: string, keyRoot: string)(lessonID: int, doc: XElement) = 
     let makeTupleOfWorksheetAndName(worksheetElement: XElement) = 
         let worksheetName = worksheetElement.Attribute(XName.Get("Name", ssNs)).Value
         (worksheetElement, worksheetName)
 
     doc.Descendants(XName.Get("Worksheet", officeNs))
     |> Seq.map makeTupleOfWorksheetAndName
-    |> Seq.collect (fun (ws, name) -> AssemblyResourceTools.createCardRecordForStrings(lessonID, name, language, "masculine")(getFirstTwoColumnsForWorksheet(ws) |> Seq.map stripFormattingCodes |> Map.ofSeq))
+    |> Seq.collect (fun (ws, name) -> AssemblyResourceTools.createCardRecordForStrings(lessonID, keyRoot + name, language, "masculine")(getFirstTwoColumnsForWorksheet(ws) |> Seq.map stripFormattingCodes |> Map.ofSeq))
     |> Array.ofSeq
 
-let internal generateCardsForXmlStream(lesson: LessonRecord, language: string, stream: Stream) = 
+let internal generateCardsForXmlStream(lesson: LessonRecord, language: string, keyRoot: string, stream: Stream) = 
     let xel = XElement.Load(stream)
-    generateCardsForWorkbook(language)(lesson.ID, xel)
+    generateCardsForWorkbook(language, keyRoot)(lesson.ID, xel)
 
 /// <summary>
 /// Generates a set of cards for a single localization XML file.
@@ -67,7 +67,7 @@ let internal generateCardsForXmlStream(lesson: LessonRecord, language: string, s
 let internal generateCardsForXml(lessonID: int, language: string)(xmlContent: string) = 
     use stringReader = new StringReader(xmlContent)
     let xel = XElement.Load(stringReader)
-    generateCardsForWorkbook(language)(lessonID, xel)
+    generateCardsForWorkbook(language, "")(lessonID, xel)
 
 let internal generateCardsForLanguage(db: LLDatabase, gameID: int)(languagePath: string) = 
     let languageMap =
@@ -84,7 +84,7 @@ let internal generateCardsForLanguage(db: LLDatabase, gameID: int)(languagePath:
         |> Map.ofArray
 
     let language = languageMap.Item(Path.GetFileName(languagePath))
-    let makeLessonForFile(fp: string): (LessonRecord * Stream) = 
+    let makeLessonForFile(fp: string): (LessonRecord * string * Stream) = 
         let rootName = Path.GetFileNameWithoutExtension(fp)
         let prefixToRemove = "Magicka_"
         let lessonName = 
@@ -100,12 +100,12 @@ let internal generateCardsForLanguage(db: LLDatabase, gameID: int)(languagePath:
                 Name = lessonName
             }
         let createdLessonRecord = { lessonRecord with ID = db.CreateOrUpdateLesson(lessonRecord) }
-        (createdLessonRecord, new MemoryStream(File.ReadAllBytes(fp)) :> Stream)
+        (createdLessonRecord, fp.Substring(languagePath.Length), new MemoryStream(File.ReadAllBytes(fp)) :> Stream)
 
-    let wrappedGenerateCardsForXmlStream(language: string)(lesson: LessonRecord, stream: Stream) = 
+    let wrappedGenerateCardsForXmlStream(language: string)(lesson: LessonRecord, keyRoot: string, stream: Stream) = 
         try
             try
-                generateCardsForXmlStream(lesson, language, stream)
+                generateCardsForXmlStream(lesson, language, keyRoot, stream)
             with
             | ex -> [||]
         finally
