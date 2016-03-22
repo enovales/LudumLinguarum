@@ -3,10 +3,35 @@ NUGET
   remote: https://www.nuget.org/api/v2
   specs:
     CommandLineParser (1.9.71)
+    FAKE (4.22.6)
+    FluentAssertions (4.2.2)
+    FsCheck (2.2.4)
+      FSharp.Core (>= 3.1.2.5)
+    FSharp.Compiler.Service (2.0.0.6)
+    FSharp.Core (4.0.0.1)
+    FSharp.Formatting (2.14.0)
+      FSharp.Compiler.Service (>= 2.0.0.3 < 2.1.0)
+      FSharpVSPowerTools.Core (>= 2.3.0 < 2.4.0)
+    FSharpVSPowerTools.Core (2.3.0)
+      FSharp.Compiler.Service (>= 2.0.0.3)
     nunrar (1.0.1)
     sqlite (3.8.4.2)
       sqlite.redist (>= 3.8.4.2)
     sqlite.redist (3.8.4.2)
+    xunit (2.1.0)
+      xunit.assert (2.1.0)
+      xunit.core (2.1.0)
+    xunit.abstractions (2.0.0)
+    xunit.assert (2.1.0)
+    xunit.core (2.1.0)
+      xunit.extensibility.core (2.1.0)
+      xunit.extensibility.execution (2.1.0)
+    xunit.extensibility.core (2.1.0)
+      xunit.abstractions (2.0.0)
+    xunit.extensibility.execution (2.1.0)
+      xunit.extensibility.core (2.1.0)
+    xunit.runner.console (2.1.0)
+    xunit.runner.visualstudio (2.1.0)
 GITHUB
   remote: praeclarum/sqlite-net
   specs:
@@ -14,6 +39,17 @@ GITHUB
   remote: icsharpcode/SharpZipLib
   specs:
     FULLPROJECT (e01215507cf25a5978a0bd850c9e67dbabf515b7)
+  remote: gsscoder/commandline
+  specs:
+    FULLPROJECT (0750d78366617b7deec4a00059f12c8032d0ea30)
+      FAKE
+      FluentAssertions
+      FsCheck
+      FSharp.Core
+      FSharp.Formatting
+      xunit
+      xunit.runner.console
+      xunit.runner.visualstudio
 GROUP Build
 NUGET
   remote: https://www.nuget.org/api/v2
@@ -25,14 +61,14 @@ NUGET
       FSharpVSPowerTools.Core (>= 2.3.0 < 2.4.0)
     FSharpVSPowerTools.Core (2.3.0)
       FSharp.Compiler.Service (>= 2.0.0.3)
-    Microsoft.Bcl (1.1.10) - framework: net10, net11, net20, net30, net35, net40, net40-full
+    Microsoft.Bcl (1.1.10) - framework: net10, net11, net20, net30, net35, net40, net40
       Microsoft.Bcl.Build (>= 1.0.14)
-    Microsoft.Bcl.Build (1.0.21) - import_targets: false, framework: net10, net11, net20, net30, net35, net40, net40-full
-    Microsoft.Net.Http (2.2.29) - framework: net10, net11, net20, net30, net35, net40, net40-full
+    Microsoft.Bcl.Build (1.0.21) - import_targets: false, framework: net10, net11, net20, net30, net35, net40, net40
+    Microsoft.Net.Http (2.2.29) - framework: net10, net11, net20, net30, net35, net40, net40
       Microsoft.Bcl (>= 1.1.10)
       Microsoft.Bcl.Build (>= 1.0.14)
     Octokit (0.19.0)
-      Microsoft.Net.Http  - framework: net10, net11, net20, net30, net35, net40, net40-full
+      Microsoft.Net.Http  - framework: net10, net11, net20, net30, net35, net40, net40
     SourceLink.Fake (1.1.0)
 GITHUB
   remote: fsharp/FAKE
