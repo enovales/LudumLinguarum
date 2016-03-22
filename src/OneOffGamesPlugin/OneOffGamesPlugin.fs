@@ -15,6 +15,7 @@ type OneOffGamesPlugin() =
     let magicalDropVName = "Magical Drop V"
     let audiosurfName = "Audiosurf"
     let bastionName = "Bastion"
+    let magickaName = "Magicka"
     let wormsArmageddonName = "Worms Armageddon"
     let puzzleChroniclesName = "Puzzle Chronicles"
     let puzzleQuest2Name = "Puzzle Quest 2"
@@ -36,6 +37,7 @@ type OneOffGamesPlugin() =
                 magicalDropVName
                 audiosurfName
                 bastionName
+                magickaName
                 wormsArmageddonName
                 puzzleChroniclesName
                 puzzleQuest2Name
@@ -53,6 +55,7 @@ type OneOffGamesPlugin() =
                     (magicalDropVName, SimpleGames.ExtractMagicalDropV)
                     (audiosurfName, SimpleGames.ExtractAudiosurf)
                     (bastionName, SimpleGames.ExtractBastion)
+                    (magickaName, Magicka.ExtractMagicka)
                     (wormsArmageddonName, WormsArmageddon.ExtractWormsArmageddon)
                     (puzzleChroniclesName, PuzzleQuestGames.ExtractPuzzleChronicles)
                     (puzzleQuest2Name, PuzzleQuestGames.ExtractPuzzleQuest2)

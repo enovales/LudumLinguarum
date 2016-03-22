@@ -6,8 +6,6 @@ nuget CommandLineParser
 github praeclarum/sqlite-net
 nuget sqlite
 nuget nunrar
-nuget OpenXMLSDK-MOT
-nuget OpenXmlPowerTools
 github icsharpcode/SharpZipLib
 
 group Build
