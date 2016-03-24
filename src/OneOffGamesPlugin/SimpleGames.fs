@@ -1,6 +1,7 @@
 ﻿module SimpleGames
 
 open AssemblyResourceTools
+open CsvTools
 open LLDatabase
 open OneOffGamesUtils
 open System
@@ -231,3 +232,104 @@ let ExtractBastion(path: string, db: LLDatabase, g: GameRecord, args: string arr
     |> db.CreateOrUpdateCards
 
     ()
+
+let internal hbFormatTokenRegexes = 
+    [|
+        (new Regex(@"\[.*?\]"), "")
+        (new Regex(@"\\n"), " ")
+    |]
+
+let internal stripHbRegex(s: string)(r: Regex, replacement: string): string = 
+    r.Replace(s, replacement)
+
+let internal stripHbFormattingTokens(s: string) = 
+    hbFormatTokenRegexes
+    |> Seq.fold stripHbRegex s
+
+let hbGenerateCardsForLine(languages: string seq, lid: int)(l: string): CardRecord array = 
+    let fields = extractFieldsForLine(l)
+
+    let cardId = fields |> Array.head
+    let generateCardForIdAndText(language: string, text: string) = 
+        {
+            CardRecord.ID = 0
+            LessonID = lid
+            Text = text
+            Gender = "masculine"
+            Key = cardId + "masculine"
+            GenderlessKey = cardId
+            KeyHash = 0
+            GenderlessKeyHash = 0
+            SoundResource = ""
+            LanguageTag = language
+            Reversible = true
+        }
+
+    fields 
+    |> Seq.tail
+    |> Seq.map stripHbFormattingTokens
+    |> Seq.zip(languages)
+    |> Seq.map generateCardForIdAndText
+    |> Array.ofSeq
+
+let hbGenerateCardsForLines(lid: int)(lines: string array): CardRecord array = 
+    let languageMap = 
+        [|
+            ("EN", "en")
+            ("JP", "ja")
+            ("IT", "it")
+            ("GER", "de")
+            ("FR", "fr")
+            ("SP", "es")
+            ("Russian", "ru")
+        |]
+        |> Map.ofArray
+    let columnHeaders = (lines |> Array.head).Split('\t')
+    let languages = columnHeaders |> Array.skip(1) |> Array.map (fun c -> languageMap |> Map.find(c))
+    let dataLines = lines |> Array.skip(1)
+
+    dataLines
+    |> Array.collect(hbGenerateCardsForLine(languages, lid))
+
+(***************************************************************************)
+(**************************** Hatoful Boyfriend ****************************)
+(***************************************************************************)
+let ExtractHatofulBoyfriend(path: string, db: LLDatabase, g: GameRecord, args: string array) = 
+    let lessonEntry = {
+        LessonRecord.GameID = g.ID;
+        ID = 0;
+        Name = "Game Text"
+    }
+    let lessonEntryWithId = { lessonEntry with ID = db.CreateOrUpdateLesson(lessonEntry) }
+    let filesToExtract = 
+        [|
+            Path.Combine(path, @"hatoful_Data\StreamingAssets\LocalisationUnicode.txt")
+        |]
+
+    filesToExtract
+    |> Array.collect (File.ReadAllLines >> Array.filter(String.IsNullOrWhiteSpace >> not) >> hbGenerateCardsForLines(lessonEntryWithId.ID))
+    |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
+    |> db.CreateOrUpdateCards
+
+(***************************************************************************)
+(********************* Hatoful Boyfriend: Holiday Star *********************)
+(***************************************************************************)
+let ExtractHatofulBoyfriendHolidayStar(path: string, db: LLDatabase, g: GameRecord, args: string array) = 
+    let lessonEntry = {
+        LessonRecord.GameID = g.ID;
+        ID = 0;
+        Name = "Game Text"
+    }
+    let lessonEntryWithId = { lessonEntry with ID = db.CreateOrUpdateLesson(lessonEntry) }
+    let filesToExtract = 
+        [|
+            Path.Combine(path, @"HB2_Data\StreamingAssets\localisation\localisationunicode_EN.txt")
+            Path.Combine(path, @"HB2_Data\StreamingAssets\localisation\localisationunicode_FR.txt")
+            Path.Combine(path, @"HB2_Data\StreamingAssets\localisation\localisationunicode_GER.txt")
+            Path.Combine(path, @"HB2_Data\StreamingAssets\localisation\localisationunicode_JP.txt")
+        |]
+
+    filesToExtract
+    |> Array.collect (File.ReadAllLines >> Array.filter(String.IsNullOrWhiteSpace >> not) >> hbGenerateCardsForLines(lessonEntryWithId.ID))
+    |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
+    |> db.CreateOrUpdateCards

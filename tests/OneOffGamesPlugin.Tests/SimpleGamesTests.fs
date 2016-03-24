@@ -45,3 +45,23 @@ type MagicalDropVTests() =
             |> Map.ofArray
 
         Assert.AreEqual(expected, SimpleGames.generateMagicalDropVStringMap(SimpleGames.sanitizeMagicalDropVXml(testXml)))
+
+
+[<TestFixture>]
+type HatofulBoyfriendTests() = 
+    [<Test>]
+    member this.``Non-format tokens are ignored by stripHbFormattingTokens``() = 
+        let expected = "Foo bar"
+        Assert.AreEqual(expected, stripHbFormattingTokens(expected))
+
+    [<Test>]
+    member this.``Format tokens are stripped from the string by stripHbFormattingTokens``() = 
+        let s = "Foo [p]bar"
+        let expected = "Foo bar"
+        Assert.AreEqual(expected, stripHbFormattingTokens(s))
+
+    [<Test>]
+    member this.``Newline tokens are replaced with a space by stripHbFormattingTokens``() = 
+        let s = @"Foo\nbar"
+        let expected = "Foo bar"
+        Assert.AreEqual(expected, stripHbFormattingTokens(s))
