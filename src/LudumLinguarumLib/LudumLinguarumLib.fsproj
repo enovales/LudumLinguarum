@@ -94,7 +94,4 @@
       <Private>True</Private>
     </ProjectReference>
   </ItemGroup>
-  <Choose>
-    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.5.2'" />
-  </Choose>
 </Project>

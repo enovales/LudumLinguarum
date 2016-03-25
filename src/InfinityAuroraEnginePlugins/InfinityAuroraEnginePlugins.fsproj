@@ -67,6 +67,11 @@
     <None Include="Scripts\NWN1Script.fsx" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\paket-files\gsscoder\commandline\src\CommandLine\CommandLine.csproj">
+      <Name>CommandLine</Name>
+      <Project>{e1bd3c65-49c3-49e7-baba-c60980cb3f20}</Project>
+      <Private>True</Private>
+    </ProjectReference>
     <ProjectReference Include="..\LudumLinguarumLib\LudumLinguarumLib.fsproj">
       <Name>LudumLinguarumLib</Name>
       <Project>{ba653ad5-b3e5-419f-9963-092c22519e80}</Project>
@@ -97,14 +102,6 @@
   </Target>
   -->
   <Choose>
-    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.5.2'">
-      <ItemGroup>
-        <Reference Include="CommandLine">
-          <HintPath>..\..\packages\CommandLineParser\lib\net45\CommandLine.dll</HintPath>
-          <Private>True</Private>
-          <Paket>True</Paket>
-        </Reference>
-      </ItemGroup>
-    </When>
+    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.5.2'" />
   </Choose>
 </Project>
