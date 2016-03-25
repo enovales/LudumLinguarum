@@ -83,6 +83,11 @@
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Numerics" />
+    <ProjectReference Include="..\..\paket-files\gsscoder\commandline\src\CommandLine\CommandLine.csproj">
+      <Name>CommandLine</Name>
+      <Project>{e1bd3c65-49c3-49e7-baba-c60980cb3f20}</Project>
+      <Private>True</Private>
+    </ProjectReference>
     <ProjectReference Include="..\LLsqlite-net\LLsqlite-net.csproj">
       <Name>LLsqlite-net</Name>
       <Project>{5399c00c-af4d-46de-ada4-c20e02d4b26b}</Project>
@@ -90,14 +95,6 @@
     </ProjectReference>
   </ItemGroup>
   <Choose>
-    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.5.2'">
-      <ItemGroup>
-        <Reference Include="CommandLine">
-          <HintPath>..\..\packages\CommandLineParser\lib\net45\CommandLine.dll</HintPath>
-          <Private>True</Private>
-          <Paket>True</Paket>
-        </Reference>
-      </ItemGroup>
-    </When>
+    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.5.2'" />
   </Choose>
 </Project>
