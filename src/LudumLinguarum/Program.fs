@@ -16,7 +16,7 @@ type ImportConfiguration() =
     [<CommandLine.Option(Required = true, HelpText = "The name of the game from the supported games list (list-supported-games) that you wish to extract.")>]
     member val Game = "" with get, set
 
-    [<CommandLine.Option(Required = true, HelpText = "The root directory of the game.")>]
+    [<CommandLine.Option("game-dir", Required = true, HelpText = "The root directory of the game.")>]
     member val GameDir = "" with get, set
 
 /// <summary>
@@ -24,7 +24,7 @@ type ImportConfiguration() =
 /// </summary>
 [<CommandLine.Verb("list-games", HelpText = "List all imported games")>]
 type ListGamesConfiguration() = 
-    [<CommandLine.Option(Required = false, HelpText = "An optional regular expression to filter the list of games")>]
+    [<CommandLine.Option("filter-regex", Required = false, HelpText = "An optional regular expression to filter the list of games")>]
     member val FilterRegex = "" with get, set
 
 /// <summary>
@@ -40,10 +40,10 @@ type ListSupportedGamesConfiguration() =
 /// </summary>
 [<CommandLine.Verb("list-lessons", HelpText = "List lessons, filtering by game and lesson names")>]
 type ListLessonsConfiguration() = 
-    [<CommandLine.Option(Required = false, HelpText = "An optional regular expression to filter the list of games searched")>]
+    [<CommandLine.Option("game-regex", Required = false, HelpText = "An optional regular expression to filter the list of games searched")>]
     member val GameRegex = "" with get, set
 
-    [<CommandLine.Option(Required = false, HelpText = "An optional regular expression to filter the list of lessons returned")>]
+    [<CommandLine.Option("filter-regex", Required = false, HelpText = "An optional regular expression to filter the list of lessons returned")>]
     member val FilterRegex = "" with get, set
 
 /// <summary>
@@ -62,7 +62,7 @@ type DeleteLessonsConfiguration() =
     [<CommandLine.Option(Required = true, HelpText = "The name of the game for which lessons are to be deleted.")>]
     member val Game = "" with get, set
 
-    [<CommandLine.Option(Required = false, HelpText = "An optional regular expression filter for the name of lessons to delete. Either this or lesson-name must be specified.")>]
+    [<CommandLine.Option("filter-regex", Required = false, HelpText = "An optional regular expression filter for the name of lessons to delete. Either this or lesson-name must be specified.")>]
     member val FilterRegex = "" with get, set
 
     [<CommandLine.Option("lesson-name", Required = false, HelpText = "The name of the lesson to delete. Either this or filter-regex must be specified.")>]
@@ -72,13 +72,13 @@ type DeleteLessonsConfiguration() =
 /// Root configuration for the program.
 /// </summary>
 type LudumLinguarumConfiguration() = 
-    [<CommandLine.Option(Required = false, HelpText = "Path to the SQLite database file to use")>]
+    [<CommandLine.Option("database-path", Required = false, HelpText = "Path to the SQLite database file to use")>]
     member val DatabasePath = "" with get, set
 
-    [<CommandLine.Option(Required = false, HelpText = "File from which arguments should be read")>]
+    [<CommandLine.Option("command-file", Required = false, HelpText = "File from which arguments should be read")>]
     member val CommandFile = "" with get, set
 
-    [<CommandLine.Option(Required = false, HelpText = "Optional log file to which output should be redirected")>]
+    [<CommandLine.Option("log-file", Required = false, HelpText = "Optional log file to which output should be redirected")>]
     member val LogFile = "" with get, set
 
 let runImportAction(iPluginManager: IPluginManager, 

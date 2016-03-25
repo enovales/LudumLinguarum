@@ -17,68 +17,56 @@ open System.IO
 open System.Text.RegularExpressions
 
 type AuroraPluginSettings() = 
-    [<CommandLine.Option(Default = "en", Required = false)>]
+    [<CommandLine.Option("language-tag", Default = "en", Required = false)>]
     member val LanguageTag = "en" with get, set
 
 type NWN1PluginSettings() = 
     inherit AuroraPluginSettings()
 
-    [<CommandLine.Option(Default = "false", Required = false)>]
-    member val ExtractDialogues = "false" with get, set
-    member this.ExtractDialoguesBoolean = Boolean.Parse(this.ExtractDialogues)
+    [<CommandLine.Option("extract-dialogues", Default = false, Required = false)>]
+    member val ExtractDialogues = false with get, set
 
-    [<CommandLine.Option(Default = "true", Required = false)>]
-    member val Extract2DAs = "true" with get, set
-    member this.Extract2DAsBoolean = Boolean.Parse(this.Extract2DAs)
+    [<CommandLine.Option("extract-2das", Default = true, Required = false)>]
+    member val Extract2DAs = true with get, set
 
-    [<CommandLine.Option(Default = "false", Required = false)>]
-    member val ExtractAll = "false" with get, set
-    member this.ExtractAllBoolean = Boolean.Parse(this.ExtractAll)
+    [<CommandLine.Option("extract-all", Default = false, Required = false)>]
+    member val ExtractAll = false with get, set
 
 type JadeEmpirePluginSettings() = 
     inherit AuroraPluginSettings()
 
-    [<CommandLine.Option(Default = "false", Required = false)>]
-    member val ExtractDialogues = "false" with get, set
-    member this.ExtractDialoguesBoolean = Boolean.Parse(this.ExtractDialogues)
+    [<CommandLine.Option("extract-dialogues", Default = false, Required = false)>]
+    member val ExtractDialogues = false with get, set
 
-    [<CommandLine.Option(Default = "true", Required = false)>]
-    member val Extract2DAs = "true" with get, set
-    member this.Extract2DAsBoolean = Boolean.Parse(this.Extract2DAs)
+    [<CommandLine.Option("extract-2das", Default = true, Required = false)>]
+    member val Extract2DAs = true with get, set
 
-    [<CommandLine.Option(Default = "false", Required = false)>]
-    member val ExtractAll = "false" with get, set
-    member this.ExtractAllBoolean = Boolean.Parse(this.ExtractAll)
+    [<CommandLine.Option("extract-all", Default = false, Required = false)>]
+    member val ExtractAll = false with get, set
 
 type KOTOR1PluginSettings() = 
     inherit AuroraPluginSettings()
 
-    [<CommandLine.Option(Default = "false", Required = false)>]
-    member val ExtractDialogues = "false" with get, set
-    member this.ExtractDialoguesBoolean = Boolean.Parse(this.ExtractDialogues)
+    [<CommandLine.Option("extract-dialogues", Default = false, Required = false)>]
+    member val ExtractDialogues = false with get, set
 
-    [<CommandLine.Option(Default = "true", Required = false)>]
-    member val Extract2DAs = "true" with get, set
-    member this.Extract2DAsBoolean = Boolean.Parse(this.Extract2DAs)
+    [<CommandLine.Option("extract-2das", Default = true, Required = false)>]
+    member val Extract2DAs = true with get, set
 
-    [<CommandLine.Option(Default = "false", Required = false)>]
-    member val ExtractAll = "false" with get, set
-    member this.ExtractAllBoolean = Boolean.Parse(this.ExtractAll)
+    [<CommandLine.Option("extract-all", Default = false, Required = false)>]
+    member val ExtractAll = false with get, set
 
 type KOTOR2PluginSettings() = 
     inherit AuroraPluginSettings()
 
-    [<CommandLine.Option(Default = "false", Required = false)>]
-    member val ExtractDialogues = "false" with get, set
-    member this.ExtractDialoguesBoolean = Boolean.Parse(this.ExtractDialogues)
+    [<CommandLine.Option("extract-dialogues", Default = false, Required = false)>]
+    member val ExtractDialogues = false with get, set
 
-    [<CommandLine.Option(Default = "true", Required = false)>]
-    member val Extract2DAs = "true" with get, set
-    member this.Extract2DAsBoolean = Boolean.Parse(this.Extract2DAs)
+    [<CommandLine.Option("extract-2das", Default = true, Required = false)>]
+    member val Extract2DAs = true with get, set
 
-    [<CommandLine.Option(Default = "false", Required = false)>]
-    member val ExtractAll = "false" with get, set
-    member this.ExtractAllBoolean = Boolean.Parse(this.ExtractAll)
+    [<CommandLine.Option("extract-all", Default = false, Required = false)>]
+    member val ExtractAll = false with get, set
 
 type private ExtractionContext<'TalkTableString when 'TalkTableString :> ITalkTableString> = {
     gameResources: IGenericResource seq;
@@ -440,13 +428,13 @@ type AuroraPlugin() =
             }
         
             let extractedDialogueCards = 
-                if (c.ExtractAllBoolean || c.ExtractDialoguesBoolean) then
+                if (c.ExtractAll || c.ExtractDialogues) then
                     this.ExtractDialogues(extractionContext) |> Array.ofSeq
                 else
                     [||]
 
             let extracted2DACards = 
-                if (c.ExtractAllBoolean || c.Extract2DAsBoolean) then
+                if (c.ExtractAll || c.Extract2DAs) then
                     this.ExtractNWN12DAs(extractionContext)
                 else
                     [||]
@@ -572,13 +560,13 @@ type AuroraPlugin() =
             }
         
             let extractedDialogueCards = 
-                if (c.ExtractAllBoolean || c.ExtractDialoguesBoolean) then
+                if (c.ExtractAll || c.ExtractDialogues) then
                     this.ExtractDialogues(extractionContext) |> Array.ofSeq
                 else
                     [||]
 
             let extracted2DACards = 
-                if (c.ExtractAllBoolean || c.Extract2DAsBoolean) then
+                if (c.ExtractAll || c.Extract2DAs) then
                     this.ExtractJadeEmpire2DAs(extractionContext)
                 else
                     [||]
@@ -701,13 +689,13 @@ type AuroraPlugin() =
             }
         
             let extractedDialogueCards = 
-                if (c.ExtractAllBoolean || c.ExtractDialoguesBoolean) then
+                if (c.ExtractAll || c.ExtractDialogues) then
                     this.ExtractDialogues(extractionContext) |> Array.ofSeq
                 else
                     [||]
 
             let extracted2DACards = 
-                if (c.ExtractAllBoolean || c.Extract2DAsBoolean) then
+                if (c.ExtractAll || c.Extract2DAs) then
                     this.ExtractKOTOR12DAs(extractionContext)
                 else
                     [||]
@@ -845,7 +833,7 @@ type AuroraPlugin() =
                 { c with Text = textWithoutImplementationComments(c.Text) }
         
             let extractedDialogueCards = 
-                if (c.ExtractAllBoolean || c.ExtractDialoguesBoolean) then
+                if (c.ExtractAll || c.ExtractDialogues) then
                     this.ExtractDialogues(extractionContext) 
                     |> Seq.map removeImplementationComments 
                     |> Array.ofSeq
@@ -853,7 +841,7 @@ type AuroraPlugin() =
                     [||]
 
             let extracted2DACards = 
-                if (c.ExtractAllBoolean || c.Extract2DAsBoolean) then
+                if (c.ExtractAll || c.Extract2DAs) then
                     this.ExtractKOTOR22DAs(extractionContext)
                 else
                     [||]
