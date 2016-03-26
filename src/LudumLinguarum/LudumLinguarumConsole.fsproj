@@ -26,6 +26,7 @@
     <StartArguments>delete-game --game="Star Wars: Knights of the Old Republic II"</StartArguments>
     <StartArguments>import --game="Magicka" --game-dir="C:\Program Files (x86)\Steam\steamapps\common\Magicka"</StartArguments>
     <StartArguments>import --game="Hatoful Boyfriend: Holiday Star" --game-dir="C:\Program Files (x86)\Steam\steamapps\common\Hatoful Boyfriend Holiday Star"</StartArguments>
+    <StartAction>Program</StartAction>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -65,6 +66,8 @@
   <ItemGroup>
     <None Include="paket.references" />
     <None Include="paket.template" />
+    <Compile Include="AssemblyInfo.fs" />
+    <Compile Include="AssemblyInfoStatic.fs" />
     <Compile Include="Program.fs" />
     <Content Include="App.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -75,6 +78,11 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\paket-files\gsscoder\commandline\src\CommandLine\CommandLine.csproj">
+      <Name>CommandLine</Name>
+      <Project>{e1bd3c65-49c3-49e7-baba-c60980cb3f20}</Project>
+      <Private>True</Private>
+    </ProjectReference>
     <ProjectReference Include="..\InfinityAuroraEnginePlugins\InfinityAuroraEnginePlugins.fsproj">
       <Name>InfinityAuroraEnginePlugins</Name>
       <Project>{551ec15e-2d53-4ed8-bd64-e1dc64a228a3}</Project>
@@ -103,15 +111,4 @@
       <Private>True</Private>
     </ProjectReference>
   </ItemGroup>
-  <Choose>
-    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.5.2'">
-      <ItemGroup>
-        <Reference Include="CommandLine">
-          <HintPath>..\..\packages\CommandLineParser\lib\net45\CommandLine.dll</HintPath>
-          <Private>True</Private>
-          <Paket>True</Paket>
-        </Reference>
-      </ItemGroup>
-    </When>
-  </Choose>
 </Project>

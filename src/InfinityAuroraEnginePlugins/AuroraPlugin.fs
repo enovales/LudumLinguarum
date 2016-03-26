@@ -1,5 +1,6 @@
 ﻿namespace InfinityAuroraEnginePlugins
 
+open CommandLine
 open LLDatabase
 open LudumLinguarumPlugins
 open InfinityAuroraEnginePlugins.CommonTypes
@@ -16,68 +17,56 @@ open System.IO
 open System.Text.RegularExpressions
 
 type AuroraPluginSettings() = 
-    [<CommandLine.Option("language-tag", DefaultValue = "en", Required = false)>]
+    [<CommandLine.Option("language-tag", Default = "en", Required = false)>]
     member val LanguageTag = "en" with get, set
 
 type NWN1PluginSettings() = 
     inherit AuroraPluginSettings()
 
-    [<CommandLine.Option("extract-dialogues", DefaultValue = "false", Required = false)>]
-    member val ExtractDialogues = "false" with get, set
-    member this.ExtractDialoguesBoolean = Boolean.Parse(this.ExtractDialogues)
+    [<CommandLine.Option("extract-dialogues", Default = false, Required = false)>]
+    member val ExtractDialogues = false with get, set
 
-    [<CommandLine.Option("extract-2das", DefaultValue = "true", Required = false)>]
-    member val Extract2DAs = "true" with get, set
-    member this.Extract2DAsBoolean = Boolean.Parse(this.Extract2DAs)
+    [<CommandLine.Option("extract-2das", Default = true, Required = false)>]
+    member val Extract2DAs = true with get, set
 
-    [<CommandLine.Option("extract-all", DefaultValue = "false", Required = false)>]
-    member val ExtractAll = "false" with get, set
-    member this.ExtractAllBoolean = Boolean.Parse(this.ExtractAll)
+    [<CommandLine.Option("extract-all", Default = false, Required = false)>]
+    member val ExtractAll = false with get, set
 
 type JadeEmpirePluginSettings() = 
     inherit AuroraPluginSettings()
 
-    [<CommandLine.Option("extract-dialogues", DefaultValue = "false", Required = false)>]
-    member val ExtractDialogues = "false" with get, set
-    member this.ExtractDialoguesBoolean = Boolean.Parse(this.ExtractDialogues)
+    [<CommandLine.Option("extract-dialogues", Default = false, Required = false)>]
+    member val ExtractDialogues = false with get, set
 
-    [<CommandLine.Option("extract-2das", DefaultValue = "true", Required = false)>]
-    member val Extract2DAs = "true" with get, set
-    member this.Extract2DAsBoolean = Boolean.Parse(this.Extract2DAs)
+    [<CommandLine.Option("extract-2das", Default = true, Required = false)>]
+    member val Extract2DAs = true with get, set
 
-    [<CommandLine.Option("extract-all", DefaultValue = "false", Required = false)>]
-    member val ExtractAll = "false" with get, set
-    member this.ExtractAllBoolean = Boolean.Parse(this.ExtractAll)
+    [<CommandLine.Option("extract-all", Default = false, Required = false)>]
+    member val ExtractAll = false with get, set
 
 type KOTOR1PluginSettings() = 
     inherit AuroraPluginSettings()
 
-    [<CommandLine.Option("extract-dialogues", DefaultValue = "false", Required = false)>]
-    member val ExtractDialogues = "false" with get, set
-    member this.ExtractDialoguesBoolean = Boolean.Parse(this.ExtractDialogues)
+    [<CommandLine.Option("extract-dialogues", Default = false, Required = false)>]
+    member val ExtractDialogues = false with get, set
 
-    [<CommandLine.Option("extract-2das", DefaultValue = "true", Required = false)>]
-    member val Extract2DAs = "true" with get, set
-    member this.Extract2DAsBoolean = Boolean.Parse(this.Extract2DAs)
+    [<CommandLine.Option("extract-2das", Default = true, Required = false)>]
+    member val Extract2DAs = true with get, set
 
-    [<CommandLine.Option("extract-all", DefaultValue = "false", Required = false)>]
-    member val ExtractAll = "false" with get, set
-    member this.ExtractAllBoolean = Boolean.Parse(this.ExtractAll)
+    [<CommandLine.Option("extract-all", Default = false, Required = false)>]
+    member val ExtractAll = false with get, set
 
 type KOTOR2PluginSettings() = 
     inherit AuroraPluginSettings()
 
-    [<CommandLine.Option("extract-dialogues", DefaultValue = "false", Required = false)>]
-    member val ExtractDialogues = "false" with get, set
-    member this.ExtractDialoguesBoolean = Boolean.Parse(this.ExtractDialogues)
+    [<CommandLine.Option("extract-dialogues", Default = false, Required = false)>]
+    member val ExtractDialogues = false with get, set
 
-    [<CommandLine.Option("extract-2das", DefaultValue = "true", Required = false)>]
-    member val Extract2DAs = "true" with get, set
-    member this.Extract2DAsBoolean = Boolean.Parse(this.Extract2DAs)
+    [<CommandLine.Option("extract-2das", Default = true, Required = false)>]
+    member val Extract2DAs = true with get, set
 
-    [<CommandLine.Option("extract-all", DefaultValue = "false", Required = false)>]
-    member val ExtractAll = "false" with get, set
-    member this.ExtractAllBoolean = Boolean.Parse(this.ExtractAll)
+    [<CommandLine.Option("extract-all", Default = false, Required = false)>]
+    member val ExtractAll = false with get, set
 
 type private ExtractionContext<'TalkTableString when 'TalkTableString :> ITalkTableString> = {
     gameResources: IGenericResource seq;
@@ -126,10 +115,8 @@ type AuroraPlugin() =
             let parser = new CommandLine.Parser(fun t -> 
                 t.HelpWriter <- System.Console.Out
                 t.IgnoreUnknownArguments <- true)
-            let pluginSettings = new AuroraPluginSettings()
 
-            // parse arguments, skipping the verb from the command line
-            if (parser.ParseArguments(args |> Array.skip(1), pluginSettings)) then
+            let runExtractAll(c: AuroraPluginSettings) = 
                 this.LogWriteLine("Searching for game handler for '" + game + "'") |> ignore
                 match game with
                 | "Neverwinter Nights" -> this.ExtractNWN1(path, db, args)
@@ -138,8 +125,10 @@ type AuroraPlugin() =
                 | "Star Wars: Knights of the Old Republic II" -> this.ExtractKOTOR2(path, db, args)
                 | g -> raise(UnknownGameException("unknown game " + g))
                 ()                
-            else
-                raise(exn("failed to parse args"))
+
+            parser.ParseArguments<AuroraPluginSettings>(args)
+                .WithParsed<AuroraPluginSettings>(new Action<AuroraPluginSettings>(runExtractAll))
+                |> ignore
 
     end
 
@@ -408,57 +397,60 @@ type AuroraPlugin() =
         let parser = new CommandLine.Parser(fun t ->
             t.HelpWriter <- System.Console.Out
             t.IgnoreUnknownArguments <- true)
-        let pluginSettings = new NWN1PluginSettings()
-        if (not(parser.ParseArguments(args, pluginSettings))) then
-            raise(exn("failed to parse NWN1 configuration"))
 
-        this.LogWriteLine("Creating NWN1 context from " + path) |> ignore
-        let context = new NWN1Context(path)
+        let runExtractNWN1(c: NWN1PluginSettings) = 
+            this.LogWriteLine("Creating NWN1 context from " + path) |> ignore
+            let context = new NWN1Context(path)
 
-        // find the talk tables
-        let masculineOrNeuterTalkTable = TalkTableV3.FromFilePath(Path.Combine(path, "dialog.tlk"))
-        let feminineTalkTablePath = Path.Combine(path, "dialogF.tlk")
-        let feminineTalkTable = 
-            if (File.Exists(feminineTalkTablePath)) then
-                TalkTableV3.FromFilePath(feminineTalkTablePath)
-            else
-                masculineOrNeuterTalkTable
+            // find the talk tables
+            let masculineOrNeuterTalkTable = TalkTableV3.FromFilePath(Path.Combine(path, "dialog.tlk"))
+            let feminineTalkTablePath = Path.Combine(path, "dialogF.tlk")
+            let feminineTalkTable = 
+                if (File.Exists(feminineTalkTablePath)) then
+                    TalkTableV3.FromFilePath(feminineTalkTablePath)
+                else
+                    masculineOrNeuterTalkTable
 
-        let gameEntry = {
-            GameRecord.Name = "Neverwinter Nights";
-            ID = 0
-        }
-        let gameEntryWithId = { gameEntry with ID = db.CreateOrUpdateGame(gameEntry) }
-        this.LogWriteLine("Game entry updated.") |> ignore
+            let gameEntry = {
+                GameRecord.Name = "Neverwinter Nights";
+                ID = 0
+            }
+            let gameEntryWithId = { gameEntry with ID = db.CreateOrUpdateGame(gameEntry) }
+            this.LogWriteLine("Game entry updated.") |> ignore
 
-        let extractionContext = {
-            ExtractionContext.gameResources = context.Resources;
-            pluginSettings = pluginSettings :> AuroraPluginSettings;
-            db = db;
-            masculineOrNeuterTalkTable = masculineOrNeuterTalkTable;
-            feminineTalkTable = feminineTalkTable;
-            gameEntry = gameEntryWithId
-        }
+            let extractionContext = {
+                ExtractionContext.gameResources = context.Resources;
+                pluginSettings = c :> AuroraPluginSettings;
+                db = db;
+                masculineOrNeuterTalkTable = masculineOrNeuterTalkTable;
+                feminineTalkTable = feminineTalkTable;
+                gameEntry = gameEntryWithId
+            }
         
-        let extractedDialogueCards = 
-            if (pluginSettings.ExtractAllBoolean || pluginSettings.ExtractDialoguesBoolean) then
-                this.ExtractDialogues(extractionContext) |> Array.ofSeq
-            else
-                [||]
+            let extractedDialogueCards = 
+                if (c.ExtractAll || c.ExtractDialogues) then
+                    this.ExtractDialogues(extractionContext) |> Array.ofSeq
+                else
+                    [||]
 
-        let extracted2DACards = 
-            if (pluginSettings.ExtractAllBoolean || pluginSettings.Extract2DAsBoolean) then
-                this.ExtractNWN12DAs(extractionContext)
-            else
-                [||]
+            let extracted2DACards = 
+                if (c.ExtractAll || c.Extract2DAs) then
+                    this.ExtractNWN12DAs(extractionContext)
+                else
+                    [||]
 
-        // filter out empty cards.
-        let allCards = Array.concat([| extractedDialogueCards; extracted2DACards |]) |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
+            // filter out empty cards.
+            let allCards = Array.concat([| extractedDialogueCards; extracted2DACards |]) |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
 
-        this.LogWriteLine("Adding extracted cards to DB.") |> ignore
-        db.CreateOrUpdateCards(allCards)
+            this.LogWriteLine("Adding extracted cards to DB.") |> ignore
+            db.CreateOrUpdateCards(allCards)
 
-        this.LogWriteLine("NWN1 extraction complete.") |> ignore
+            this.LogWriteLine("NWN1 extraction complete.") |> ignore
+
+        parser.ParseArguments<NWN1PluginSettings>(args)
+            .WithParsed(new Action<NWN1PluginSettings>(runExtractNWN1))
+            |> ignore
+
         ()
 
     member private this.ExtractJadeEmpire2DAs(xc: ExtractionContext<TalkTableV4String>) = 
@@ -537,57 +529,60 @@ type AuroraPlugin() =
         let parser = new CommandLine.Parser(fun t ->
             t.HelpWriter <- System.Console.Out
             t.IgnoreUnknownArguments <- true)
-        let pluginSettings = new JadeEmpirePluginSettings()
-        if (not(parser.ParseArguments(args, pluginSettings))) then
-            raise(exn("failed to parse Jade Empire configuration"))
 
-        this.LogWriteLine("Creating Jade Empire context from " + path) |> ignore
-        let context = new JadeEmpireContext(path)
+        let runExtractJadeEmpire(c: JadeEmpirePluginSettings) = 
+            this.LogWriteLine("Creating Jade Empire context from " + path) |> ignore
+            let context = new JadeEmpireContext(path)
 
-        // find the talk tables
-        let masculineOrNeuterTalkTable = TalkTableV4.FromFilePath(Path.Combine(path, "dialog.tlk"))
-        let feminineTalkTablePath = Path.Combine(path, "dialogF.tlk")
-        let feminineTalkTable = 
-            if (File.Exists(feminineTalkTablePath)) then
-                TalkTableV4.FromFilePath(feminineTalkTablePath)
-            else
-                masculineOrNeuterTalkTable
+            // find the talk tables
+            let masculineOrNeuterTalkTable = TalkTableV4.FromFilePath(Path.Combine(path, "dialog.tlk"))
+            let feminineTalkTablePath = Path.Combine(path, "dialogF.tlk")
+            let feminineTalkTable = 
+                if (File.Exists(feminineTalkTablePath)) then
+                    TalkTableV4.FromFilePath(feminineTalkTablePath)
+                else
+                    masculineOrNeuterTalkTable
 
-        let gameEntry = {
-            GameRecord.Name = "Jade Empire";
-            ID = 0
-        }
-        let gameEntryWithId = { gameEntry with ID = db.CreateOrUpdateGame(gameEntry) }
-        this.LogWriteLine("Game entry updated.") |> ignore
+            let gameEntry = {
+                GameRecord.Name = "Jade Empire";
+                ID = 0
+            }
+            let gameEntryWithId = { gameEntry with ID = db.CreateOrUpdateGame(gameEntry) }
+            this.LogWriteLine("Game entry updated.") |> ignore
 
-        let extractionContext = {
-            ExtractionContext.gameResources = context.Resources;
-            pluginSettings = pluginSettings :> AuroraPluginSettings;
-            db = db;
-            masculineOrNeuterTalkTable = masculineOrNeuterTalkTable;
-            feminineTalkTable = feminineTalkTable;
-            gameEntry = gameEntryWithId
-        }
+            let extractionContext = {
+                ExtractionContext.gameResources = context.Resources;
+                pluginSettings = c :> AuroraPluginSettings;
+                db = db;
+                masculineOrNeuterTalkTable = masculineOrNeuterTalkTable;
+                feminineTalkTable = feminineTalkTable;
+                gameEntry = gameEntryWithId
+            }
         
-        let extractedDialogueCards = 
-            if (pluginSettings.ExtractAllBoolean || pluginSettings.ExtractDialoguesBoolean) then
-                this.ExtractDialogues(extractionContext) |> Array.ofSeq
-            else
-                [||]
+            let extractedDialogueCards = 
+                if (c.ExtractAll || c.ExtractDialogues) then
+                    this.ExtractDialogues(extractionContext) |> Array.ofSeq
+                else
+                    [||]
 
-        let extracted2DACards = 
-            if (pluginSettings.ExtractAllBoolean || pluginSettings.Extract2DAsBoolean) then
-                this.ExtractJadeEmpire2DAs(extractionContext)
-            else
-                [||]
+            let extracted2DACards = 
+                if (c.ExtractAll || c.Extract2DAs) then
+                    this.ExtractJadeEmpire2DAs(extractionContext)
+                else
+                    [||]
 
-        // filter out empty cards.
-        let allCards = Array.concat([| extractedDialogueCards; extracted2DACards |]) |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
+            // filter out empty cards.
+            let allCards = Array.concat([| extractedDialogueCards; extracted2DACards |]) |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
 
-        this.LogWriteLine("Adding extracted cards to DB.") |> ignore
-        db.CreateOrUpdateCards(allCards)
+            this.LogWriteLine("Adding extracted cards to DB.") |> ignore
+            db.CreateOrUpdateCards(allCards)
 
-        this.LogWriteLine("Jade Empire extraction complete.") |> ignore
+            this.LogWriteLine("Jade Empire extraction complete.") |> ignore
+
+        parser.ParseArguments<JadeEmpirePluginSettings>(args)
+            .WithParsed(new Action<JadeEmpirePluginSettings>(runExtractJadeEmpire))
+            |> ignore
+
         ()
 
     member private this.ExtractKOTOR12DAs(xc: ExtractionContext<TalkTableV3String>) = 
@@ -670,50 +665,53 @@ type AuroraPlugin() =
         let parser = new CommandLine.Parser(fun t ->
             t.HelpWriter <- System.Console.Out
             t.IgnoreUnknownArguments <- true)
-        let pluginSettings = new KOTOR1PluginSettings()
-        if (not(parser.ParseArguments(args, pluginSettings))) then
-            raise(exn("failed to parse KOTOR1 configuration"))
 
-        this.LogWriteLine("Creating KOTOR1 context from " + path) |> ignore
-        let context = new KOTOR1Context(path)
+        let runExtractKOTOR1(c: KOTOR1PluginSettings) = 
+            this.LogWriteLine("Creating KOTOR1 context from " + path) |> ignore
+            let context = new KOTOR1Context(path)
 
-        // find the talk tables
-        let masculineOrNeuterTalkTable = TalkTableV3.FromFilePath(Path.Combine(path, "dialog.tlk"))
-        let gameEntry = {
-            GameRecord.Name = "Star Wars: Knights of the Old Republic";
-            ID = 0
-        }
-        let gameEntryWithId = { gameEntry with ID = db.CreateOrUpdateGame(gameEntry) }
-        this.LogWriteLine("Game entry updated.") |> ignore
+            // find the talk tables
+            let masculineOrNeuterTalkTable = TalkTableV3.FromFilePath(Path.Combine(path, "dialog.tlk"))
+            let gameEntry = {
+                GameRecord.Name = "Star Wars: Knights of the Old Republic";
+                ID = 0
+            }
+            let gameEntryWithId = { gameEntry with ID = db.CreateOrUpdateGame(gameEntry) }
+            this.LogWriteLine("Game entry updated.") |> ignore
 
-        let extractionContext = {
-            ExtractionContext.gameResources = context.Resources;
-            pluginSettings = pluginSettings :> AuroraPluginSettings;
-            db = db;
-            masculineOrNeuterTalkTable = masculineOrNeuterTalkTable;
-            feminineTalkTable = masculineOrNeuterTalkTable;
-            gameEntry = gameEntryWithId
-        }
+            let extractionContext = {
+                ExtractionContext.gameResources = context.Resources;
+                pluginSettings = c :> AuroraPluginSettings;
+                db = db;
+                masculineOrNeuterTalkTable = masculineOrNeuterTalkTable;
+                feminineTalkTable = masculineOrNeuterTalkTable;
+                gameEntry = gameEntryWithId
+            }
         
-        let extractedDialogueCards = 
-            if (pluginSettings.ExtractAllBoolean || pluginSettings.ExtractDialoguesBoolean) then
-                this.ExtractDialogues(extractionContext) |> Array.ofSeq
-            else
-                [||]
+            let extractedDialogueCards = 
+                if (c.ExtractAll || c.ExtractDialogues) then
+                    this.ExtractDialogues(extractionContext) |> Array.ofSeq
+                else
+                    [||]
 
-        let extracted2DACards = 
-            if (pluginSettings.ExtractAllBoolean || pluginSettings.Extract2DAsBoolean) then
-                this.ExtractKOTOR12DAs(extractionContext)
-            else
-                [||]
+            let extracted2DACards = 
+                if (c.ExtractAll || c.Extract2DAs) then
+                    this.ExtractKOTOR12DAs(extractionContext)
+                else
+                    [||]
 
-        // filter out empty cards.
-        let allCards = Array.concat([| extractedDialogueCards; extracted2DACards |]) |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
+            // filter out empty cards.
+            let allCards = Array.concat([| extractedDialogueCards; extracted2DACards |]) |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
 
-        this.LogWriteLine("Adding extracted cards to DB.") |> ignore
-        db.CreateOrUpdateCards(allCards)
+            this.LogWriteLine("Adding extracted cards to DB.") |> ignore
+            db.CreateOrUpdateCards(allCards)
 
-        this.LogWriteLine("KOTOR1 extraction complete.") |> ignore
+            this.LogWriteLine("KOTOR1 extraction complete.") |> ignore
+
+        parser.ParseArguments<KOTOR1PluginSettings>(args)
+            .WithParsed(new Action<KOTOR1PluginSettings>(runExtractKOTOR1))           
+            |> ignore
+
         ()
 
     member private this.ExtractKOTOR22DAs(xc: ExtractionContext<TalkTableV3String>) = 
@@ -800,61 +798,64 @@ type AuroraPlugin() =
         let parser = new CommandLine.Parser(fun t ->
             t.HelpWriter <- System.Console.Out
             t.IgnoreUnknownArguments <- true)
-        let pluginSettings = new KOTOR2PluginSettings()
-        if (not(parser.ParseArguments(args, pluginSettings))) then
-            raise(exn("failed to parse KOTOR2 configuration"))
 
-        this.LogWriteLine("Creating KOTOR2 context from " + path) |> ignore
-        let context = new KOTOR2Context(path)
+        let runExtractKOTOR2(c: KOTOR2PluginSettings) = 
+            this.LogWriteLine("Creating KOTOR2 context from " + path) |> ignore
+            let context = new KOTOR2Context(path)
 
-        // find the talk tables
-        let masculineOrNeuterTalkTable = TalkTableV3.FromFilePath(Path.Combine(path, "dialog.tlk"))
-        let gameEntry = {
-            GameRecord.Name = "Star Wars: Knights of the Old Republic II";
-            ID = 0
-        }
-        let gameEntryWithId = { gameEntry with ID = db.CreateOrUpdateGame(gameEntry) }
-        this.LogWriteLine("Game entry updated.") |> ignore
+            // find the talk tables
+            let masculineOrNeuterTalkTable = TalkTableV3.FromFilePath(Path.Combine(path, "dialog.tlk"))
+            let gameEntry = {
+                GameRecord.Name = "Star Wars: Knights of the Old Republic II";
+                ID = 0
+            }
+            let gameEntryWithId = { gameEntry with ID = db.CreateOrUpdateGame(gameEntry) }
+            this.LogWriteLine("Game entry updated.") |> ignore
 
-        let extractionContext = {
-            ExtractionContext.gameResources = context.Resources;
-            pluginSettings = pluginSettings :> AuroraPluginSettings;
-            db = db;
-            masculineOrNeuterTalkTable = masculineOrNeuterTalkTable;
-            feminineTalkTable = masculineOrNeuterTalkTable;
-            gameEntry = gameEntryWithId
-        }
+            let extractionContext = {
+                ExtractionContext.gameResources = context.Resources;
+                pluginSettings = c :> AuroraPluginSettings;
+                db = db;
+                masculineOrNeuterTalkTable = masculineOrNeuterTalkTable;
+                feminineTalkTable = masculineOrNeuterTalkTable;
+                gameEntry = gameEntryWithId
+            }
 
-        let findImplementationCommentsRegex = new Regex("\{.*\}")
-        let rec textWithoutImplementationComments(t: string): string = 
-            let rmatch = findImplementationCommentsRegex.Match(t)
-            if (rmatch.Success) then
-                textWithoutImplementationComments(t.Remove(rmatch.Index, rmatch.Length).Trim())
-            else
-                t
+            let findImplementationCommentsRegex = new Regex("\{.*\}")
+            let rec textWithoutImplementationComments(t: string): string = 
+                let rmatch = findImplementationCommentsRegex.Match(t)
+                if (rmatch.Success) then
+                    textWithoutImplementationComments(t.Remove(rmatch.Index, rmatch.Length).Trim())
+                else
+                    t
 
-        let removeImplementationComments(c: CardRecord): CardRecord = 
-            { c with Text = textWithoutImplementationComments(c.Text) }
+            let removeImplementationComments(c: CardRecord): CardRecord = 
+                { c with Text = textWithoutImplementationComments(c.Text) }
         
-        let extractedDialogueCards = 
-            if (pluginSettings.ExtractAllBoolean || pluginSettings.ExtractDialoguesBoolean) then
-                this.ExtractDialogues(extractionContext) 
-                |> Seq.map removeImplementationComments 
-                |> Array.ofSeq
-            else
-                [||]
+            let extractedDialogueCards = 
+                if (c.ExtractAll || c.ExtractDialogues) then
+                    this.ExtractDialogues(extractionContext) 
+                    |> Seq.map removeImplementationComments 
+                    |> Array.ofSeq
+                else
+                    [||]
 
-        let extracted2DACards = 
-            if (pluginSettings.ExtractAllBoolean || pluginSettings.Extract2DAsBoolean) then
-                this.ExtractKOTOR22DAs(extractionContext)
-            else
-                [||]
+            let extracted2DACards = 
+                if (c.ExtractAll || c.Extract2DAs) then
+                    this.ExtractKOTOR22DAs(extractionContext)
+                else
+                    [||]
 
-        // filter out empty cards.
-        let allCards = Array.concat([| extractedDialogueCards; extracted2DACards |]) |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
+            // filter out empty cards.
+            let allCards = Array.concat([| extractedDialogueCards; extracted2DACards |]) |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
 
-        this.LogWriteLine("Adding extracted cards to DB.") |> ignore
-        db.CreateOrUpdateCards(allCards)
+            this.LogWriteLine("Adding extracted cards to DB.") |> ignore
+            db.CreateOrUpdateCards(allCards)
 
-        this.LogWriteLine("KOTOR2 extraction complete.") |> ignore
+            this.LogWriteLine("KOTOR2 extraction complete.") |> ignore
+
+        parser.ParseArguments<KOTOR2PluginSettings>(args)
+            .WithParsed(new Action<KOTOR2PluginSettings>(runExtractKOTOR2))
+            |> ignore
+
         ()

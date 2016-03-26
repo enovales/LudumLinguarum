@@ -6,6 +6,7 @@ open System
 open System.IO
 open System.Text.RegularExpressions
 
+[<CommandLine.Verb("export-anki", HelpText = "Export content as Anki flashcards")>]
 type AnkiExporterConfiguration() = 
     [<CommandLine.Option("game", Required = true)>]
     member val GameToExport = "" with get, set
