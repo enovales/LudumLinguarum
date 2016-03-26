@@ -317,7 +317,6 @@ let main argv =
     commandLineParser
         .ParseArguments<LudumLinguarumConfiguration>(argv)
         .WithParsed<LudumLinguarumConfiguration>(new Action<LudumLinguarumConfiguration>(runFn))
-        .WithNotParsed(fun _ -> failwith "Failed to parse configuration")
     |> ignore
 
     0
