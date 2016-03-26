@@ -27,6 +27,9 @@ type ListGamesConfiguration() =
     [<CommandLine.Option("filter-regex", Required = false, HelpText = "An optional regular expression to filter the list of games")>]
     member val FilterRegex = "" with get, set
 
+    [<CommandLine.Option("language", Required = false, HelpText = "Specifies a language that the game must support. Apply this multiple times if desired.")>]
+    member val Languages = Seq.empty<string> with get, set
+
 /// <summary>
 /// Configuration for the 'list-supported-games' verb.
 /// </summary>
@@ -116,22 +119,28 @@ let runScanForTextAction(otw: TextWriter)(vc: DebugTools.TextScannerConfiguratio
 /// <param name="vc">configuration for this verb handler</param>
 let runListGamesAction(otw: TextWriter, db: LLDatabase)(vc: ListGamesConfiguration) = 
     let games = db.Games
-    let filter = 
+    let regexFilter = 
         if (String.IsNullOrWhiteSpace(vc.FilterRegex)) then
             fun _ -> true
         else
             let regex = new Regex(vc.FilterRegex)
             fun (t: GameRecord) -> regex.IsMatch(t.Name)
 
-    let eligibleGames = games |> Array.filter filter
+    let languagesFilter(g: GameRecord, languages: string array) = 
+        vc.Languages
+        |> Seq.forall(fun l -> languages |> Array.contains(l)) 
+
+    let eligibleGames = games |> Array.filter regexFilter
     let languagesForGame(g: GameRecord) = 
         db.Lessons 
         |> Array.filter (fun l -> l.GameID = g.ID)
-        |> Array.collect(db.LanguagesForLesson >> Array.ofList)
+        |> Array.collect(db.LanguagesForLesson >> Array.ofList >> Array.sort)
         |> Array.distinct
     
     eligibleGames
-    |> Array.map(fun t -> "[" + t.Name + "], [" + String.Join(", ", languagesForGame(t)) + "]")
+    |> Array.map(fun g -> (g, languagesForGame(g)))
+    |> Array.filter languagesFilter
+    |> Array.map(fun (g, languages) -> "[" + g.Name + "], [" + String.Join(", ", languages) + "]")
     |> Array.iter otw.WriteLine
 
 /// <summary>
@@ -173,6 +182,7 @@ let runListLessonsAction(otw: TextWriter, db: LLDatabase)(vc: ListLessonsConfigu
     |> Array.filter checkGameFilterForLesson
     |> Array.filter lessonFilter
     |> Array.map (fun l -> l.Name)
+    |> Array.sort
     |> Array.iter otw.WriteLine
 
 let runDeleteGameAction(otw: TextWriter, db: LLDatabase)(vc: DeleteGameConfiguration) = 
