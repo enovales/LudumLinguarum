@@ -38,11 +38,18 @@ let internal generateCardsForRow(lessonId: int, languageTags: string array)(rowI
     let key = t.[0]
     let category = t.[1]
     let cardKey = rowIndex.ToString() + key + category;
-    let localizedStrings = t |> Array.skip(2)
-    let tagsAndStrings = localizedStrings |> Array.zip languageTags
+    let localizedStrings = 
+        t 
+        |> Array.skip(2)
+        |> Array.truncate(languageTags.Length)
 
-    tagsAndStrings
-    |> Array.map(makeCardsForLanguageTags(cardKey, lessonId))
+    if (localizedStrings.Length = languageTags.Length) then
+        localizedStrings 
+        |> Array.truncate(languageTags.Length) 
+        |> Array.zip languageTags
+        |> Array.map(makeCardsForLanguageTags(cardKey, lessonId))
+    else
+        [||]
 
 let internal extractXUITabDelimited(stringLines: string array, lessonId: int): CardRecord array = 
     let tabDelimited = stringLines |> Array.map(fun t -> t.Split('\t'))
