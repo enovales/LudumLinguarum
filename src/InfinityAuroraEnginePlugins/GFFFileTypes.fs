@@ -4,6 +4,7 @@ open InfinityAuroraEnginePlugins.CommonTypes
 open InfinityAuroraEnginePlugins.GFF
 open InfinityAuroraEnginePlugins.SerializedGFF
 open InfinityAuroraEnginePlugins.TalkTable
+open System.Collections.Generic
 
 type SerializedSyncStruct = {
         Active: ResRef option
@@ -33,10 +34,10 @@ type SerializedDialogueStruct = {
         AnimLoop: byte option
         Comment: GFFRawCExoString option
         Delay: uint32 option
-        EntriesList: List<SerializedSyncStruct> option
+        EntriesList: SerializedSyncStruct list option
         Quest: GFFRawCExoString option
         QuestEntry: uint32 option
-        RepliesList: List<SerializedSyncStruct> option
+        RepliesList: SerializedSyncStruct list option
         Script: ResRef option
         Sound: ResRef option
         Speaker: GFFRawCExoString option
@@ -142,7 +143,7 @@ and DialogueStruct = {
         Script: ResRef option;
         Sound: ResRef option;
         Text: GFFRawCExoLocString option;
-        Next: List<AugmentedSyncStruct>;
+        Next: AugmentedSyncStruct list;
         Speaker: GFFRawCExoString option;
     }
     with
@@ -164,19 +165,19 @@ and DialogueStruct = {
                 | _ -> None
 
             let retval = {
-                DialogueStruct.Animation = d.Animation;
-                AnimLoop = d.AnimLoop;
-                Comment = d.Comment;
-                Delay = d.Delay;
-                Quest = d.Quest;
-                QuestEntry = d.QuestEntry;
-                Script = d.Script;
-                Sound = d.Sound;
-                Text = extractedText;
+                DialogueStruct.Animation = d.Animation
+                AnimLoop = d.AnimLoop
+                Comment = d.Comment
+                Delay = d.Delay
+                Quest = d.Quest
+                QuestEntry = d.QuestEntry
+                Script = d.Script
+                Sound = d.Sound
+                Text = extractedText
                 Next = match nextList with 
                        | Some(nl) -> nl |> List.map (fun r -> AugmentedSyncStruct.FromSerialized(r))
-                       | _ -> [];
-                Speaker = d.Speaker;
+                       | _ -> []
+                Speaker = d.Speaker
             }
 
             retval
@@ -215,6 +216,68 @@ and Dialogue = {
                 ReplyList = replyList
                 StartingList = startingList
             }
+    end
+
+type SyncStructEnumerator(ss: AugmentedSyncStruct) = 
+    let mutable cur: AugmentedSyncStruct option = None
+    let mutable curit: IEnumerator<AugmentedSyncStruct> option = None
+    interface IEnumerator<AugmentedSyncStruct> with
+        member this.Dispose() = ()
+        member this.Reset() = cur <- None
+        member this.MoveNext() = 
+            match (cur, curit) with
+            | (None, _) when ss.IsLink -> 
+                // root node is a link. end.
+                false
+            | (None, _) ->
+                // root node is not a link. return that first.
+                cur <- Some(ss)
+                curit <- None
+                true
+            | (Some(n), None) ->
+                // at the root node. not iterating on children yet.
+                match n.DialogueNode with
+                | Some(Node(dn)) -> 
+                    // find the first non-link child, and set that to be 
+                    // the current node, and start its iterator.
+                    cur <- (dn.Next |> Seq.tryFind(fun nn -> not(nn.IsLink)))
+                    curit <- cur |> Option.map (fun nn -> new SyncStructEnumerator(nn) :> IEnumerator<AugmentedSyncStruct>)
+                    curit.IsSome
+                | _ ->
+                    false
+            | (Some(n), Some(it)) ->
+                // currently iterating on a child node. try and move that child iterator.
+                match it.MoveNext() with
+                | true -> 
+                    true
+                | _ ->
+                    // move onto the next non-link sibling, if one is available, and start its iterator.
+                    match n.DialogueNode with
+                    | Some(Node(dn)) -> 
+                        cur <- (dn.Next |> Seq.skipWhile(fun t -> t <> ss) |> Seq.tryFind(fun nn -> not(nn.IsLink)))
+                        curit <- cur |> Option.map (fun nn -> new SyncStructEnumerator(nn) :> IEnumerator<AugmentedSyncStruct>)
+                        curit.IsSome
+                    | _ ->
+                        false
+
+        member this.Current 
+            with get() = 
+                if (cur = Some(ss)) then
+                    ss
+                else
+                    match curit with
+                    | Some(it) -> it.Current
+                    | _ -> failwith "no more elements"
+
+        member this.Current
+            with get(): obj = 
+                if (cur = Some(ss)) then
+                    ss :> obj
+                else
+                    match curit with
+                    | Some(it) -> it.Current :> obj
+                    | _ -> failwith "no more elements"
+
     end
 
 let EvaluateString<'T when 'T :> ITalkTableString>(s: GFFRawCExoLocString, tMasculine: ITalkTable<'T>, tFeminine: ITalkTable<'T>, l: LanguageType, g: Gender): string option = 
