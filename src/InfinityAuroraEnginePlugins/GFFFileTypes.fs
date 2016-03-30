@@ -309,6 +309,18 @@ let rec GatherNonLinkNodesWithText(acc: AugmentedSyncStruct list, n: AugmentedSy
             dn.Next |> List.mapi (fun i next -> GatherNonLinkNodesWithText(acc, next)) |> List.concat
         | _ -> acc
 
+let rec NewGatherNonLinkNodesWithTextInternal(en: IEnumerator<AugmentedSyncStruct>) = 
+    match en.MoveNext() with
+    | true -> Some(en.Current, en)
+    | false -> None
+
+let NewGatherNonLinkNodesWithText(n: AugmentedSyncStruct): AugmentedSyncStruct list = 
+    let en = new SyncStructEnumerator(n) :> IEnumerator<AugmentedSyncStruct>
+    Seq.unfold NewGatherNonLinkNodesWithTextInternal en
+    |> Seq.filter (fun n -> n.Text.IsSome)
+    |> List.ofSeq
+    
+
 let gatherStringForSyncStruct(i: int)(n: AugmentedSyncStruct) = 
     match n.DialogueNode with
     | Some(SyncStructDialogueNode.Node dn) -> 
@@ -316,8 +328,8 @@ let gatherStringForSyncStruct(i: int)(n: AugmentedSyncStruct) =
     | _ -> failwith "should not be called with non dialogue nodes"
 
 let GatherStrings(n: AugmentedSyncStruct): (GFFRawCExoLocString * string) list = 
-    let nodes = GatherNonLinkNodesWithText([], n)
-    nodes |> List.mapi gatherStringForSyncStruct
+    NewGatherNonLinkNodesWithText(n)
+    |> List.mapi gatherStringForSyncStruct
 
 let ExtractStringsFromDialogue<'T when 'T :> ITalkTableString>(dialogue: Dialogue, l: LanguageType, g: Gender, maleOrNeuterTalkTable: ITalkTable<'T>, femaleTalkTable: ITalkTable<'T>) =
     let strings = 
