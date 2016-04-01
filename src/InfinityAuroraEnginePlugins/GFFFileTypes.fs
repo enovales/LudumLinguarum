@@ -223,7 +223,10 @@ type SyncStructEnumerator(ss: AugmentedSyncStruct) =
     let mutable curit: IEnumerator<AugmentedSyncStruct> option = None
     interface IEnumerator<AugmentedSyncStruct> with
         member this.Dispose() = ()
-        member this.Reset() = cur <- None
+        member this.Reset() = 
+            cur <- None
+            curit <- None
+
         member this.MoveNext() = 
             match (cur, curit) with
             | (None, _) when ss.IsLink -> 
@@ -242,7 +245,8 @@ type SyncStructEnumerator(ss: AugmentedSyncStruct) =
                     // the current node, and start its iterator.
                     cur <- (dn.Next |> Seq.tryFind(fun nn -> not(nn.IsLink)))
                     curit <- cur |> Option.map (fun nn -> new SyncStructEnumerator(nn) :> IEnumerator<AugmentedSyncStruct>)
-                    curit.IsSome
+                    curit |> Option.iter(fun it -> it.Reset())
+                    curit.IsSome && curit.Value.MoveNext()
                 | _ ->
                     false
             | (Some(n), Some(it)) ->
@@ -251,12 +255,14 @@ type SyncStructEnumerator(ss: AugmentedSyncStruct) =
                 | true -> 
                     true
                 | _ ->
-                    // move onto the next non-link sibling, if one is available, and start its iterator.
-                    match n.DialogueNode with
+                    // move onto the next non-link sibling, with an iterator that can reset and returns true for MoveNext().
+                    // FIXME: this is not yet complete. but it should be working, because each node should at least be iterable. hmm.
+                    match ss.DialogueNode with
                     | Some(Node(dn)) -> 
-                        cur <- (dn.Next |> Seq.skipWhile(fun t -> t <> ss) |> Seq.tryFind(fun nn -> not(nn.IsLink)))
+                        cur <- (dn.Next |> Seq.skipWhile(fun t -> t <> n) |> Seq.skip(1) |> Seq.tryFind(fun nn -> not(nn.IsLink)))
                         curit <- cur |> Option.map (fun nn -> new SyncStructEnumerator(nn) :> IEnumerator<AugmentedSyncStruct>)
-                        curit.IsSome
+                        curit |> Option.iter(fun it -> it.Reset())
+                        curit.IsSome && curit.Value.MoveNext()
                     | _ ->
                         false
 
