@@ -4,8 +4,6 @@ open InfinityAuroraEnginePlugins.CommonTypes
 open InfinityAuroraEnginePlugins.GFF
 open InfinityAuroraEnginePlugins.SerializedGFF
 open InfinityAuroraEnginePlugins.TalkTable
-open System
-open System.Collections.Generic
 
 type SerializedSyncStruct = {
         Active: ResRef option
@@ -230,78 +228,6 @@ and Dialogue = {
             }
     end
 
-type SyncStructEnumerator(ss: AugmentedSyncStruct) = 
-    let ds = 
-        match ss.DialogueNode with
-        | Some(Node(dn)) -> dn
-        | _ -> failwith "can only be used with a fixed up sync struct"
-
-    let mutable cur: AugmentedSyncStruct option = None
-    let mutable curit: IEnumerator<AugmentedSyncStruct> option = None
-    let isNonLinkWithText(s: AugmentedSyncStruct) = 
-        not(s.IsLink) && (s.Text.IsSome)
-
-    interface IEnumerator<AugmentedSyncStruct> with
-        member this.Dispose() = ()
-        member this.Reset() = 
-            cur <- None
-            curit <- None
-
-        member this.MoveNext() = 
-            match (cur, curit) with
-            | (None, _) when ss.IsLink -> 
-                // root node is a link. end.
-                false
-            | (None, _) ->
-                // root node is not a link. return that first.
-                cur <- Some(ss)
-                curit <- None
-                true
-            | (Some(n), None) ->
-                // at the root node. not iterating on children yet.
-                match n.DialogueNode with
-                | Some(Node(dn)) -> 
-                    // find the first non-link child, and set that to be 
-                    // the current node, and start its iterator.
-                    cur <- (dn.Next |> Seq.tryFind isNonLinkWithText)
-                    curit <- cur |> Option.map (fun nn -> new SyncStructEnumerator(nn) :> IEnumerator<AugmentedSyncStruct>)
-                    curit |> Option.iter(fun it -> it.Reset())
-                    curit.IsSome && curit.Value.MoveNext()
-                | _ ->
-                    false
-            | (Some(n), Some(it)) ->
-                // currently iterating on a child node. try and move that child iterator.
-                match it.MoveNext() with
-                | true -> 
-                    true
-                | _ ->
-                    // move onto the next non-link sibling, with an iterator that can reset and returns true for MoveNext().
-                    // FIXME: this is not yet complete. but it should be working, because each node should at least be iterable. hmm.
-                    cur <- (ds.Next |> Seq.skipWhile(fun t -> t <> n) |> Seq.skip(1) |> Seq.tryFind isNonLinkWithText)
-                    curit <- cur |> Option.map (fun nn -> new SyncStructEnumerator(nn) :> IEnumerator<AugmentedSyncStruct>)
-                    curit |> Option.iter(fun it -> it.Reset())
-                    curit.IsSome && curit.Value.MoveNext()
-
-        member this.Current 
-            with get() = 
-                match cur with
-                | Some(c) when Object.ReferenceEquals(c, ss) -> ss
-                | _ ->
-                    match curit with
-                    | Some(it) -> it.Current
-                    | _ -> failwith "no more elements"
-
-        member this.Current
-            with get(): obj = 
-                match cur with
-                | Some(c) when Object.ReferenceEquals(c, ss) -> ss :> obj
-                | _ ->
-                    match curit with
-                    | Some(it) -> it.Current :> obj
-                    | _ -> failwith "no more elements"
-
-    end
-
 let EvaluateString<'T when 'T :> ITalkTableString>(s: GFFRawCExoLocString, tMasculine: ITalkTable<'T>, tFeminine: ITalkTable<'T>, l: LanguageType, g: Gender): string option = 
     if (s.stringCount > 0u) then
         s.substrings |> List.tryFind(fun t -> (t.languageAndGender.Language = l) && (t.languageAndGender.Gender = g)) |> Option.map (fun t -> t.value)
@@ -320,29 +246,7 @@ let SyncStructString(s: AugmentedSyncStruct, tMasculine: TalkTableV3, tFeminine:
 
 let dialogueNodeKey(depth, slot) = "depth " + depth.ToString() + " slot " + slot.ToString()
 
-let rec GatherNonLinkNodesWithText(acc: AugmentedSyncStruct list, n: AugmentedSyncStruct): AugmentedSyncStruct list = 
-    match n.IsLink with
-    | true -> acc
-    | false -> 
-        match n.DialogueNode with
-        | Some(SyncStructDialogueNode.Node dn) when n.Text.IsSome -> 
-            n :: (dn.Next |> List.mapi(fun i next -> GatherNonLinkNodesWithText(acc, next)) |> List.concat)
-        | Some(SyncStructDialogueNode.Node dn) -> 
-            dn.Next |> List.mapi (fun i next -> GatherNonLinkNodesWithText(acc, next)) |> List.concat
-        | _ -> acc
-
-let rec NewGatherNonLinkNodesWithTextInternal(en: IEnumerator<AugmentedSyncStruct>) = 
-    match en.MoveNext() with
-    | true -> Some(en.Current, en)
-    | false -> None
-
-let NewGatherNonLinkNodesWithText(n: AugmentedSyncStruct): AugmentedSyncStruct list = 
-    let en = new SyncStructEnumerator(n) :> IEnumerator<AugmentedSyncStruct>
-    Seq.unfold NewGatherNonLinkNodesWithTextInternal en
-    |> Seq.filter (fun n -> n.Text.IsSome)
-    |> List.ofSeq
-
-let NewNewGatherNonLinkNodesWithText(n: AugmentedSyncStruct): AugmentedSyncStruct list = 
+let GatherNonLinkNodesWithText(n: AugmentedSyncStruct): AugmentedSyncStruct list = 
     n.Elements
     |> Seq.filter (fun n -> not(n.IsLink) && n.Text.IsSome)
     |> List.ofSeq
@@ -355,15 +259,10 @@ let gatherStringForSyncStruct(i: int)(n: AugmentedSyncStruct) =
     | _ -> failwith "should not be called with non dialogue nodes"
 
 let GatherStrings(n: AugmentedSyncStruct): (GFFRawCExoLocString * string) list = 
-    NewNewGatherNonLinkNodesWithText(n)
+    GatherNonLinkNodesWithText(n)
     |> List.mapi gatherStringForSyncStruct
 
 let ExtractStringsFromDialogue<'T when 'T :> ITalkTableString>(dialogue: Dialogue, l: LanguageType, g: Gender, maleOrNeuterTalkTable: ITalkTable<'T>, femaleTalkTable: ITalkTable<'T>) =
-    //let strings = 
-    //    dialogue.StartingList 
-    //    |> Array.map GatherStrings 
-    //    |> List.concat
-
     [| 
         dialogue.EntryList |> Array.filter(fun e -> e.Text.IsSome) |> Array.mapi(fun i e -> (e.Text.Value, "e" + i.ToString()))
         dialogue.ReplyList |> Array.filter(fun e -> e.Text.IsSome) |> Array.mapi(fun i e -> (e.Text.Value, "r" + i.ToString()))

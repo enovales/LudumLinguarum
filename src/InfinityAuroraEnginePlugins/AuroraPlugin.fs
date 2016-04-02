@@ -162,9 +162,6 @@ type AuroraPlugin() =
 
         let generateStringsAndKeys(r: Dialogue * IGenericResource * LessonRecord) = 
             let (t, dialogueResource, lessonEntry) = r
-
-            Console.WriteLine("generateStringsAndKeys() for " + dialogueResource.Name.Value)
-
             let extractedM = ExtractStringsFromDialogue(t, languageType, Gender.MasculineOrNeutral, xc.masculineOrNeuterTalkTable, xc.feminineTalkTable)
             let extractedF = 
                 if (xc.masculineOrNeuterTalkTable = xc.feminineTalkTable) then 
