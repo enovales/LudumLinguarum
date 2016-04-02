@@ -4,6 +4,7 @@ open InfinityAuroraEnginePlugins.CommonTypes
 open InfinityAuroraEnginePlugins.GFF
 open InfinityAuroraEnginePlugins.SerializedGFF
 open InfinityAuroraEnginePlugins.TalkTable
+open System
 open System.Collections.Generic
 
 type SerializedSyncStruct = {
@@ -131,7 +132,18 @@ and AugmentedSyncStruct = {
             | Some(SyncStructDialogueNode.Index i) ->
                 this.DialogueNode <- Some(SyncStructDialogueNode.Node ds.[int i])
             | _ -> ()
-
+        member this.Elements: AugmentedSyncStruct seq = 
+            if this.IsLink then
+                Seq.empty
+            else
+                let nexts = 
+                    match this.DialogueNode with
+                    | Some(Node(dn)) -> dn.Next |> Seq.ofList
+                    | _ -> Seq.empty
+                seq {
+                    yield this
+                    for n in nexts do yield! n.Elements
+                }
     end
 and DialogueStruct = {
         Animation: uint32 option;
@@ -219,8 +231,16 @@ and Dialogue = {
     end
 
 type SyncStructEnumerator(ss: AugmentedSyncStruct) = 
+    let ds = 
+        match ss.DialogueNode with
+        | Some(Node(dn)) -> dn
+        | _ -> failwith "can only be used with a fixed up sync struct"
+
     let mutable cur: AugmentedSyncStruct option = None
     let mutable curit: IEnumerator<AugmentedSyncStruct> option = None
+    let isNonLinkWithText(s: AugmentedSyncStruct) = 
+        not(s.IsLink) && (s.Text.IsSome)
+
     interface IEnumerator<AugmentedSyncStruct> with
         member this.Dispose() = ()
         member this.Reset() = 
@@ -243,7 +263,7 @@ type SyncStructEnumerator(ss: AugmentedSyncStruct) =
                 | Some(Node(dn)) -> 
                     // find the first non-link child, and set that to be 
                     // the current node, and start its iterator.
-                    cur <- (dn.Next |> Seq.tryFind(fun nn -> not(nn.IsLink)))
+                    cur <- (dn.Next |> Seq.tryFind isNonLinkWithText)
                     curit <- cur |> Option.map (fun nn -> new SyncStructEnumerator(nn) :> IEnumerator<AugmentedSyncStruct>)
                     curit |> Option.iter(fun it -> it.Reset())
                     curit.IsSome && curit.Value.MoveNext()
@@ -257,29 +277,25 @@ type SyncStructEnumerator(ss: AugmentedSyncStruct) =
                 | _ ->
                     // move onto the next non-link sibling, with an iterator that can reset and returns true for MoveNext().
                     // FIXME: this is not yet complete. but it should be working, because each node should at least be iterable. hmm.
-                    match ss.DialogueNode with
-                    | Some(Node(dn)) -> 
-                        cur <- (dn.Next |> Seq.skipWhile(fun t -> t <> n) |> Seq.skip(1) |> Seq.tryFind(fun nn -> not(nn.IsLink)))
-                        curit <- cur |> Option.map (fun nn -> new SyncStructEnumerator(nn) :> IEnumerator<AugmentedSyncStruct>)
-                        curit |> Option.iter(fun it -> it.Reset())
-                        curit.IsSome && curit.Value.MoveNext()
-                    | _ ->
-                        false
+                    cur <- (ds.Next |> Seq.skipWhile(fun t -> t <> n) |> Seq.skip(1) |> Seq.tryFind isNonLinkWithText)
+                    curit <- cur |> Option.map (fun nn -> new SyncStructEnumerator(nn) :> IEnumerator<AugmentedSyncStruct>)
+                    curit |> Option.iter(fun it -> it.Reset())
+                    curit.IsSome && curit.Value.MoveNext()
 
         member this.Current 
             with get() = 
-                if (cur = Some(ss)) then
-                    ss
-                else
+                match cur with
+                | Some(c) when Object.ReferenceEquals(c, ss) -> ss
+                | _ ->
                     match curit with
                     | Some(it) -> it.Current
                     | _ -> failwith "no more elements"
 
         member this.Current
             with get(): obj = 
-                if (cur = Some(ss)) then
-                    ss :> obj
-                else
+                match cur with
+                | Some(c) when Object.ReferenceEquals(c, ss) -> ss :> obj
+                | _ ->
                     match curit with
                     | Some(it) -> it.Current :> obj
                     | _ -> failwith "no more elements"
@@ -325,6 +341,11 @@ let NewGatherNonLinkNodesWithText(n: AugmentedSyncStruct): AugmentedSyncStruct l
     Seq.unfold NewGatherNonLinkNodesWithTextInternal en
     |> Seq.filter (fun n -> n.Text.IsSome)
     |> List.ofSeq
+
+let NewNewGatherNonLinkNodesWithText(n: AugmentedSyncStruct): AugmentedSyncStruct list = 
+    n.Elements
+    |> Seq.filter (fun n -> not(n.IsLink) && n.Text.IsSome)
+    |> List.ofSeq
     
 
 let gatherStringForSyncStruct(i: int)(n: AugmentedSyncStruct) = 
@@ -334,17 +355,24 @@ let gatherStringForSyncStruct(i: int)(n: AugmentedSyncStruct) =
     | _ -> failwith "should not be called with non dialogue nodes"
 
 let GatherStrings(n: AugmentedSyncStruct): (GFFRawCExoLocString * string) list = 
-    NewGatherNonLinkNodesWithText(n)
+    NewNewGatherNonLinkNodesWithText(n)
     |> List.mapi gatherStringForSyncStruct
 
 let ExtractStringsFromDialogue<'T when 'T :> ITalkTableString>(dialogue: Dialogue, l: LanguageType, g: Gender, maleOrNeuterTalkTable: ITalkTable<'T>, femaleTalkTable: ITalkTable<'T>) =
-    let strings = 
-        dialogue.StartingList 
-        |> Array.map GatherStrings 
-        |> List.concat
-    strings |> 
-        List.map (fun (t, k) -> (EvaluateString(t, maleOrNeuterTalkTable, femaleTalkTable, l, g), k)) |> 
-        List.filter(fun (t, k) -> t.IsSome) |> List.map (fun (t, k) -> (t.Value, k))
+    //let strings = 
+    //    dialogue.StartingList 
+    //    |> Array.map GatherStrings 
+    //    |> List.concat
+
+    [| 
+        dialogue.EntryList |> Array.filter(fun e -> e.Text.IsSome) |> Array.mapi(fun i e -> (e.Text.Value, "e" + i.ToString()))
+        dialogue.ReplyList |> Array.filter(fun e -> e.Text.IsSome) |> Array.mapi(fun i e -> (e.Text.Value, "r" + i.ToString()))
+    |]
+    |> Array.collect id
+    |> Array.map (fun (t, k) -> (EvaluateString(t, maleOrNeuterTalkTable, femaleTalkTable, l, g), k)) 
+    |> Array.filter(fun (t, k) -> t.IsSome) 
+    |> Array.map (fun (t, k) -> (t.Value, k))
+    |> List.ofArray
 
 /// <summary>
 /// Utility function to augment the extracted strings and keys with extra information about the dialogue
