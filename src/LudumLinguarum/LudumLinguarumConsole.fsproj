@@ -25,7 +25,7 @@
     <OtherFlags>--warnon:1182</OtherFlags>
     <StartArguments>delete-game --game="Star Wars: Knights of the Old Republic II"</StartArguments>
     <StartArguments>import --game="Magicka" --game-dir="C:\Program Files (x86)\Steam\steamapps\common\Magicka"</StartArguments>
-    <StartArguments>import --game "Jade Empire" --game-dir "C:\Program Files (x86)\Steam\steamapps\common\Jade Empire" --language-tag en --extract-all=true</StartArguments>
+    <StartArguments>import --game="Jade Empire" --game-dir="C:\TempGameCopies\Jade Empire (German)" --language-tag=de --extract-all=true</StartArguments>
     <StartAction>Program</StartAction>
     <StartProgram>C:\projects\LudumLinguarum\src\LudumLinguarum\bin\Debug\LudumLinguarum.exe</StartProgram>
   </PropertyGroup>
