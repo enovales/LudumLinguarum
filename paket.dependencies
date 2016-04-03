@@ -5,7 +5,6 @@ source https://nuget.org/api/v2
 nuget CommandLineParser
 github praeclarum/sqlite-net
 nuget sqlite
-nuget nunrar
 github icsharpcode/SharpZipLib
 github gsscoder/commandline
 
