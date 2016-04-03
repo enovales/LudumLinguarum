@@ -76,7 +76,8 @@ type GatherStringsTests() =
             [
                 (testStrings.[0], "0")
             ]
-        Assert.AreEqual(expected, GatherStrings(syncStructs.[0]))
+            |> Set.ofList
+        Assert.AreEqual(expected, GatherStrings(syncStructs.[0]) |> Set.ofList)
 
     [<Test>]
     member this.``GatherStrings() on a two-line dialogue``() = 
@@ -85,7 +86,8 @@ type GatherStringsTests() =
                 (testStrings.[0], "0");
                 (testStrings.[1], "1")
             ]
-        Assert.AreEqual(expected, GatherStrings(connectSyncStructs(syncStructs.[0], syncStructs.[1])))
+            |> Set.ofList
+        Assert.AreEqual(expected, GatherStrings(connectSyncStructs(syncStructs.[0], syncStructs.[1])) |> Set.ofList)
 
     [<Test>]
     member this.``GatherStrings() on a multiple line dialogue``() = 
@@ -95,9 +97,10 @@ type GatherStringsTests() =
                 (testStrings.[1], "1")
                 (testStrings.[2], "2")
             ]
+            |> Set.ofList
 
         let connected = connectSyncStructs(syncStructs.[0], connectSyncStructs(syncStructs.[1], syncStructs.[2]))
-        Assert.AreEqual(expected, GatherStrings(connected))
+        Assert.AreEqual(expected, GatherStrings(connected) |> Set.ofList)
 
     [<Test>]
     member this.``GatherStrings() on a dialogue with multiple answers on a node``() = 
@@ -107,11 +110,12 @@ type GatherStringsTests() =
                 (testStrings.[1], "1")
                 (testStrings.[2], "2")
             ]
+            |> Set.ofList
 
         // connect answers in reverse order, because of the prepending
         let connected = connectSyncStructs(syncStructs.[0], syncStructs.[2])
         let bothConnected = connectSyncStructs(connected, syncStructs.[1])
-        Assert.AreEqual(expected, GatherStrings(bothConnected))
+        Assert.AreEqual(expected, GatherStrings(bothConnected) |> Set.ofList)
 
     [<Test>]
     member this.``GatherStrings() doesn't follow links in the dialogue``() = 
@@ -119,6 +123,7 @@ type GatherStringsTests() =
             [
                 (testStrings.[0], "0")
             ]
+            |> Set.ofList
 
         // connect first sync struct to a link.
         let link = 
@@ -126,5 +131,5 @@ type GatherStringsTests() =
                 syncStructs.[1] with IsLink = true
             }
         let connected = connectSyncStructs(syncStructs.[0], link)
-        Assert.AreEqual(expected, GatherStrings(connected))
+        Assert.AreEqual(expected, GatherStrings(connected) |> Set.ofList)
 

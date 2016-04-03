@@ -33,10 +33,10 @@ type SerializedDialogueStruct = {
         AnimLoop: byte option
         Comment: GFFRawCExoString option
         Delay: uint32 option
-        EntriesList: List<SerializedSyncStruct> option
+        EntriesList: SerializedSyncStruct list option
         Quest: GFFRawCExoString option
         QuestEntry: uint32 option
-        RepliesList: List<SerializedSyncStruct> option
+        RepliesList: SerializedSyncStruct list option
         Script: ResRef option
         Sound: ResRef option
         Speaker: GFFRawCExoString option
@@ -130,7 +130,18 @@ and AugmentedSyncStruct = {
             | Some(SyncStructDialogueNode.Index i) ->
                 this.DialogueNode <- Some(SyncStructDialogueNode.Node ds.[int i])
             | _ -> ()
-
+        member this.Elements: AugmentedSyncStruct seq = 
+            if this.IsLink then
+                Seq.empty
+            else
+                let nexts = 
+                    match this.DialogueNode with
+                    | Some(Node(dn)) -> dn.Next |> Seq.ofList
+                    | _ -> Seq.empty
+                seq {
+                    yield this
+                    for n in nexts do yield! n.Elements
+                }
     end
 and DialogueStruct = {
         Animation: uint32 option;
@@ -142,7 +153,7 @@ and DialogueStruct = {
         Script: ResRef option;
         Sound: ResRef option;
         Text: GFFRawCExoLocString option;
-        Next: List<AugmentedSyncStruct>;
+        Next: AugmentedSyncStruct list;
         Speaker: GFFRawCExoString option;
     }
     with
@@ -164,19 +175,19 @@ and DialogueStruct = {
                 | _ -> None
 
             let retval = {
-                DialogueStruct.Animation = d.Animation;
-                AnimLoop = d.AnimLoop;
-                Comment = d.Comment;
-                Delay = d.Delay;
-                Quest = d.Quest;
-                QuestEntry = d.QuestEntry;
-                Script = d.Script;
-                Sound = d.Sound;
-                Text = extractedText;
+                DialogueStruct.Animation = d.Animation
+                AnimLoop = d.AnimLoop
+                Comment = d.Comment
+                Delay = d.Delay
+                Quest = d.Quest
+                QuestEntry = d.QuestEntry
+                Script = d.Script
+                Sound = d.Sound
+                Text = extractedText
                 Next = match nextList with 
                        | Some(nl) -> nl |> List.map (fun r -> AugmentedSyncStruct.FromSerialized(r))
-                       | _ -> [];
-                Speaker = d.Speaker;
+                       | _ -> []
+                Speaker = d.Speaker
             }
 
             retval
@@ -235,16 +246,11 @@ let SyncStructString(s: AugmentedSyncStruct, tMasculine: TalkTableV3, tFeminine:
 
 let dialogueNodeKey(depth, slot) = "depth " + depth.ToString() + " slot " + slot.ToString()
 
-let rec GatherNonLinkNodesWithText(acc: AugmentedSyncStruct list, n: AugmentedSyncStruct): AugmentedSyncStruct list = 
-    match n.IsLink with
-    | true -> acc
-    | false -> 
-        match n.DialogueNode with
-        | Some(SyncStructDialogueNode.Node dn) when n.Text.IsSome -> 
-            n :: (dn.Next |> List.mapi(fun i next -> GatherNonLinkNodesWithText(acc, next)) |> List.concat)
-        | Some(SyncStructDialogueNode.Node dn) -> 
-            dn.Next |> List.mapi (fun i next -> GatherNonLinkNodesWithText(acc, next)) |> List.concat
-        | _ -> acc
+let GatherNonLinkNodesWithText(n: AugmentedSyncStruct): AugmentedSyncStruct list = 
+    n.Elements
+    |> Seq.filter (fun n -> not(n.IsLink) && n.Text.IsSome)
+    |> List.ofSeq
+    
 
 let gatherStringForSyncStruct(i: int)(n: AugmentedSyncStruct) = 
     match n.DialogueNode with
@@ -253,17 +259,19 @@ let gatherStringForSyncStruct(i: int)(n: AugmentedSyncStruct) =
     | _ -> failwith "should not be called with non dialogue nodes"
 
 let GatherStrings(n: AugmentedSyncStruct): (GFFRawCExoLocString * string) list = 
-    let nodes = GatherNonLinkNodesWithText([], n)
-    nodes |> List.mapi gatherStringForSyncStruct
+    GatherNonLinkNodesWithText(n)
+    |> List.mapi gatherStringForSyncStruct
 
 let ExtractStringsFromDialogue<'T when 'T :> ITalkTableString>(dialogue: Dialogue, l: LanguageType, g: Gender, maleOrNeuterTalkTable: ITalkTable<'T>, femaleTalkTable: ITalkTable<'T>) =
-    let strings = 
-        dialogue.StartingList 
-        |> Array.map GatherStrings 
-        |> List.concat
-    strings |> 
-        List.map (fun (t, k) -> (EvaluateString(t, maleOrNeuterTalkTable, femaleTalkTable, l, g), k)) |> 
-        List.filter(fun (t, k) -> t.IsSome) |> List.map (fun (t, k) -> (t.Value, k))
+    [| 
+        dialogue.EntryList |> Array.filter(fun e -> e.Text.IsSome) |> Array.mapi(fun i e -> (e.Text.Value, "e" + i.ToString()))
+        dialogue.ReplyList |> Array.filter(fun e -> e.Text.IsSome) |> Array.mapi(fun i e -> (e.Text.Value, "r" + i.ToString()))
+    |]
+    |> Array.collect id
+    |> Array.map (fun (t, k) -> (EvaluateString(t, maleOrNeuterTalkTable, femaleTalkTable, l, g), k)) 
+    |> Array.filter(fun (t, k) -> t.IsSome) 
+    |> Array.map (fun (t, k) -> (t.Value, k))
+    |> List.ofArray
 
 /// <summary>
 /// Utility function to augment the extracted strings and keys with extra information about the dialogue

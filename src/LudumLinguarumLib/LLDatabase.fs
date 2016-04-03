@@ -262,7 +262,10 @@ type LLDatabase(dbPath: string) =
         cards |> Seq.iter this.DeleteCardInternal
 
     member this.CreateOrUpdateGame(ge: GameRecord) = 
-        let existingEntry = this.Games |> Array.tryFind(fun t -> t.Name = ge.Name)
+        let existingEntry = 
+            db.Query<GameEntry>("select * from GameEntry where Name = ?", ge.Name)
+            |> Seq.tryHead
+
         match existingEntry with
         | Some(ee) -> 
             let updatedEntry = { ge with ID = ee.ID }
@@ -271,7 +274,10 @@ type LLDatabase(dbPath: string) =
         | _ -> this.AddGame(ge)
 
     member this.CreateOrUpdateLesson(le: LessonRecord) = 
-        let existingEntry = this.Lessons |> Array.tryFind(fun t -> (t.Name = le.Name) && (t.GameID = le.GameID))
+        let existingEntry = 
+            db.Query<LessonEntry>("select * from LessonEntry where Name = ? and GameID = ?", le.Name, le.GameID)
+            |> Seq.tryHead
+
         match existingEntry with
         | Some(ee) ->
             let updatedEntry = { le with ID = ee.ID }
@@ -280,8 +286,9 @@ type LLDatabase(dbPath: string) =
         | _ -> this.AddLesson(le)
 
     member this.CreateOrUpdateCard(ce: CardRecord) = 
-        let existingEntry = db.Query<CardEntry>("select * from CardEntry where KeyHash = ? and LessonID = ?", calculateKeyHash(ce.Key), ce.LessonID) |> 
-                            Seq.tryHead
+        let existingEntry = 
+            db.Query<CardEntry>("select * from CardEntry where KeyHash = ? and LessonID = ?", calculateKeyHash(ce.Key), ce.LessonID) 
+            |> Seq.tryHead
 
         match existingEntry with
         | Some(ee) ->
