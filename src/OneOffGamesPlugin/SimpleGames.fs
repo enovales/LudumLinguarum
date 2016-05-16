@@ -24,6 +24,53 @@ let ExtractSkullsOfTheShogun(path: string, db: LLDatabase, g: GameRecord, args: 
     |> db.CreateOrUpdateCards
 
 (***************************************************************************)
+(******************************** Hell Yeah ********************************)
+(***************************************************************************)
+let ExtractHellYeah(path: string, db: LLDatabase, g: GameRecord, args: string array) = 
+    // table format: arguments to OneOffGamesUtils.ExtractStringsFromAssemblies, but with 
+    // a lesson name instead of an id at the end.
+    let mainExePath = Path.Combine(path, "HELLYEAH.exe")
+    let mainResourceDllName = "HELLYEAH.resources.dll"
+    let gameLibraryPath = Path.Combine(path, "HY_GameLibrary.dll")
+    let gameLibraryResourceDllName = "HY_GameLibrary.resources.dll"
+    let easyStoragePath = Path.Combine(path, "EasyStorage.dll")
+    let easyStorageResourceDllName = "EasyStorage.resources.dll"
+    let resTable = 
+        [|
+            (path, mainExePath, mainResourceDllName, "HELLYEAH_4_0.TEXTS.ACHIEVEMENTS", "achievements", "achievements")
+            (path, mainExePath, mainResourceDllName, "HELLYEAH_4_0.TEXTS.CUSTO", "customization", "customization")
+            (path, mainExePath, mainResourceDllName, "HELLYEAH_4_0.TEXTS.GENERAL", "general", "general")
+            (path, mainExePath, mainResourceDllName, "HELLYEAH_4_0.TEXTS.ISLAND", "island", "island")
+            (path, mainExePath, mainResourceDllName, "HELLYEAH_4_0.TEXTS.MISSIONS", "missions", "missions")
+            (path, mainExePath, mainResourceDllName, "HELLYEAH_4_0.TEXTS.OBJECTIVES", "objectives", "objectives")
+            (path, mainExePath, mainResourceDllName, "HELLYEAH_4_0.TEXTS.PCONLY", "pc-only", "pc-only")
+            (path, mainExePath, mainResourceDllName, "HELLYEAH_4_0.TEXTS.POKEDEX", "compendium", "compendium")
+            (path, mainExePath, mainResourceDllName, "HELLYEAH_4_0.TEXTS.SCRIPTS", "dialogue", "dialogue")
+            (path, mainExePath, mainResourceDllName, "HELLYEAH_4_0.TEXTS.SHOP", "shop", "shop")
+            (path, mainExePath, mainResourceDllName, "HELLYEAH_4_0.TEXTS.TELEPORT", "teleport", "teleport")
+            (path, mainExePath, mainResourceDllName, "HELLYEAH_4_0.TEXTS.TRIGGERS", "triggers", "triggers")
+            (path, gameLibraryPath, gameLibraryResourceDllName, "HY_GameLibrary.TEXTS.LOADING", "loading-text", "loading-text")
+            (path, gameLibraryPath, gameLibraryResourceDllName, "HY_GameLibrary.TEXTS.SUBTITLES", "subtitles", "subtitles")
+            (path, gameLibraryPath, gameLibraryResourceDllName, "HY_GameLibrary.TEXTS.TRC", "certification", "certification")
+            (path, gameLibraryPath, gameLibraryResourceDllName, "HY_GameLibrary.TEXTS.UI", "ui", "ui")
+            (path, easyStoragePath, easyStorageResourceDllName, "EasyStorage.Strings", "easystorage", "easystorage")
+        |]
+
+    let createAndExtract(path: string, mainResPath: string, resDllName: string, resourceRoot: string, keyRoot: string, lessonName: string) = 
+        let lessonEntry = {
+            LessonRecord.GameID = g.ID;
+            ID = 0;
+            Name = lessonName
+        }
+        let lessonEntryWithId = { lessonEntry with ID = db.CreateOrUpdateLesson(lessonEntry) }
+        OneOffGamesUtils.ExtractStringsFromAssemblies(path, mainResPath, resDllName, resourceRoot, keyRoot, lessonEntryWithId.ID)
+
+    resTable
+    |> Array.collect createAndExtract
+    |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
+    |> db.CreateOrUpdateCards
+
+(***************************************************************************)
 (***************************** Magical Drop V ******************************)
 (***************************************************************************)
 let internal sanitizeMagicalDropVXml(x: string) = 
