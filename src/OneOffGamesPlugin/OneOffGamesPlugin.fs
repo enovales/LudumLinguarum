@@ -23,6 +23,7 @@ type OneOffGamesPlugin() =
     let orcsMustDieName = "Orcs Must Die!"
     let hatofulBoyfriendName = "Hatoful Boyfriend"
     let hatofulBoyfriendHolidayStarName = "Hatoful Boyfriend: Holiday Star"
+    let hellYeahName = "Hell Yeah!"
 
     interface IPlugin with
         member this.Load(tw: TextWriter, [<ParamArray>] args: string[]) = 
@@ -47,6 +48,7 @@ type OneOffGamesPlugin() =
                 orcsMustDieName
                 hatofulBoyfriendName
                 hatofulBoyfriendHolidayStarName
+                hellYeahName
             |]
         member this.ExtractAll(game: string, path: string, db: LLDatabase, [<ParamArray>] args: string[]) = 
             this.LogWriteLine("Searching for game handler for '" + game + "'") |> ignore
@@ -67,6 +69,7 @@ type OneOffGamesPlugin() =
                     (orcsMustDieName, OrcsMustDie.ExtractOrcsMustDie)
                     (hatofulBoyfriendName, SimpleGames.ExtractHatofulBoyfriend)
                     (hatofulBoyfriendHolidayStarName, SimpleGames.ExtractHatofulBoyfriendHolidayStar)
+                    (hellYeahName, SimpleGames.ExtractHellYeah)
                 |] |> Map.ofArray
 
             if (handlerMapping |> Map.containsKey(game)) then

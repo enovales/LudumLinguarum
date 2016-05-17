@@ -27,11 +27,14 @@ let createResourceManagerForAssembly(a: Assembly, baseName: string): ResourceMan
 
 let extractResourcesFromAssemblyViaResourceReader(a: Assembly, c: CultureInfo, resourcesName: string) = 
     use stream = a.GetManifestResourceStream(resourcesName)
-    let resReader = new ResourceReader(stream)
-    let e = resReader.GetEnumerator()
-    e.MoveNext() |> ignore
-    let strings = collectStringResources(e, [])
-    strings |> Map.ofList
+    if (isNull stream) then
+        Map.empty
+    else
+        let resReader = new ResourceReader(stream)
+        let e = resReader.GetEnumerator()
+        match e.MoveNext() with
+        | true -> collectStringResources(e, []) |> Map.ofList
+        | _ -> Map.empty
 
 let createCardRecordForStrings(lid: int, keyRoot: string, language: string, gender: string)(strings: Map<string, string>) = 
     let createCardRecordForMapEntry (k, v) = 
