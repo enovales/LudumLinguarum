@@ -6,7 +6,7 @@ open System
 open System.IO
 open System.Text.RegularExpressions
 
-type private Key() =
+type Key() =
     [<PrimaryKey; AutoIncrement>]
     member val IndexID: int = 0 with get, set
     member val CatID: int = 0 with get, set
@@ -14,12 +14,12 @@ type private Key() =
     member val Context: string = "" with get, set
     member val Value: string = "" with get, set
 
-type private Value() = 
+type Value() = 
     [<PrimaryKey; AutoIncrement>]
     member val IndexID: int = 0 with get, set
     member val Value: string = "" with get, set
 
-type private Category() = 
+type Category() = 
     [<PrimaryKey; AutoIncrement>]
     member val CatID: int = 0 with get, set
     member val Name: string = "" with get, set
