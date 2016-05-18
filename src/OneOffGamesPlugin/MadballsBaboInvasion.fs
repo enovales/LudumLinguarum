@@ -26,8 +26,9 @@ type Category() =
 
 let private formattingRegexes = 
     [|
-        new Regex("\^[0-9]{3,}")
-        new Regex("\{[0-9]+\}")
+        new Regex(@"\^[0-9]+")
+        new Regex(@"\{[0-9]+?\}")
+        new Regex(@"\[.+?\]")
     |]
 
 let internal stripFormattingTags(s: string) = 
@@ -65,7 +66,7 @@ let private createCardsForDatabase(dbPath: string, language: string, lessons: Le
         {
             CardRecord.ID = 0
             LessonID = lessons.[k.CatID - 1].ID
-            Text = valueMap.[k.IndexID]
+            Text = stripFormattingTags(valueMap.[k.IndexID])
             Gender = "masculine"
             Key = k.ConstID
             GenderlessKey = k.ConstID
