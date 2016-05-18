@@ -138,6 +138,7 @@ let runListGamesAction(otw: TextWriter, db: LLDatabase)(vc: ListGamesConfigurati
         |> Array.distinct
     
     eligibleGames
+    |> Array.sortBy (fun g -> g.Name)
     |> Array.map(fun g -> (g, languagesForGame(g)))
     |> Array.filter languagesFilter
     |> Array.map(fun (g, languages) -> "[" + g.Name + "], [" + String.Join(", ", languages) + "]")
