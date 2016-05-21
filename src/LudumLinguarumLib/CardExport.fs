@@ -35,13 +35,13 @@ type AnkiExporterConfiguration() =
     member val ProductionLanguage = "" with get, set
 
 type AnkiExporter(iPluginManager: IPluginManager, outputTextWriter: TextWriter, 
-                  LLDatabase: LLDatabase, config: AnkiExporterConfiguration) = 
+                  llDatabase: LLDatabase, config: AnkiExporterConfiguration) = 
 
     member private this.GenerateRecognitionAndProductionCardSets
         (lesson: LessonRecord, recognitionLanguage: string, productionLanguage: string) = 
         // get the recognition and production cards for this lesson
-        let recognitionCards = LLDatabase.CardsFromLessonAndLanguageTag(lesson, config.RecognitionLanguage)
-        let productionCards = LLDatabase.CardsFromLessonAndLanguageTag(lesson, config.ProductionLanguage)
+        let recognitionCards = llDatabase.CardsFromLessonAndLanguageTag(lesson, config.RecognitionLanguage)
+        let productionCards = llDatabase.CardsFromLessonAndLanguageTag(lesson, config.ProductionLanguage)
 
         // Check if one of the card sets has populated genders, and the other has none. If this
         // is the case, then replicate the non-gendered cards using the populated gender set. This
@@ -106,7 +106,7 @@ type AnkiExporter(iPluginManager: IPluginManager, outputTextWriter: TextWriter,
         let filterLessonsRegex(gid: int, regex: Regex)(l: LessonRecord) = 
             filterGame(gid)(l) && (regex.IsMatch(l.Name))
 
-        match (LLDatabase.Games |> Array.tryFind(fun t -> t.Name = game)) with
+        match (llDatabase.Games |> Array.tryFind(fun t -> t.Name = game)) with
         | Some(g) -> 
             // Prefer the regex over using the name. If no name is specified, then 
             // export all lessons for the game.
@@ -117,7 +117,7 @@ type AnkiExporter(iPluginManager: IPluginManager, outputTextWriter: TextWriter,
                 | (Some(l), _) -> filterLessonsWildcard(g.ID, l)
                 | _ -> filterGame(g.ID)
 
-            let lessonsToExport = LLDatabase.Lessons |> Array.filter lessonFilter
+            let lessonsToExport = llDatabase.Lessons |> Array.filter lessonFilter
             let reportLessonExport(l: LessonRecord) =
                 outputTextWriter.WriteLine("Exporting lesson [" + l.Name + "]")
                 l
