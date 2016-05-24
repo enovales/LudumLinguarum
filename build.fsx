@@ -372,10 +372,14 @@ Target "Release" (fun _ ->
     Branches.tag "" release.NugetVersion
     Branches.pushTag "" remote release.NugetVersion
 
+    traceImportant "About to generate release zip"
+    let makeReleaseZipResult = shellExec { ExecParams.Program = "powershell"; WorkingDirectory = ""; CommandLine = "-ExecutionPolicy Unrestricted -file make-release-zip.ps1"; Args = [] }
+    traceImportant(sprintf "release zip generation returned %d" makeReleaseZipResult)
+
     // release on github
     createClient user pw
     |> createDraft gitOwner gitName release.NugetVersion (release.SemVer.PreRelease <> None) release.Notes
-    // TODO: |> uploadFile "PATH_TO_FILE"
+    |> uploadFile @"bin\LudumLinguarum.zip"
     |> releaseDraft
     |> Async.RunSynchronously
 )
@@ -420,7 +424,7 @@ Target "All" DoNothing
   ==> "Release"
 
 "BuildPackage"
-  ==> "PublishNuget"
+  //==> "PublishNuget"
   ==> "Release"
 
 RunTargetOrDefault "All"
