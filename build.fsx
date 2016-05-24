@@ -424,7 +424,7 @@ Target "All" DoNothing
   ==> "Release"
 
 "BuildPackage"
-  ==> "PublishNuget"
+  //==> "PublishNuget"
   ==> "Release"
 
 RunTargetOrDefault "All"
