@@ -373,7 +373,7 @@ Target "Release" (fun _ ->
     Branches.pushTag "" remote release.NugetVersion
 
     traceImportant "About to generate release zip"
-    let makeReleaseZipResult = shellExec { ExecParams.Program = "powershell"; WorkingDirectory = ""; CommandLine = "-file make-release-zip.ps1"; Args = "" }
+    let makeReleaseZipResult = shellExec { ExecParams.Program = "powershell"; WorkingDirectory = ""; CommandLine = "-file make-release-zip.ps1"; Args = [] }
     traceImportant(sprintf "release zip generation returned %d" makeReleaseZipResult)
 
     // release on github
