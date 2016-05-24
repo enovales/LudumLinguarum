@@ -4,10 +4,10 @@ open System.Reflection
 [<assembly: AssemblyTitleAttribute("LudumLinguarumConsole")>]
 [<assembly: AssemblyProductAttribute("LudumLinguarum")>]
 [<assembly: AssemblyDescriptionAttribute("Tools for extracting localized content from games, and turning them into language learning content.")>]
-[<assembly: AssemblyVersionAttribute("0.0.1")>]
-[<assembly: AssemblyFileVersionAttribute("0.0.1")>]
+[<assembly: AssemblyVersionAttribute("0.9.0")>]
+[<assembly: AssemblyFileVersionAttribute("0.9.0")>]
 do ()
 
 module internal AssemblyVersionInformation =
-    let [<Literal>] Version = "0.0.1"
-    let [<Literal>] InformationalVersion = "0.0.1"
+    let [<Literal>] Version = "0.9.0"
+    let [<Literal>] InformationalVersion = "0.9.0"

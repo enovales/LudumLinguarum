@@ -4,11 +4,11 @@ using System.Reflection;
 [assembly: AssemblyTitleAttribute("OneOffGamesData")]
 [assembly: AssemblyProductAttribute("LudumLinguarum")]
 [assembly: AssemblyDescriptionAttribute("Tools for extracting localized content from games, and turning them into language learning content.")]
-[assembly: AssemblyVersionAttribute("0.0.1")]
-[assembly: AssemblyFileVersionAttribute("0.0.1")]
+[assembly: AssemblyVersionAttribute("0.9.0")]
+[assembly: AssemblyFileVersionAttribute("0.9.0")]
 namespace System {
     internal static class AssemblyVersionInformation {
-        internal const string Version = "0.0.1";
-        internal const string InformationalVersion = "0.0.1";
+        internal const string Version = "0.9.0";
+        internal const string InformationalVersion = "0.9.0";
     }
 }
