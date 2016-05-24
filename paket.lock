@@ -2,14 +2,14 @@ FRAMEWORK: NET452
 NUGET
   remote: https://www.nuget.org/api/v2
   specs:
-    FAKE (4.23)
-    FluentAssertions (4.3.1)
-    FsCheck (2.2.5)
+    FAKE (4.27)
+    FluentAssertions (4.6.2)
+    FsCheck (2.4)
       FSharp.Core (>= 3.1.2.5)
-    FSharp.Compiler.Service (2.0.0.8)
+    FSharp.Compiler.Service (2.0.0.6)
     FSharp.Core (4.0.0.1)
-    FSharp.Formatting (2.14)
-      FSharp.Compiler.Service (>= 2.0.0.3 < 2.1)
+    FSharp.Formatting (2.14.2)
+      FSharp.Compiler.Service (2.0.0.6)
       FSharpVSPowerTools.Core (>= 2.3 < 2.4)
     FSharpVSPowerTools.Core (2.3)
       FSharp.Compiler.Service (>= 2.0.0.3)
@@ -36,10 +36,10 @@ GITHUB
     FULLPROJECT (e7b8303677a3a0190cc601c091a139b60b464bc1)
   remote: icsharpcode/SharpZipLib
   specs:
-    FULLPROJECT (e01215507cf25a5978a0bd850c9e67dbabf515b7)
+    FULLPROJECT (00c3c9112f132b2b4202000bf5a4b0746881c9e3)
   remote: gsscoder/commandline
   specs:
-    FULLPROJECT (0750d78366617b7deec4a00059f12c8032d0ea30)
+    FULLPROJECT (6d2068684e721fbd1479b8c425306fd0bcf524c9)
       FAKE
       FluentAssertions
       FsCheck
@@ -59,10 +59,10 @@ GROUP Build
 NUGET
   remote: https://www.nuget.org/api/v2
   specs:
-    FAKE (4.23)
-    FSharp.Compiler.Service (2.0.0.8)
-    FSharp.Formatting (2.14)
-      FSharp.Compiler.Service (>= 2.0.0.3 < 2.1)
+    FAKE (4.27)
+    FSharp.Compiler.Service (2.0.0.6)
+    FSharp.Formatting (2.14.2)
+      FSharp.Compiler.Service (2.0.0.6)
       FSharpVSPowerTools.Core (>= 2.3 < 2.4)
     FSharpVSPowerTools.Core (2.3)
       FSharp.Compiler.Service (>= 2.0.0.3)
@@ -78,7 +78,7 @@ NUGET
 GITHUB
   remote: fsharp/FAKE
   specs:
-    modules/Octokit/Octokit.fsx (f2214d09beebe85710527900d46f42d1f2ca77b0)
+    modules/Octokit/Octokit.fsx (8c077f35f8cd0350485109ddd1810dafe9885d1a)
       Octokit
 GROUP Test
 NUGET

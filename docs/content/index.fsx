@@ -4,7 +4,7 @@
 #I "../../bin"
 
 (**
-LudumLinguarum
+Ludum Linguarum
 ======================
 
 Documentation
@@ -26,10 +26,10 @@ Example
 This example demonstrates using a function defined in this sample library.
 
 *)
-#r "LudumLinguarum.dll"
+#r "LudumLinguarumConsole\LudumLinguarum.dll"
 open LudumLinguarum
 
-printfn "hello = %i" <| Library.hello 0
+//printfn "hello = %i" <| Library.hello 0
 
 (**
 Some more info
@@ -59,9 +59,9 @@ The library is available under Public Domain license, which allows modification 
 redistribution for both commercial and non-commercial purposes. For more information see the 
 [License file][license] in the GitHub repository. 
 
-  [content]: https://github.com/fsprojects/LudumLinguarum/tree/master/docs/content
-  [gh]: https://github.com/fsprojects/LudumLinguarum
-  [issues]: https://github.com/fsprojects/LudumLinguarum/issues
-  [readme]: https://github.com/fsprojects/LudumLinguarum/blob/master/README.md
-  [license]: https://github.com/fsprojects/LudumLinguarum/blob/master/LICENSE.txt
+  [content]: https://github.com/enovales/LudumLinguarum/tree/master/docs/content
+  [gh]: https://github.com/enovales/LudumLinguarum
+  [issues]: https://github.com/enovales/LudumLinguarum/issues
+  [readme]: https://github.com/enovales/LudumLinguarum/blob/master/README.md
+  [license]: https://github.com/enovales/LudumLinguarum/blob/master/LICENSE.txt
 *)
