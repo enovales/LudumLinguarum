@@ -7,7 +7,10 @@
 Ludum Linguarum
 ======================
 
-Documentation
+Ludum Linguarum is a set of tools and recipes to extract localized content (currently just text) from a set of known 
+games. This text can then be turned into flash cards for use with [Anki](http://ankisrs.net/) (one of the most popular 
+[spaced repetition](https://en.wikipedia.org/wiki/Spaced_repetition) software programs, with clients for all major
+desktop and mobile platforms).
 
 <div class="row">
   <div class="span1"></div>
