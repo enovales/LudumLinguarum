@@ -11,6 +11,9 @@ In other words, you can spice up your language learning regimen by drilling flas
 Currently only PC games are supported, although there's no technical reason other platforms couldn't be supported -- 
 it's just simpler to work on PC versions of titles.
 
+(The program has currently only been tested on Windows. I'm not sure if it would work running under Mono on Linux or
+OS X -- if you try it out on one of these platforms, please let me know what you find!)
+
 # Quick Start
 
 This walkthrough covers setting up Ludum Linguarum, the Anki desktop client, importing text from a game, exporting it to
