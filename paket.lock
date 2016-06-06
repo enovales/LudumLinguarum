@@ -15,6 +15,7 @@ NUGET
       FSharp.Compiler.Service (>= 2.0.0.3)
     SQLite (3.12.2)
       SQLite.UWP.Native (>= 3.12.2)
+    SQLite.Native (3.12.2)
     SQLite.UWP.Native (3.12.2)
     xunit (2.1)
       xunit.assert (2.1)
@@ -69,7 +70,7 @@ GITHUB
     src/RailwaySharp/ErrorHandling.cs (fa4f11173e470d558df80987e69e6ab10f977fcd)
   remote: enovales/SegaAFSTools
   specs:
-    FULLPROJECT (02e7d11a032e5d2dd458cc402c5793d011b7ebe5)
+    FULLPROJECT (765ba666362998cfe94dbbb1e6fc14744fc3acf5)
       FSharp.Core
 GROUP Build
 NUGET

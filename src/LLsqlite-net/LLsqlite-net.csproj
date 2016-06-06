@@ -53,7 +53,7 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="..\..\packages\sqlite.redist\build\native\bin\x64\Release\sqlite3.dll">
+    <Content Include="..\..\packages\SQLite.Native\runtimes\win7-x64\native\sqlite3.dll">
       <Link>sqlite3.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

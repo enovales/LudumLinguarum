@@ -4,6 +4,7 @@ source https://nuget.org/api/v2
 
 github praeclarum/sqlite-net
 nuget sqlite
+nuget SQLite.Native
 github icsharpcode/SharpZipLib
 github gsscoder/commandline
 github enovales/SegaAFSTools
