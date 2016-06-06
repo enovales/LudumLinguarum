@@ -1,3 +1,6 @@
+#### 0.10.0 - June 5 2016
+* Version currently under development
+
 #### 0.9.0 - May 23 2016
 * Initial version
 * Supports exporting content as [Anki](http://ankisrs.net/) flashcards
