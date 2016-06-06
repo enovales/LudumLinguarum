@@ -6,6 +6,7 @@ github praeclarum/sqlite-net
 nuget sqlite
 github icsharpcode/SharpZipLib
 github gsscoder/commandline
+github enovales/SegaAFSTools
 
 group Build
   source https://nuget.org/api/v2

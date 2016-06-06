@@ -63,6 +63,11 @@
     <Compile Include="AssemblyInfoStatic.fs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\paket-files\enovales\SegaAFSTools\src\SegaAFSTools\SegaAFSLib.fsproj">
+      <Name>SegaAFSLib</Name>
+      <Project>{42eaba35-de38-46c8-8c47-bb362ce94bc9}</Project>
+      <Private>True</Private>
+    </ProjectReference>
     <ProjectReference Include="..\..\paket-files\icsharpcode\SharpZipLib\ICSharpCode.SharpZipLib\ICSharpCode.SharpZipLib.csproj">
       <Name>ICSharpCode.SharpZipLib</Name>
       <Project>{0e7413ff-eb9e-4714-acf2-be3a6a7b2ffd}</Project>

@@ -2,20 +2,20 @@ FRAMEWORK: NET452
 NUGET
   remote: https://www.nuget.org/api/v2
   specs:
-    FAKE (4.27)
-    FluentAssertions (4.6.2)
+    FAKE (4.28)
+    FluentAssertions (4.7)
     FsCheck (2.4)
       FSharp.Core (>= 3.1.2.5)
     FSharp.Compiler.Service (2.0.0.6)
     FSharp.Core (4.0.0.1)
-    FSharp.Formatting (2.14.2)
+    FSharp.Formatting (2.14.4)
       FSharp.Compiler.Service (2.0.0.6)
       FSharpVSPowerTools.Core (>= 2.3 < 2.4)
     FSharpVSPowerTools.Core (2.3)
       FSharp.Compiler.Service (>= 2.0.0.3)
-    sqlite (3.8.4.2)
-      sqlite.redist (>= 3.8.4.2)
-    sqlite.redist (3.8.4.2)
+    SQLite (3.12.2)
+      SQLite.UWP.Native (>= 3.12.2)
+    SQLite.UWP.Native (3.12.2)
     xunit (2.1)
       xunit.assert (2.1)
       xunit.core (2.1)
@@ -39,7 +39,16 @@ GITHUB
     FULLPROJECT (00c3c9112f132b2b4202000bf5a4b0746881c9e3)
   remote: gsscoder/commandline
   specs:
-    FULLPROJECT (6d2068684e721fbd1479b8c425306fd0bcf524c9)
+    FULLPROJECT (285b2e6748838f9b0e1b1b7de5fca5f789a6fb3f)
+      FAKE
+      FluentAssertions
+      FsCheck
+      FSharp.Core
+      FSharp.Formatting
+      xunit
+      xunit.runner.console
+      xunit.runner.visualstudio
+    FULLPROJECT (285b2e6748838f9b0e1b1b7de5fca5f789a6fb3f)
       FAKE
       FluentAssertions
       FsCheck
@@ -51,17 +60,24 @@ GITHUB
   remote: gsscoder/CSharpx
   specs:
     src/CSharpx/EnumerableExtensions.cs (1ae4e7b6ac1b19493f333e23c9ae636a01b23862)
+    src/CSharpx/EnumerableExtensions.cs (1ae4e7b6ac1b19493f333e23c9ae636a01b23862)
+    src/CSharpx/Maybe.cs (1ae4e7b6ac1b19493f333e23c9ae636a01b23862)
     src/CSharpx/Maybe.cs (1ae4e7b6ac1b19493f333e23c9ae636a01b23862)
   remote: gsscoder/railwaysharp
   specs:
     src/RailwaySharp/ErrorHandling.cs (fa4f11173e470d558df80987e69e6ab10f977fcd)
+    src/RailwaySharp/ErrorHandling.cs (fa4f11173e470d558df80987e69e6ab10f977fcd)
+  remote: enovales/SegaAFSTools
+  specs:
+    FULLPROJECT (02e7d11a032e5d2dd458cc402c5793d011b7ebe5)
+      FSharp.Core
 GROUP Build
 NUGET
   remote: https://www.nuget.org/api/v2
   specs:
-    FAKE (4.27)
+    FAKE (4.28)
     FSharp.Compiler.Service (2.0.0.6)
-    FSharp.Formatting (2.14.2)
+    FSharp.Formatting (2.14.4)
       FSharp.Compiler.Service (2.0.0.6)
       FSharpVSPowerTools.Core (>= 2.3 < 2.4)
     FSharpVSPowerTools.Core (2.3)
@@ -78,7 +94,7 @@ NUGET
 GITHUB
   remote: fsharp/FAKE
   specs:
-    modules/Octokit/Octokit.fsx (8c077f35f8cd0350485109ddd1810dafe9885d1a)
+    modules/Octokit/Octokit.fsx (60acb2f035cb39f2bd40a6c58a4de10d915da248)
       Octokit
 GROUP Test
 NUGET
