@@ -64,7 +64,7 @@ let private cardsForDGCPBaseName(rootPath: string, lessonID: int)(baseName: stri
     |> Array.collect(cardsForDGCPSuffix(baseName, rootPath, lessonID))
 
 let internal getNextDocTextBlock(s: string seq) = 
-    let isFiller(t: string) = t.StartsWith("#") || t.StartsWith("^") || t.StartsWith("_")
+    let isFiller(t: string) = t.StartsWith("#") || t.StartsWith("^") || t.StartsWith("_") || t.StartsWith("%")
     let n = s |> Seq.skipWhile isFiller
     let strings = n |> Seq.takeWhile(fun t -> not(t.StartsWith("#")) && not(t.StartsWith("_")))
     let newState = n |> Seq.skipWhile(isFiller >> not)
