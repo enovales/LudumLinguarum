@@ -72,7 +72,7 @@ let internal getNextDocTextBlock(s: string seq) =
     | true -> None
     | false -> Some(String.Join(Environment.NewLine, strings), newState)
 
-let internal cardsForDocText(d: string, language: string, keyRoot: string, lessonID: int, encoding: Encoding) = 
+let internal cardsForDocText(d: string, language: string, keyRoot: string, lessonID: int) = 
     let lines = d.Split([| Environment.NewLine |], StringSplitOptions.RemoveEmptyEntries)
             
     lines 
@@ -81,7 +81,7 @@ let internal cardsForDocText(d: string, language: string, keyRoot: string, lesso
     |> Seq.mapi (fun i t -> (i.ToString(), t))
     |> Array.ofSeq
     |> Map.ofArray
-    |> AssemblyResourceTools.createCardRecordForStrings(lessonID, keyRoot, language, "masculine")
+    |> AssemblyResourceTools.createCardRecordForStrings(lessonID, keyRoot + "_", language, "masculine")
 
 let ExtractSpaceChannel5Part2(path: string, db: LLDatabase, g: GameRecord, args: string array) = 
     let lessonEntry = {
@@ -92,7 +92,22 @@ let ExtractSpaceChannel5Part2(path: string, db: LLDatabase, g: GameRecord, args:
     let lessonEntryWithId = { lessonEntry with ID = db.CreateOrUpdateLesson(lessonEntry) }
 
     // read text from ctl_text archives
-    let ctlTextCards = [||]
+    let cardsForCtlTextArchive(n: string * string * Encoding) = 
+        let (suffix, language, encoding) = n
+        use ctlTextArchive = new AFS.AFSArchive(Path.Combine(path, "ctl_text" + suffix + ".afs"))
+
+        // read every file in the archive, and generate cards for them
+        let cardsForArchiveFile(idx: int, afe: AFS.ArchiveFileEntry) = 
+            use sr = new StreamReader(ctlTextArchive.GetStream(afe), encoding)
+            cardsForDocText(sr.ReadToEnd(), language, afe.Name + "_" + idx.ToString("0000"), lessonEntryWithId.ID)
+
+        ctlTextArchive.FileEntries
+        |> Array.mapi (fun i x -> (i, x))
+        |> Array.collect cardsForArchiveFile
+
+    let ctlTextCards = 
+        suffixesAndLanguages
+        |> Array.collect cardsForCtlTextArchive
 
     // read text from DGCP files
     let dgcpCards = 
