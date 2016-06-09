@@ -44,12 +44,15 @@ let private dgcpFiles =
     |]
 
 let private cardsForDGCPFile(language: string, keyRoot: string, lessonID: int, path: string, encoding: Encoding) = 
-    let dgcp = new DGCP.DGCPFile(path, encoding)
+    if (File.Exists(path)) then
+        let dgcp = new DGCP.DGCPFile(path, encoding)
             
-    dgcp.Entries
-    |> Array.mapi (fun i t -> (i.ToString(), t))
-    |> Map.ofArray
-    |> AssemblyResourceTools.createCardRecordForStrings(lessonID, keyRoot, language, "masculine")
+        dgcp.Entries
+        |> Array.mapi (fun i t -> (i.ToString(), t))
+        |> Map.ofArray
+        |> AssemblyResourceTools.createCardRecordForStrings(lessonID, keyRoot, language, "masculine")
+    else
+        [||]
 
 let private cardsForDGCPSuffix(baseName: string, rootPath: string, lessonID: int)(t: string * string * Encoding) =
     let (suffix, language, encoding) = t
@@ -59,6 +62,26 @@ let private cardsForDGCPSuffix(baseName: string, rootPath: string, lessonID: int
 let private cardsForDGCPBaseName(rootPath: string, lessonID: int)(baseName: string) = 
     suffixesAndLanguages
     |> Array.collect(cardsForDGCPSuffix(baseName, rootPath, lessonID))
+
+let internal getNextDocTextBlock(s: string seq) = 
+    let isFiller(t: string) = t.StartsWith("#") || t.StartsWith("^") || t.StartsWith("_")
+    let n = s |> Seq.skipWhile isFiller
+    let strings = n |> Seq.takeWhile(fun t -> not(t.StartsWith("#")) && not(t.StartsWith("_")))
+    let newState = n |> Seq.skipWhile(isFiller >> not)
+    match Seq.isEmpty(strings) with
+    | true -> None
+    | false -> Some(String.Join(Environment.NewLine, strings), newState)
+
+let internal cardsForDocText(d: string, language: string, keyRoot: string, lessonID: int, encoding: Encoding) = 
+    let lines = d.Split([| Environment.NewLine |], StringSplitOptions.RemoveEmptyEntries)
+            
+    lines 
+    |> Seq.ofArray 
+    |> Seq.unfold getNextDocTextBlock 
+    |> Seq.mapi (fun i t -> (i.ToString(), t))
+    |> Array.ofSeq
+    |> Map.ofArray
+    |> AssemblyResourceTools.createCardRecordForStrings(lessonID, keyRoot, language, "masculine")
 
 let ExtractSpaceChannel5Part2(path: string, db: LLDatabase, g: GameRecord, args: string array) = 
     let lessonEntry = {
