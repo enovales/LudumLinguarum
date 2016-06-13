@@ -8,18 +8,38 @@ open System.Text
 open System.Xml.Linq
 
 /// <summary>
-/// Generates a key-value pair from a Text XML element in a PQ2 localization
+/// Generates a key-value pair from a Text XML element in a Puzzle Quest-engine localization
 /// file, which will later be transformed into a card.
 /// </summary>
 /// <param name="el">the XML element</param>
 let internal generateKVForTextElement(el: XElement) = 
     (el.Attribute(XName.Get("tag")).Value, el.Value)
 
+/// <summary>
+/// Generates a key-value pair from a CutScene Text XML element, from Puzzle Kingdoms.
+/// </summary>
+/// <param name="el">the text element</param>
+let internal generateKVForCutsceneTextElement(el: XElement) = 
+    (el.Attribute(XName.Get("time")).Value, el.Value)
+
+/// <summary>
+/// Generates cards for the top-level node in a Puzzle Quest-engine localization file.
+/// </summary>
+/// <param name="lessonID">lesson ID to use</param>
+/// <param name="language">language to use</param>
+/// <param name="keyRoot">key root for generating cards</param>
+/// <param name="xel">the XML root element</param>
 let internal generateCardsForXElement(lessonID: int, language: string, keyRoot: string)(xel: XElement) = 
+    let cutsceneName = XName.Get("CutScene")
+    let elementExtractor = 
+        match xel.Name with
+        | n when n = cutsceneName -> generateKVForCutsceneTextElement
+        | _ -> generateKVForTextElement
+
     // the element is the TextLibrary node
     xel.Descendants()
     |> Seq.filter(fun t -> t.Name.LocalName = "Text")
-    |> Seq.map generateKVForTextElement
+    |> Seq.map elementExtractor
     |> Map.ofSeq
     |> AssemblyResourceTools.createCardRecordForStrings(lessonID, keyRoot, language, "masculine")
 
@@ -169,3 +189,37 @@ let ExtractPuzzleChronicles(path: string, db: LLDatabase, g: GameRecord, args: s
     |> db.CreateOrUpdateCards
 
     ()
+
+let ExtractPuzzleKingdoms(path: string, db: LLDatabase, g: GameRecord, args: string array) = 
+    let configuredLessonCreator = createLesson(g.ID, db)
+    let languageMap = 
+        [|
+            ("English", "en")
+            ("French", "fr")
+            ("German", "de")
+            ("Italian", "it")
+            ("Spanish", "es")
+        |]
+        |> Map.ofArray
+
+    // create lessons for each of the subdirectories in the asset zips
+    let lessonsMap = 
+        [|
+            ("", "Game Text")
+            ("Conversations", "Conversations")
+            ("CutScenes", "Cutscenes")
+            ("pc", "pc")
+            ("Tutorials", "Tutorials")
+        |]
+        |> Array.map(fun (k, v) -> (k, configuredLessonCreator(v)))
+        |> Map.ofArray
+
+    // load zips in reverse order, so the call to distinct will preserve the most recent ones
+    let cardKeyAndLanguage(c: CardRecord) = c.LanguageTag + c.Key
+    [|
+        "Assets.zip"
+    |]
+    |> Array.collect((fun p -> Path.Combine(path, p)) >> generateCardsForAssetZip(languageMap, lessonsMap))
+    |> Array.distinctBy cardKeyAndLanguage
+    |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
+    |> db.CreateOrUpdateCards

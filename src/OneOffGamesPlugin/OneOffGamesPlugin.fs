@@ -18,6 +18,7 @@ type OneOffGamesPlugin() =
     let magickaName = "Magicka"
     let wormsArmageddonName = "Worms Armageddon"
     let puzzleChroniclesName = "Puzzle Chronicles"
+    let puzzleKingdomsName = "Puzzle Kingdoms"
     let puzzleQuest2Name = "Puzzle Quest 2"
     let pillarsOfEternityName = "Pillars of Eternity"
     let orcsMustDieName = "Orcs Must Die!"
@@ -45,6 +46,7 @@ type OneOffGamesPlugin() =
                 magickaName
                 wormsArmageddonName
                 puzzleChroniclesName
+                puzzleKingdomsName
                 puzzleQuest2Name
                 pillarsOfEternityName
                 orcsMustDieName
@@ -68,6 +70,7 @@ type OneOffGamesPlugin() =
                     (magickaName, Magicka.ExtractMagicka)
                     (wormsArmageddonName, WormsArmageddon.ExtractWormsArmageddon)
                     (puzzleChroniclesName, PuzzleQuestGames.ExtractPuzzleChronicles)
+                    (puzzleKingdomsName, PuzzleQuestGames.ExtractPuzzleKingdoms)
                     (puzzleQuest2Name, PuzzleQuestGames.ExtractPuzzleQuest2)
                     (pillarsOfEternityName, PillarsOfEternity.ExtractPillarsOfEternity)
                     (orcsMustDieName, OrcsMustDie.ExtractOrcsMustDie)
