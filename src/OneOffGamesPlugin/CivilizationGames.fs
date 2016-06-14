@@ -22,16 +22,21 @@ let internal nodeNameToLanguage =
 let internal generateKVsForTextElement(xel: XElement) = 
     let tagName = XName.Get("Tag", "http://www.firaxis.com")
     let tag = (xel.Elements(tagName) |> Seq.head).Value
-    let others = xel.Elements() |> Seq.filter(fun e -> e.Name <> tagName)
-    let getValueForLanguageElement(langEl: XElement) = 
+    let others = xel.Elements() |> Seq.filter(fun e -> (e.Name <> tagName) && (nodeNameToLanguage.ContainsKey(e.Name.LocalName)))
+    let getValueForLanguageElement(langEl: XElement): string option = 
         if String.IsNullOrWhiteSpace(langEl.Value) then
-            // get "Text" descendant
+            // get "Text" descendant, if available
             let textName = XName.Get("Text", "http://www.firaxis.com")
-            (langEl.Elements(textName) |> Seq.head).Value
+            langEl.Elements(textName) |> Seq.tryHead |> Option.map(fun o -> o.Value)
         else
-            langEl.Value
+            Some(langEl.Value)
 
-    others |> Seq.map(fun e -> (nodeNameToLanguage.[e.Name.LocalName], (tag, getValueForLanguageElement(e))))
+    let kvSeqForTextElement(e: XElement) = 
+        match getValueForLanguageElement(e) with
+        | Some(v) -> [| (nodeNameToLanguage.[e.Name.LocalName], (tag, v)) |]
+        | _ -> [||]
+
+    others |> Seq.collect kvSeqForTextElement
 
 /// <summary>
 /// Generates cards for the top-level node in a Puzzle Quest-engine localization file.
