@@ -75,30 +75,127 @@ let internal createLesson(gameID: int, db: LLDatabase)(title: string): LessonRec
     }
     { lessonEntry with ID = db.CreateOrUpdateLesson(lessonEntry) }
 
+let internal civ4Content = 
+    [|
+        (@"Assets\XML\Text\CIV4DiplomacyText.xml", "Diplomacy Text")
+        (@"Assets\XML\Text\CIV4GameText_Civilopedia_Bonuses.xml", "Civilopedia Bonuses")
+        (@"Assets\XML\Text\CIV4GameText_Civilopedia_BuildingsProjects.xml", "Civilopedia Buildings and Projects")
+        (@"Assets\XML\Text\CIV4GameText_Civilopedia_CivicsReligion.xml", "Civilopedia Civics and Religions")
+        (@"Assets\XML\Text\CIV4GameText_Civilopedia_CivLeaders.xml", "Civilopedia Leaders")
+        (@"Assets\XML\Text\CIV4GameText_Civilopedia_Concepts.xml", "Civilopedia Concepts")
+        (@"Assets\XML\Text\CIV4GameText_Civilopedia_Techs.xml", "Civilopedia Techs")
+        (@"Assets\XML\Text\CIV4GameText_Civilopedia_Units.xml", "Civilopedia Units")
+        (@"Assets\XML\Text\CIV4GameText_Help.xml", "Help")
+        (@"Assets\XML\Text\CIV4GameText_Misc1.xml", "Misc")
+        (@"Assets\XML\Text\CIV4GameText_New.xml", "New")
+        (@"Assets\XML\Text\CIV4GameText_Strategy.xml", "Strategy")
+        (@"Assets\XML\Text\CIV4GameTextInfos.xml", "Infos")
+        (@"Assets\XML\Text\CIV4GameTextInfos_Cities.xml", "Infos Cities")
+        (@"Assets\XML\Text\CIV4GameTextInfos_GreatPeople.xml", "Infos Great People")
+        (@"Assets\XML\Text\CIV4GameTextInfos_Objects.xml", "Infos Objects")
+    |]
+
+let internal civ4WarlordsContent = 
+    [|
+        (@"Warlords\Assets\XML\Text\CIV4GameText_Warlords.xml", "Warlords")
+        (@"Warlords\Assets\XML\Text\CIV4GameText_Warlords_Changed.xml", "Warlords Changed")
+        (@"Warlords\Assets\XML\Text\CIV4GameText_Warlords_Civ4Changed.xml", "Warlords Civ 4 Changed")
+        (@"Warlords\Assets\XML\Text\CIV4GameText_Warlords_Civilopedia.xml", "Warlords Civilopedia")
+        (@"Warlords\Assets\XML\Text\CIV4GameText_Warlords_Diplomacy.xml", "Warlords Diplomacy")
+        (@"Warlords\Assets\XML\Text\CIV4GameText_Warlords_Objects.xml", "Warlords Objects")
+        (@"Warlords\Assets\XML\Text\CIV4GameText_Warlords_Strategy.xml", "Warlords Strategy")
+    |]
+
+let internal civ4BtsContent = 
+    [|
+        (@"Beyond the Sword\Assets\XML\Text\CIV4GameText_BTS.xml", "Beyond the Sword")
+        (@"Beyond the Sword\Assets\XML\Text\CIV4GameText_BTS_Fixed.xml", "Beyond the Sword Fixed")
+        (@"Beyond the Sword\Assets\XML\Text\CIV4GameText_BTS_FourthRoundTranslation.xml", "Beyond the Sword Fourth Round Translation")
+        (@"Beyond the Sword\Assets\XML\Text\CIV4GameText_BTS_PatchText.xml", "Beyond the Sword Patch Text")
+        (@"Beyond the Sword\Assets\XML\Text\CIV4GameText_Cities_BTS.xml", "Beyond the Sword Cities")
+        (@"Beyond the Sword\Assets\XML\Text\CIV4GameText_Civilopedia_BTS.xml", "Beyond the Sword Civilopedia")
+        (@"Beyond the Sword\Assets\XML\Text\CIV4GameText_DiplomacyText_BTS.xml", "Beyond the Sword Diplomacy")
+        (@"Beyond the Sword\Assets\XML\Text\CIV4GameText_Events_BTS.xml", "Beyond the Sword Events")
+        (@"Beyond the Sword\Assets\XML\Text\CIV4GameText_Objects_BTS.xml", "Beyond the Sword Objects")
+        (@"Beyond the Sword\Assets\XML\Text\CIV4GameTextChanged_BTS.xml", "Beyond the Sword Changed")
+    |]
+
+let internal civ4ColonizationContent = 
+    [|
+        (@"Assets\XML\Text\CIV4GameText_BTS_PatchText.xml", "Patch Text")
+        (@"Assets\XML\Text\CIV4GameText_Colonization.xml", "Colonization")
+        (@"Assets\XML\Text\CIV4GameText_Colonization_DiplomacyText.xml", "Diplomacy Text")
+        (@"Assets\XML\Text\CIV4GameText_Colonization_Events.xml", "Events")
+        (@"Assets\XML\Text\CIV4GameText_Colonization_LastMinute.xml", "Last Minute")
+        (@"Assets\XML\Text\CIV4GameText_Colonization_Objects.xml", "Objects")
+        (@"Assets\XML\Text\CIV4GameText_Colonization_PatchMod.xml", "Patch Mod")
+        (@"Assets\XML\Text\CIV4GameText_Colonization_Pedia.xml", "Civilopedia")
+        (@"Assets\XML\Text\CIV4GameText_Colonization_Strategy.xml", "Strategy")
+        (@"Assets\XML\Text\CIV4GameTextInfos_Objects_Original.xml", "Infos Objects Original")
+        (@"Assets\XML\Text\CIV4GameTextInfos_Original.xml", "Infos Original")
+    |]
+
 let ExtractCiv4(path: string, db: LLDatabase, g: GameRecord, args: string array) = 
     let configuredLessonCreator = createLesson(g.ID, db)
 
     // create lessons for each of the localization files
     let contentPathsToLessons = 
-        [|
-            ("CIV4DiplomacyText.xml", "Diplomacy Text")
-            ("CIV4GameText_Civilopedia_Bonuses.xml", "Civilopedia Bonuses")
-            ("CIV4GameText_Civilopedia_BuildingsProjects.xml", "Civilopedia Buildings and Projects")
-            ("CIV4GameText_Civilopedia_CivicsReligion.xml", "Civilopedia Civics and Religions")
-            ("CIV4GameText_Civilopedia_CivLeaders.xml", "Civilopedia Leaders")
-            ("CIV4GameText_Civilopedia_Concepts.xml", "Civilopedia Concepts")
-            ("CIV4GameText_Civilopedia_Techs.xml", "Civilopedia Techs")
-            ("CIV4GameText_Civilopedia_Units.xml", "Civilopedia Units")
-            ("CIV4GameText_Help.xml", "Help")
-            ("CIV4GameText_Misc1.xml", "Misc")
-            ("CIV4GameText_New.xml", "New")
-            ("CIV4GameText_Strategy.xml", "Strategy")
-            ("CIV4GameTextInfos.xml", "Infos")
-            ("CIV4GameTextInfos_Cities.xml", "Infos Cities")
-            ("CIV4GameTextInfos_GreatPeople.xml", "Infos Great People")
-            ("CIV4GameTextInfos_Objects.xml", "Infos Objects")
-        |]
-        |> Array.map(fun (k, v) -> (Path.Combine(path, @"Assets\XML\Text\" + k), configuredLessonCreator(v)))
+        civ4Content
+        |> Array.map(fun (k, v) -> (Path.Combine(path, k), configuredLessonCreator(v)))
+
+    let cardsForContent(p: string, l: LessonRecord) = 
+        let rootName = Path.GetFileNameWithoutExtension(p)
+        use fs = new FileStream(p, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)
+        generateCardsForXmlStream(l.ID, rootName)(fs)
+
+    contentPathsToLessons
+    |> Array.collect cardsForContent
+    |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
+    |> db.CreateOrUpdateCards
+
+let ExtractCiv4Warlords(path: string, db: LLDatabase, g: GameRecord, args: string array) = 
+    let configuredLessonCreator = createLesson(g.ID, db)
+
+    // create lessons for each of the localization files
+    let contentPathsToLessons = 
+        Array.concat([| civ4Content; civ4WarlordsContent |])
+        |> Array.map(fun (k, v) -> (Path.Combine(path, k), configuredLessonCreator(v)))
+
+    let cardsForContent(p: string, l: LessonRecord) = 
+        let rootName = Path.GetFileNameWithoutExtension(p)
+        use fs = new FileStream(p, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)
+        generateCardsForXmlStream(l.ID, rootName)(fs)
+
+    contentPathsToLessons
+    |> Array.collect cardsForContent
+    |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
+    |> db.CreateOrUpdateCards
+
+let ExtractCiv4BeyondTheSword(path: string, db: LLDatabase, g: GameRecord, args: string array) = 
+    let configuredLessonCreator = createLesson(g.ID, db)
+
+    // create lessons for each of the localization files
+    let contentPathsToLessons = 
+        Array.concat([| civ4Content; civ4WarlordsContent; civ4BtsContent |])
+        |> Array.map(fun (k, v) -> (Path.Combine(path, k), configuredLessonCreator(v)))
+
+    let cardsForContent(p: string, l: LessonRecord) = 
+        let rootName = Path.GetFileNameWithoutExtension(p)
+        use fs = new FileStream(p, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)
+        generateCardsForXmlStream(l.ID, rootName)(fs)
+
+    contentPathsToLessons
+    |> Array.collect cardsForContent
+    |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
+    |> db.CreateOrUpdateCards
+
+let ExtractCiv4Colonization(path: string, db: LLDatabase, g: GameRecord, args: string array) = 
+    let configuredLessonCreator = createLesson(g.ID, db)
+
+    // create lessons for each of the localization files
+    let contentPathsToLessons = 
+        civ4ColonizationContent
+        |> Array.map(fun (k, v) -> (Path.Combine(path, k), configuredLessonCreator(v)))
 
     let cardsForContent(p: string, l: LessonRecord) = 
         let rootName = Path.GetFileNameWithoutExtension(p)
