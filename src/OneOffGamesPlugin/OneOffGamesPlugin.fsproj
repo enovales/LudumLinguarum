@@ -59,6 +59,7 @@
     <Compile Include="PillarsOfEternity.fs" />
     <Compile Include="OrcsMustDie.fs" />
     <Compile Include="MadballsBaboInvasion.fs" />
+    <Compile Include="CivilizationGames.fs" />
     <Compile Include="SimpleGames.fs" />
     <Compile Include="OneOffGamesPlugin.fs" />
     <Compile Include="AssemblyInfoStatic.fs" />
