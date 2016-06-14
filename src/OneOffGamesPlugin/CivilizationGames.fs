@@ -3,9 +3,10 @@
 open LLDatabase
 open System
 open System.IO
+open System.Text.RegularExpressions
 open System.Xml.Linq
 
-let internal nodeNameToLanguage = 
+let private nodeNameToLanguage = 
     [|
         ("English", "en")
         ("French", "fr")
@@ -14,6 +15,14 @@ let internal nodeNameToLanguage =
         ("Spanish", "es")
     |]
     |> Map.ofArray
+
+let private civ4formattingCodeRegex = new Regex("\[[^\]]+?\]")
+let rec internal stripCiv4FormattingCodes(value: string): string = 
+    let r = civ4formattingCodeRegex.Match(value)
+    match r.Success with
+    | true -> stripCiv4FormattingCodes(value.Remove(r.Index, r.Length))
+    | _ -> value
+
 
 /// <summary>
 /// Generates a set of key-value pairs for a text element, one for each language.
@@ -33,7 +42,7 @@ let internal generateKVsForTextElement(xel: XElement) =
 
     let kvSeqForTextElement(e: XElement) = 
         match getValueForLanguageElement(e) with
-        | Some(v) -> [| (nodeNameToLanguage.[e.Name.LocalName], (tag, v)) |]
+        | Some(v) -> [| (nodeNameToLanguage.[e.Name.LocalName], (tag, stripCiv4FormattingCodes(v))) |]
         | _ -> [||]
 
     others |> Seq.collect kvSeqForTextElement
