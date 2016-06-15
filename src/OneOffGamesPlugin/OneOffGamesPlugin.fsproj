@@ -60,6 +60,7 @@
     <Compile Include="OrcsMustDie.fs" />
     <Compile Include="MadballsBaboInvasion.fs" />
     <Compile Include="CivilizationGames.fs" />
+    <Compile Include="ParadoxStrategyGames.fs" />
     <Compile Include="SimpleGames.fs" />
     <Compile Include="OneOffGamesPlugin.fs" />
     <Compile Include="AssemblyInfoStatic.fs" />
