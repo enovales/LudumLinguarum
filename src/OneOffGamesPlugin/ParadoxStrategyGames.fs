@@ -51,7 +51,7 @@ let internal generateCardsForSSVContent(lessonID: int, keyRoot: string)(ssv: str
         |> Seq.toArray
 
     ssv.Split([| Environment.NewLine |], StringSplitOptions.None) 
-    |> Array.filter (fun s -> not(s.StartsWith("#")))
+    |> Array.filter (fun s -> not(String.IsNullOrWhiteSpace(s)) && not(s.StartsWith("#")))
     |> Array.collect(extractor >> cardsForLine)
 
 let internal generateCardsForSSVs(lid: int, ssvDir: string) = 
