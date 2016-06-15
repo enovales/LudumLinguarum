@@ -1,10 +1,11 @@
 ﻿module CsvTools
 
+open System
 open System.Collections
 open System.Text.RegularExpressions
 
-let private csvRegex = """
-(?:^\t)*
+let private csvRegex(delimiter: string) = String.Format("""
+(?:^{0})*
 (?:
     (?# Double-quoted field)
     " (?# field's opening quote)
@@ -13,13 +14,15 @@ let private csvRegex = """
 (?# ... or ...)
 |
     (?# ... some non-quote/non-tab text ...)
-    ( [^"\t]+ )
+    ( [^"{0}]+ )
 )
-"""
-let internal lineRegex = new Regex(csvRegex, RegexOptions.IgnorePatternWhitespace)
+""", delimiter
+)
+
+let internal lineRegex(delimiter: string) = new Regex(csvRegex(delimiter), RegexOptions.IgnorePatternWhitespace)
 let internal quotesRegex = new Regex("\"\"")
-let extractFieldsForLine(line: string): string array = 
-    let matches = lineRegex.Matches(line)
+let extractFieldsForLine(delimiter: string)(line: string): string array = 
+    let matches = lineRegex(delimiter).Matches(line)
     let it = matches.GetEnumerator()
     let unfoldMatches(state: IEnumerator) = 
         if state.MoveNext() then
