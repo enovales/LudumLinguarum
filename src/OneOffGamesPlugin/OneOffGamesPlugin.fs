@@ -27,6 +27,10 @@ type OneOffGamesPlugin() =
     let hellYeahName = "Hell Yeah!"
     let madballsBaboInvasionName = "Madballs: Babo Invasion"
     let spaceChannel5Part2Name = "Space Channel 5: Part 2"
+    let civ4Name = "Sid Meier's Civilization IV"
+    let civ4WarlordsName = "Sid Meier's Civilization IV: Warlords"
+    let civ4BeyondTheSwordName = "Sid Meier's Civilization IV: Beyond the Sword"
+    let civ4ColonizationName = "Sid Meier's Civilization IV: Colonization"
 
     interface IPlugin with
         member this.Load(tw: TextWriter, [<ParamArray>] args: string[]) = 
@@ -55,6 +59,10 @@ type OneOffGamesPlugin() =
                 hellYeahName
                 madballsBaboInvasionName
                 spaceChannel5Part2Name
+                civ4Name
+                civ4WarlordsName
+                civ4BeyondTheSwordName
+                civ4ColonizationName
             |]
         member this.ExtractAll(game: string, path: string, db: LLDatabase, [<ParamArray>] args: string[]) = 
             this.LogWriteLine("Searching for game handler for '" + game + "'") |> ignore
@@ -79,6 +87,10 @@ type OneOffGamesPlugin() =
                     (hellYeahName, SimpleGames.ExtractHellYeah)
                     (madballsBaboInvasionName, MadballsBaboInvasion.ExtractMadballsBaboInvasion)
                     (spaceChannel5Part2Name, SpaceChannel5.ExtractSpaceChannel5Part2)
+                    (civ4Name, CivilizationGames.ExtractCiv4)
+                    (civ4WarlordsName, CivilizationGames.ExtractCiv4Warlords)
+                    (civ4BeyondTheSwordName, CivilizationGames.ExtractCiv4BeyondTheSword)
+                    (civ4ColonizationName, CivilizationGames.ExtractCiv4Colonization)
                 |] |> Map.ofArray
 
             if (handlerMapping |> Map.containsKey(game)) then
