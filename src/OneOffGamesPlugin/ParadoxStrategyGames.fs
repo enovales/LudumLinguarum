@@ -3,61 +3,69 @@
 open LLDatabase
 open System
 open System.IO
+open System.Text
 open System.Text.RegularExpressions
 open System.Xml.Linq
 
-let internal localizationSsvColumnMapping = 
+let internal localizationsAndEncodings = 
     [|
-        Some("en")
-        Some("fr")
-        Some("de")
-        Some("pl")
-        Some("es")
-        Some("it")
-        Some("sv")
-        Some("cz")
-        Some("hu")
-        Some("nl")
-        Some("pt")
-        Some("ru")
-        Some("fi")
-        None
+        ("en", Encoding.GetEncoding("Windows-1252"))
+        ("fr", Encoding.GetEncoding("Windows-1252"))
+        ("de", Encoding.GetEncoding("Windows-1252"))
+        ("pl", Encoding.GetEncoding("windows-1250"))
+        ("es", Encoding.GetEncoding("Windows-1252"))
+        ("it", Encoding.GetEncoding("Windows-1252"))
+        //("sv", Encoding.GetEncoding("Windows-1252"))
+        ("cz", Encoding.GetEncoding("Windows-1250"))
+        ("hu", Encoding.GetEncoding("Windows-1250"))
+        ("nl", Encoding.GetEncoding("Windows-1252"))
+        ("pt", Encoding.GetEncoding("Windows-1252"))
+        ("ru", Encoding.GetEncoding("koi8-r"))
+        ("fi", Encoding.GetEncoding("Windows-1252"))
     |]
 
-let internal generateCardsForSSVContent(lessonID: int, keyRoot: string)(ssv: string) = 
+let internal generateCardsForSSVContent(lessonID: int, keyRoot: string)(ssvBytes: byte array) = 
     let extractor = CsvTools.extractFieldsForLine(";")
-    let cardsForLine(fields: string array) = 
-        let cardsForPair(key: string)(langOpt: string option, value: string) = 
-            match (langOpt, value) with
-            | (Some(language), v) -> 
-                [|
-                    {
-                        CardRecord.ID = 0
-                        LessonID = lessonID
-                        Text = v
-                        Gender = "masculine"
-                        Key = keyRoot + key + "masculine"
-                        GenderlessKey = keyRoot + key
-                        KeyHash = 0
-                        GenderlessKeyHash = 0
-                        SoundResource = ""
-                        LanguageTag = language
-                        Reversible = true
-                    }
-                |]
-            | _ -> [||]
-        Seq.zip localizationSsvColumnMapping (fields |> Seq.skip(1))
-        |> Seq.collect(cardsForPair(fields |> Seq.head))
-        |> Seq.toArray
+    let cardsForLine(i: int, lang: string)(fields: string array) = 
+        let tag = fields |> Array.head
+        let langValue = fields.[i].Trim()
+        match langValue with
+        | v when not(String.IsNullOrWhiteSpace(v)) && v <> "x" && v <> "*" -> 
+            [|
+                {
+                    CardRecord.ID = 0
+                    LessonID = lessonID
+                    Text = v
+                    Gender = "masculine"
+                    Key = keyRoot + tag + "masculine"
+                    GenderlessKey = keyRoot + tag
+                    KeyHash = 0
+                    GenderlessKeyHash = 0
+                    SoundResource = ""
+                    LanguageTag = lang
+                    Reversible = true
+                }
+            |]
+        | _ -> [||]
 
-    ssv.Split([| Environment.NewLine |], StringSplitOptions.None) 
-    |> Array.filter (fun s -> not(String.IsNullOrWhiteSpace(s)) && not(s.StartsWith("#")))
-    |> Array.collect(extractor >> cardsForLine)
+    // for each available language, extract the whole file again with that language's encoding.
+    let createExtractionTuple(i: int)(lang: string, enc: Encoding) = 
+        (i + 1, lang, enc.GetString(ssvBytes).Split([| Environment.NewLine |], StringSplitOptions.None))
+    let cardsForLocalizationAndEncoding(i: int, lang: string, lines: string array) = 
+        let nonCommentLine(l: string) = not(l.StartsWith("#")) && not(String.IsNullOrWhiteSpace(l))
+        lines 
+        |> Array.filter nonCommentLine 
+        |> Array.map extractor
+        |> Array.collect(cardsForLine(i, lang))
+
+    localizationsAndEncodings
+    |> Array.mapi createExtractionTuple
+    |> Array.collect cardsForLocalizationAndEncoding
 
 let internal generateCardsForSSVs(lid: int, ssvDir: string) = 
     let files = Directory.GetFiles(ssvDir, "*.csv")
     let cardsForFile(p: string) = 
-        File.ReadAllText(p) 
+        File.ReadAllBytes(p) 
         |> generateCardsForSSVContent(lid, Path.GetFileNameWithoutExtension(p))
 
     files
