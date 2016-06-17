@@ -28,25 +28,28 @@ let internal generateCardsForSSVContent(lessonID: int, keyRoot: string)(ssvBytes
     let extractor = CsvTools.extractFieldsForLine(";")
     let cardsForLine(i: int, lang: string)(fields: string array) = 
         let tag = fields |> Array.head
-        let langValue = fields.[i].Trim()
-        match langValue with
-        | v when not(String.IsNullOrWhiteSpace(v)) && v <> "x" && v <> "*" -> 
-            [|
-                {
-                    CardRecord.ID = 0
-                    LessonID = lessonID
-                    Text = v
-                    Gender = "masculine"
-                    Key = keyRoot + tag + "masculine"
-                    GenderlessKey = keyRoot + tag
-                    KeyHash = 0
-                    GenderlessKeyHash = 0
-                    SoundResource = ""
-                    LanguageTag = lang
-                    Reversible = true
-                }
-            |]
-        | _ -> [||]
+        if (i >= fields.Length) then
+            [||]
+        else
+            let langValue = fields.[i].Trim()
+            match langValue with
+            | v when not(String.IsNullOrWhiteSpace(v)) && v <> "x" && v <> "*" -> 
+                [|
+                    {
+                        CardRecord.ID = 0
+                        LessonID = lessonID
+                        Text = v
+                        Gender = "masculine"
+                        Key = keyRoot + tag + "masculine"
+                        GenderlessKey = keyRoot + tag
+                        KeyHash = 0
+                        GenderlessKeyHash = 0
+                        SoundResource = ""
+                        LanguageTag = lang
+                        Reversible = true
+                    }
+                |]
+            | _ -> [||]
 
     // for each available language, extract the whole file again with that language's encoding.
     let createExtractionTuple(i: int)(lang: string, enc: Encoding) = 
@@ -62,14 +65,15 @@ let internal generateCardsForSSVContent(lessonID: int, keyRoot: string)(ssvBytes
     |> Array.mapi createExtractionTuple
     |> Array.collect cardsForLocalizationAndEncoding
 
+let internal generateCardsForFile(lid: int)(p: string) = 
+    File.ReadAllBytes(p) 
+    |> generateCardsForSSVContent(lid, Path.GetFileNameWithoutExtension(p))
+
 let internal generateCardsForSSVs(lid: int, ssvDir: string) = 
     let files = Directory.GetFiles(ssvDir, "*.csv")
-    let cardsForFile(p: string) = 
-        File.ReadAllBytes(p) 
-        |> generateCardsForSSVContent(lid, Path.GetFileNameWithoutExtension(p))
 
     files
-    |> Seq.collect cardsForFile
+    |> Seq.collect(generateCardsForFile(lid))
     |> Array.ofSeq
 
 let internal createLesson(gameID: int, db: LLDatabase)(title: string): LessonRecord = 
@@ -81,6 +85,22 @@ let internal createLesson(gameID: int, db: LLDatabase)(title: string): LessonRec
     { lessonEntry with ID = db.CreateOrUpdateLesson(lessonEntry) }
 
 let ExtractEU3(path: string, db: LLDatabase, g: GameRecord, args: string array) = 
+    let lesson = createLesson(g.ID, db)("Game Text")
+
+    generateCardsForSSVs(lesson.ID, Path.Combine(path, "localisation"))
+    |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
+    |> db.CreateOrUpdateCards
+
+let ExtractHOI3(path: string, db: LLDatabase, g: GameRecord, args: string array) = 
+    // Hearts of Iron 3 has better grouping in its localization files, so we'll
+    // go ahead and create a lesson for each one.
+    let lessonGenerator = createLesson(g.ID, db)
+    Directory.GetFiles(Path.Combine(path, "localisation"), "*.csv")
+    |> Array.collect(fun p -> generateCardsForFile(lessonGenerator(Path.GetFileNameWithoutExtension(p)).ID)(p))
+    |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
+    |> db.CreateOrUpdateCards
+
+let ExtractVictoria2(path: string, db: LLDatabase, g: GameRecord, args: string array) = 
     let lesson = createLesson(g.ID, db)("Game Text")
 
     generateCardsForSSVs(lesson.ID, Path.Combine(path, "localisation"))
