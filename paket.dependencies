@@ -6,6 +6,7 @@ github praeclarum/sqlite-net
 nuget CsvHelper
 nuget sqlite
 nuget SQLite.Native
+nuget YamlDotNet
 github icsharpcode/SharpZipLib
 github gsscoder/commandline
 github enovales/SegaAFSTools

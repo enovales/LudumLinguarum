@@ -106,3 +106,25 @@ let ExtractVictoria2(path: string, db: LLDatabase, g: GameRecord, args: string a
     generateCardsForSSVs(lesson.ID, Path.Combine(path, "localisation"))
     |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
     |> db.CreateOrUpdateCards
+
+let ExtractEU4(path: string, db: LLDatabase, g: GameRecord, args: string array) = 
+    // The localization .yml files are named xyz_l_language_optional_suffix.yml. Extract the
+    // lesson names, and then group the files by lesson for extraction.
+    let lessonGenerator = createLesson(g.ID, db)
+    let supportedLanguages = [| "english"; "french"; "german"; "spanish" |]
+    let extractLessonName(p: string) = 
+        supportedLanguages |> Array.fold (fun (s: string)(l: string) -> s.Replace("_l_" + l, "")) p
+        
+    let ymls = Directory.GetFiles(Path.Combine(path, "localisation"), "*.yml")
+    let ymlsByLesson = ymls |> Array.groupBy extractLessonName
+
+    let cardsForLesson(lessonName: string, files: string array) = 
+        let lesson = lessonGenerator(lessonName)
+        [||]
+
+    ymlsByLesson
+    |> Array.collect cardsForLesson
+    |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
+    |> db.CreateOrUpdateCards
+
+    ()
