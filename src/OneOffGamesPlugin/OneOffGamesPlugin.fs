@@ -31,6 +31,10 @@ type OneOffGamesPlugin() =
     let civ4WarlordsName = "Sid Meier's Civilization IV: Warlords"
     let civ4BeyondTheSwordName = "Sid Meier's Civilization IV: Beyond the Sword"
     let civ4ColonizationName = "Sid Meier's Civilization IV: Colonization"
+    let eu3Name = "Europa Universalis III"
+    let hoi3Name = "Hearts of Iron 3"
+    let victoria2Name = "Victoria 2"
+    let eu4Name = "Europa Universalis IV"
 
     interface IPlugin with
         member this.Load(tw: TextWriter, [<ParamArray>] args: string[]) = 
@@ -63,13 +67,17 @@ type OneOffGamesPlugin() =
                 civ4WarlordsName
                 civ4BeyondTheSwordName
                 civ4ColonizationName
+                eu3Name
+                hoi3Name
+                victoria2Name
+                eu4Name
             |]
         member this.ExtractAll(game: string, path: string, db: LLDatabase, [<ParamArray>] args: string[]) = 
             this.LogWriteLine("Searching for game handler for '" + game + "'") |> ignore
             let handlerMapping = 
                 [|
-                    (kof2002Name, XUIGames.ExtractKOF2002);
-                    (kof98Name, XUIGames.ExtractKOF98);
+                    (kof2002Name, XUIGames.ExtractKOF2002)
+                    (kof98Name, XUIGames.ExtractKOF98)
                     (jetSetRadioName, JetSetRadio.JetSetRadio.ExtractJetSetRadio)
                     (skullsOfTheShogunName, SimpleGames.ExtractSkullsOfTheShogun)
                     (magicalDropVName, SimpleGames.ExtractMagicalDropV)
@@ -91,6 +99,10 @@ type OneOffGamesPlugin() =
                     (civ4WarlordsName, CivilizationGames.ExtractCiv4Warlords)
                     (civ4BeyondTheSwordName, CivilizationGames.ExtractCiv4BeyondTheSword)
                     (civ4ColonizationName, CivilizationGames.ExtractCiv4Colonization)
+                    (eu3Name, ParadoxStrategyGames.ExtractEU3)
+                    (hoi3Name, ParadoxStrategyGames.ExtractHOI3)
+                    (victoria2Name, ParadoxStrategyGames.ExtractVictoria2)
+                    (eu4Name, ParadoxStrategyGames.ExtractEU4)
                 |] |> Map.ofArray
 
             if (handlerMapping |> Map.containsKey(game)) then

@@ -1,9 +1,9 @@
 FRAMEWORK: NET452
 NUGET
   remote: https://www.nuget.org/api/v2
-  specs:
-    FAKE (4.28)
-    FluentAssertions (4.8)
+    CsvHelper (2.15)
+    FAKE (4.29)
+    FluentAssertions (4.9)
     FsCheck (2.5)
       FSharp.Core (>= 3.1.2.5)
     FSharp.Compiler.Service (2.0.0.6)
@@ -31,16 +31,14 @@ NUGET
       xunit.extensibility.core (2.1)
     xunit.runner.console (2.1)
     xunit.runner.visualstudio (2.1)
+    YamlDotNet (3.9)
 GITHUB
   remote: praeclarum/sqlite-net
-  specs:
-    FULLPROJECT (e7b8303677a3a0190cc601c091a139b60b464bc1)
+    FULLPROJECT (bf7acfcf0c97b0c668cbce8c0292d127ae56a252)
   remote: icsharpcode/SharpZipLib
-  specs:
     FULLPROJECT (00c3c9112f132b2b4202000bf5a4b0746881c9e3)
   remote: gsscoder/commandline
-  specs:
-    FULLPROJECT (285b2e6748838f9b0e1b1b7de5fca5f789a6fb3f)
+    FULLPROJECT (78848d064202840a942ee177a76434d6849f018a)
       FAKE
       FluentAssertions
       FsCheck
@@ -49,7 +47,7 @@ GITHUB
       xunit
       xunit.runner.console
       xunit.runner.visualstudio
-    FULLPROJECT (285b2e6748838f9b0e1b1b7de5fca5f789a6fb3f)
+    FULLPROJECT (78848d064202840a942ee177a76434d6849f018a)
       FAKE
       FluentAssertions
       FsCheck
@@ -59,24 +57,20 @@ GITHUB
       xunit.runner.console
       xunit.runner.visualstudio
   remote: gsscoder/CSharpx
-  specs:
     src/CSharpx/EnumerableExtensions.cs (1ae4e7b6ac1b19493f333e23c9ae636a01b23862)
     src/CSharpx/EnumerableExtensions.cs (1ae4e7b6ac1b19493f333e23c9ae636a01b23862)
     src/CSharpx/Maybe.cs (1ae4e7b6ac1b19493f333e23c9ae636a01b23862)
     src/CSharpx/Maybe.cs (1ae4e7b6ac1b19493f333e23c9ae636a01b23862)
   remote: gsscoder/railwaysharp
-  specs:
     src/RailwaySharp/ErrorHandling.cs (fa4f11173e470d558df80987e69e6ab10f977fcd)
     src/RailwaySharp/ErrorHandling.cs (fa4f11173e470d558df80987e69e6ab10f977fcd)
   remote: enovales/SegaAFSTools
-  specs:
     FULLPROJECT (c03159521639f8bf9ec60f49df814ddbffe298ea)
       FSharp.Core
 GROUP Build
 NUGET
   remote: https://www.nuget.org/api/v2
-  specs:
-    FAKE (4.28)
+    FAKE (4.29)
     FSharp.Compiler.Service (2.0.0.6)
     FSharp.Formatting (2.14.4)
       FSharp.Compiler.Service (2.0.0.6)
@@ -89,17 +83,15 @@ NUGET
     Microsoft.Net.Http (2.2.29) - framework: net10, net11, net20, net30, net35, net40, net40-full
       Microsoft.Bcl (>= 1.1.10)
       Microsoft.Bcl.Build (>= 1.0.14)
-    Octokit (0.19)
+    Octokit (0.20)
       Microsoft.Net.Http  - framework: net10, net11, net20, net30, net35, net40, net40-full
     SourceLink.Fake (1.1)
 GITHUB
   remote: fsharp/FAKE
-  specs:
-    modules/Octokit/Octokit.fsx (60acb2f035cb39f2bd40a6c58a4de10d915da248)
+    modules/Octokit/Octokit.fsx (f1d6399702cea83af9cc1f72f89cbf3dc0f86a5a)
       Octokit
 GROUP Test
 NUGET
   remote: https://www.nuget.org/api/v2
-  specs:
     NUnit (2.6.4)
     NUnit.Runners (2.6.4)

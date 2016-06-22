@@ -60,9 +60,12 @@
     <Compile Include="OrcsMustDie.fs" />
     <Compile Include="MadballsBaboInvasion.fs" />
     <Compile Include="CivilizationGames.fs" />
+    <Compile Include="ParadoxStrategyGames.fs" />
     <Compile Include="SimpleGames.fs" />
     <Compile Include="OneOffGamesPlugin.fs" />
     <Compile Include="AssemblyInfoStatic.fs" />
+    <None Include="Scripts\load-references-debug.fsx" />
+    <None Include="Scripts\load-project-debug.fsx" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\paket-files\enovales\SegaAFSTools\src\SegaAFSTools\SegaAFSLib.fsproj">
@@ -114,4 +117,15 @@
   <Target Name="AfterBuild">
   </Target>
   -->
+  <Choose>
+    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.5.2'">
+      <ItemGroup>
+        <Reference Include="YamlDotNet">
+          <HintPath>..\..\packages\YamlDotNet\lib\net35\YamlDotNet.dll</HintPath>
+          <Private>True</Private>
+          <Paket>True</Paket>
+        </Reference>
+      </ItemGroup>
+    </When>
+  </Choose>
 </Project>

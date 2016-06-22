@@ -67,6 +67,7 @@
     <Compile Include="MagickaTests.fs" />
     <Compile Include="MadballsBaboInvasionTests.fs" />
     <Compile Include="SpaceChannel5Tests.fs" />
+    <Compile Include="ParadoxStrategyGamesTests.fs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />

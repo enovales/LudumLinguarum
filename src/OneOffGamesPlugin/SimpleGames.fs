@@ -294,7 +294,7 @@ let internal stripHbFormattingTokens(s: string) =
     |> Seq.fold stripHbRegex s
 
 let hbGenerateCardsForLine(languages: string seq, lid: int)(l: string): CardRecord array = 
-    let fields = extractFieldsForLine(l)
+    let fields = extractFieldsForLine("\\t")(l)
 
     let cardId = fields |> Array.head
     let generateCardForIdAndText(language: string, text: string) = 

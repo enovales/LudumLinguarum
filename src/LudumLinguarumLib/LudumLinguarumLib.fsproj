@@ -74,6 +74,7 @@
     <Compile Include="AssemblyInfoStatic.fs" />
     <Compile Include="AssemblyResourceTools.fs" />
     <Compile Include="CsvTools.fs" />
+    <Compile Include="YamlTools.fs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />
@@ -93,5 +94,19 @@
       <Project>{5399c00c-af4d-46de-ada4-c20e02d4b26b}</Project>
       <Private>True</Private>
     </ProjectReference>
+    <Reference Include="YamlDotNet">
+      <HintPath>..\..\packages\YamlDotNet\lib\dotnet\YamlDotNet.dll</HintPath>
+    </Reference>
   </ItemGroup>
+  <Choose>
+    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.5.2'">
+      <ItemGroup>
+        <Reference Include="CsvHelper">
+          <HintPath>..\..\packages\CsvHelper\lib\net45\CsvHelper.dll</HintPath>
+          <Private>True</Private>
+          <Paket>True</Paket>
+        </Reference>
+      </ItemGroup>
+    </When>
+  </Choose>
 </Project>
