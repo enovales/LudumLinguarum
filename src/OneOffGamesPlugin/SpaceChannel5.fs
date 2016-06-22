@@ -45,7 +45,7 @@ let private dgcpFiles =
 
 let private cardsForDGCPFile(language: string, keyRoot: string, lessonID: int, path: string, encoding: Encoding) = 
     if (File.Exists(path)) then
-        let dgcp = new DGCP.DGCPFile(path, encoding)
+        let dgcp = new AFS.DGCP.DGCPFile(path, encoding)
             
         dgcp.Entries
         |> Array.mapi (fun i t -> (i.ToString(), t))

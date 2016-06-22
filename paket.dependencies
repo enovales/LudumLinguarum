@@ -2,14 +2,16 @@ framework net452
 
 source https://nuget.org/api/v2
 
+nuget FSharp.Core redirects: force
+
 github praeclarum/sqlite-net
 nuget CsvHelper
 nuget sqlite
 nuget SQLite.Native
 nuget YamlDotNet
 github icsharpcode/SharpZipLib
-github gsscoder/commandline
-github enovales/SegaAFSTools
+git https://github.com/gsscoder/commandline.git master build: "build.cmd", OS: windows
+github enovales/SegaAFSTools src/SegaAFSTools/AFS.fs
 
 group Build
   source https://nuget.org/api/v2

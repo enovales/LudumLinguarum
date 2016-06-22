@@ -2,75 +2,29 @@ FRAMEWORK: NET452
 NUGET
   remote: https://www.nuget.org/api/v2
     CsvHelper (2.15)
-    FAKE (4.29)
-    FluentAssertions (4.9)
-    FsCheck (2.5)
-      FSharp.Core (>= 3.1.2.5)
-    FSharp.Compiler.Service (2.0.0.6)
-    FSharp.Core (4.0.0.1)
-    FSharp.Formatting (2.14.4)
-      FSharp.Compiler.Service (2.0.0.6)
-      FSharpVSPowerTools.Core (>= 2.3 < 2.4)
-    FSharpVSPowerTools.Core (2.3)
-      FSharp.Compiler.Service (>= 2.0.0.3)
+    FSharp.Core (4.0.0.1) - redirects: force
     SQLite (3.12.2)
       SQLite.UWP.Native (>= 3.12.2)
     SQLite.Native (3.12.2)
     SQLite.UWP.Native (3.12.2)
-    xunit (2.1)
-      xunit.assert (2.1)
-      xunit.core (2.1)
-    xunit.abstractions (2.0)
-    xunit.assert (2.1)
-    xunit.core (2.1)
-      xunit.extensibility.core (2.1)
-      xunit.extensibility.execution (2.1)
-    xunit.extensibility.core (2.1)
-      xunit.abstractions (2.0)
-    xunit.extensibility.execution (2.1)
-      xunit.extensibility.core (2.1)
-    xunit.runner.console (2.1)
-    xunit.runner.visualstudio (2.1)
     YamlDotNet (3.9)
 GITHUB
   remote: praeclarum/sqlite-net
     FULLPROJECT (bf7acfcf0c97b0c668cbce8c0292d127ae56a252)
   remote: icsharpcode/SharpZipLib
     FULLPROJECT (00c3c9112f132b2b4202000bf5a4b0746881c9e3)
-  remote: gsscoder/commandline
-    FULLPROJECT (78848d064202840a942ee177a76434d6849f018a)
-      FAKE
-      FluentAssertions
-      FsCheck
-      FSharp.Core
-      FSharp.Formatting
-      xunit
-      xunit.runner.console
-      xunit.runner.visualstudio
-    FULLPROJECT (78848d064202840a942ee177a76434d6849f018a)
-      FAKE
-      FluentAssertions
-      FsCheck
-      FSharp.Core
-      FSharp.Formatting
-      xunit
-      xunit.runner.console
-      xunit.runner.visualstudio
-  remote: gsscoder/CSharpx
-    src/CSharpx/EnumerableExtensions.cs (1ae4e7b6ac1b19493f333e23c9ae636a01b23862)
-    src/CSharpx/EnumerableExtensions.cs (1ae4e7b6ac1b19493f333e23c9ae636a01b23862)
-    src/CSharpx/Maybe.cs (1ae4e7b6ac1b19493f333e23c9ae636a01b23862)
-    src/CSharpx/Maybe.cs (1ae4e7b6ac1b19493f333e23c9ae636a01b23862)
-  remote: gsscoder/railwaysharp
-    src/RailwaySharp/ErrorHandling.cs (fa4f11173e470d558df80987e69e6ab10f977fcd)
-    src/RailwaySharp/ErrorHandling.cs (fa4f11173e470d558df80987e69e6ab10f977fcd)
+GIT
+  remote: https://github.com/gsscoder/commandline.git
+     (78848d064202840a942ee177a76434d6849f018a)
+      build: build.cmd
+      os: windows
+GITHUB
   remote: enovales/SegaAFSTools
-    FULLPROJECT (c03159521639f8bf9ec60f49df814ddbffe298ea)
-      FSharp.Core
+    src/SegaAFSTools/AFS.fs (dd2d6acc0ffc184029e988b084ee298651129ffc)
 GROUP Build
 NUGET
   remote: https://www.nuget.org/api/v2
-    FAKE (4.29)
+    FAKE (4.29.2)
     FSharp.Compiler.Service (2.0.0.6)
     FSharp.Formatting (2.14.4)
       FSharp.Compiler.Service (2.0.0.6)
@@ -88,7 +42,7 @@ NUGET
     SourceLink.Fake (1.1)
 GITHUB
   remote: fsharp/FAKE
-    modules/Octokit/Octokit.fsx (f1d6399702cea83af9cc1f72f89cbf3dc0f86a5a)
+    modules/Octokit/Octokit.fsx (c063bf415dac7f7d4df4c37fe76badce76cae3c3)
       Octokit
 GROUP Test
 NUGET

@@ -4,7 +4,6 @@
 #r "../../LLsqlite-net/bin/Debug/LLsqlite-net.dll"
 #r "../../LudumLinguarumLib/bin/Debug/LudumLinguarumLib.dll"
 #r "../../OneOffGamesData/bin/Debug/OneOffGamesData.dll"
-#r "../../../paket-files/enovales/SegaAFSTools/src/SegaAFSTools/bin/Debug/SegaAFSLib.dll"
 #r "System.Core.dll"
 #r "System.dll"
 #r "System.Numerics.dll"
