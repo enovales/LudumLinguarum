@@ -1,0 +1,17 @@
+// Warning: generated file; your changes could be lost when a new file is generated.
+#I __SOURCE_DIRECTORY__
+#load "load-references-release.fsx"
+#load "../AssemblyInfo.fs"
+      "../CommonTypes.fs"
+      "../TalkTable.fs"
+      "../ArchiveFiles.fs"
+      "../SerializedGFF.fs"
+      "../GFF.fs"
+      "../GFFFileTypes.fs"
+      "../IAResourceManager.fs"
+      "../TwoDA.fs"
+      "../NWN1Context.fs"
+      "../JadeEmpireContext.fs"
+      "../KOTOR1Context.fs"
+      "../KOTOR2Context.fs"
+      "../AuroraPlugin.fs"

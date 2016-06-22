@@ -1,5 +1,15 @@
-#### 0.10.0 - June 5 2016
-* Added support for Space Channel 5: Part 2 \[en, jp, de, es, fr, it\]
+#### 0.10.0 - June 21 2016
+* Added support for:
+  * [Space Channel 5: Part 2]() \[en, jp, de, es, fr, it\]
+  * [Puzzle Kingdoms]() \[de, en, es, fr, it\]
+  * [Sid Meier's Civilization IV]() \[de, en, es, fr, it\]
+  * [Sid Meier's Civilization IV: Warlords]() \[de, en, es, fr, it\]
+  * [Sid Meier's Civilization IV: Beyond the Sword]() \[de, en, es, fr, it\]
+  * [Sid Meier's Civilization IV: Colonization]() \[de, en, es, fr, it\]
+  * [Europa Universalis III]() \[en, de\]
+  * [Europa Universalis IV]() \[de, en, es, fr\]
+  * [Hearts of Iron 3]() \[de, en, fr\]
+  * [Victoria 2]() \[de, en, fr\]
 
 #### 0.9.0 - May 23 2016
 * Initial version

@@ -65,6 +65,8 @@
     <None Include="Scripts\KOTOR2Script.fsx" />
     <None Include="Scripts\JadeEmpireScript.fsx" />
     <None Include="Scripts\NWN1Script.fsx" />
+    <None Include="Scripts\load-references-release.fsx" />
+    <None Include="Scripts\load-project-release.fsx" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\paket-files\gsscoder\commandline\src\CommandLine\CommandLine.csproj">
