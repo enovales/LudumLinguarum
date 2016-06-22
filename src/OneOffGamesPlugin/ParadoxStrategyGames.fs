@@ -6,6 +6,8 @@ open System.IO
 open System.Text
 open System.Text.RegularExpressions
 open System.Xml.Linq
+open YamlDotNet.RepresentationModel
+open YamlTools
 
 let internal localizationsAndEncodings = 
     [|
@@ -107,6 +109,26 @@ let ExtractVictoria2(path: string, db: LLDatabase, g: GameRecord, args: string a
     |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
     |> db.CreateOrUpdateCards
 
+let internal eu4NumericKeyAnnotationRegex = new Regex(@"^(?:\s*\S+:)([0-9]+)(?:.*)", RegexOptions.None)
+let rec internal eu4StripNumericKeyAnnotations(s: string) = 
+    let m = eu4NumericKeyAnnotationRegex.Match(s)
+    if (m.Success) then
+        eu4StripNumericKeyAnnotations(s.Remove(m.Groups.[1].Index, m.Groups.[1].Length))
+    else
+        s
+
+let internal eu4KeyRegex = new Regex(@"^(?:\s*)(\S+:)", RegexOptions.None)
+
+let internal eu4EscapeQuotedValues(s: string) = 
+    match (s.IndexOf('"'), s.LastIndexOf('"')) with
+    | (a, _) when a < 0 -> s
+    | (a, b) when a = b -> s
+    | (a, b) when b > (a + 1) ->
+        let len = b - (a + 1)
+        let quoted = s.Substring(a + 1, len)
+        s.Remove(a + 1, len).Insert(a + 1, quoted.Replace('"', '\'').Trim())
+    | _ -> s
+
 let ExtractEU4(path: string, db: LLDatabase, g: GameRecord, args: string array) = 
     // The localization .yml files are named xyz_l_language_optional_suffix.yml. Extract the
     // lesson names, and then group the files by lesson for extraction.
@@ -118,12 +140,57 @@ let ExtractEU4(path: string, db: LLDatabase, g: GameRecord, args: string array) 
     let ymls = Directory.GetFiles(Path.Combine(path, "localisation"), "*.yml")
     let ymlsByLesson = ymls |> Array.groupBy extractLessonName
 
+    let cardsForYml(lid: int)(yd: YamlDocument) = 
+        let languages = 
+            [|
+                ("l_english", "en")
+                ("l_french", "fr")
+                ("l_german", "de")
+                ("l_spanish", "es")
+            |]
+
+        let cardsForLanguage nodeNameAndLang = 
+            let (nodeName, lang) = nodeNameAndLang
+            yd.RootNode
+            |> YamlTools.findMappingNodesWithName(nodeName)
+            |> Seq.collect YamlTools.convertMappingNodeToStringPairs
+            |> Map.ofSeq
+            |> AssemblyResourceTools.createCardRecordForStrings(lid, "", lang, "masculine")
+
+        languages
+        |> Seq.collect cardsForLanguage
+        |> Array.ofSeq
+
     let cardsForLesson(lessonName: string, files: string array) = 
         let lesson = lessonGenerator(lessonName)
-        [||]
+        let cardsForFile(fn: string) = 
+            // there are files that have duplicate keys, so we need to filter them out.
+            let keyForLine l = 
+                let m = eu4KeyRegex.Match(l)
+                if m.Success then
+                    Some(m.Groups.[1].Value)
+                else
+                    None
+
+            let contentsLines = 
+                File.ReadAllLines(fn) 
+                |> Seq.map (eu4StripNumericKeyAnnotations >> eu4EscapeQuotedValues)
+                |> Seq.distinctBy keyForLine
+
+            let rebuiltContents = String.Join(Environment.NewLine, contentsLines)
+            use sr = new StringReader(rebuiltContents)
+            let ys = new YamlStream()
+            ys.Load(sr)
+
+            ys.Documents
+            |> Seq.collect(cardsForYml(lesson.ID))
+
+        files
+        |> Seq.collect cardsForFile
 
     ymlsByLesson
-    |> Array.collect cardsForLesson
+    |> Seq.collect cardsForLesson
+    |> Array.ofSeq
     |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
     |> db.CreateOrUpdateCards
 

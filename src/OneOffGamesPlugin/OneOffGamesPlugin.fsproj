@@ -64,6 +64,9 @@
     <Compile Include="SimpleGames.fs" />
     <Compile Include="OneOffGamesPlugin.fs" />
     <Compile Include="AssemblyInfoStatic.fs" />
+    <None Include="Scripts\load-references-debug.fsx" />
+    <None Include="Scripts\load-project-debug.fsx" />
+    <None Include="Scripts\ParadoxStrategyGamesExperiment.fsx" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\paket-files\enovales\SegaAFSTools\src\SegaAFSTools\SegaAFSLib.fsproj">
