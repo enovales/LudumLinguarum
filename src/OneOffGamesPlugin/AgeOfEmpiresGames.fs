@@ -17,7 +17,10 @@ let internal createLesson(gameID: int, db: LLDatabase)(title: string): LessonRec
     { lessonEntry with ID = db.CreateOrUpdateLesson(lessonEntry) }
 
 let private aoe2MassageText(v: string) = 
-    v.TrimStart([| '"' |]).TrimEnd([| '"' |]).Replace("<b>", "").Replace("<i>", "").Replace("<B>", "").Replace("<I>", "").Replace(@"\n", Environment.NewLine)
+    let removeStrings = [| "<b>"; "<B>"; "<i>"; "<I>"; "<GREY>"; "<BLUE>"; "<PURPLE>"; "<GREEN>"; "<AQUA>"; "<RED>"; "<YELLOW>"; "<ORANGE>" |]
+    let trimmed = v.TrimStart([| '"' |]).TrimEnd([| '"' |])
+    let removed = removeStrings |> Array.fold(fun (s: string)(toRemove: string) -> s.Replace(toRemove, "")) trimmed
+    removed.Replace(@"\n", Environment.NewLine).Trim()
 
 
 let private extractAOE2HDHistoryFile(fn: string, lid: int, lang: string) = 
@@ -37,12 +40,18 @@ let private extractAOE2HDHistoryFiles(path: string, db: LLDatabase, g: GameRecor
 let private aoe2HDCampaignStringRegex = new Regex(@"^(\S+)\s+(.+)$")
 let private extractAOE2HDCampaignStrings(path: string, db: LLDatabase, g: GameRecord) = 
     let lesson = createLesson(g.ID, db)("Game Text")
+    let trimLineComments(s: string) = 
+        match s.IndexOf("//") with
+        | i when i >= 0 -> s.Substring(0, i).Trim()
+        | _ -> s
+
     let cardsForLanguage(lang: string) = 
         let p = Path.Combine(path, @"resources\" + lang + @"\strings\key-value\key-value-strings-utf8.txt")
         let lines = 
             File.ReadAllLines(p, Encoding.UTF8)
             |> Array.map(fun l -> l.Trim())
             |> Array.filter(fun l -> not(l.StartsWith("//")) && not(String.IsNullOrWhiteSpace(l)))
+            |> Array.map trimLineComments
 
         let kvPairForLine(l: string) = 
             let m = aoe2HDCampaignStringRegex.Match(l)
