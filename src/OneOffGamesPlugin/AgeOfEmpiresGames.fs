@@ -16,8 +16,12 @@ let internal createLesson(gameID: int, db: LLDatabase)(title: string): LessonRec
     }
     { lessonEntry with ID = db.CreateOrUpdateLesson(lessonEntry) }
 
+let private aoe2MassageText(v: string) = 
+    v.TrimStart([| '"' |]).TrimEnd([| '"' |]).Replace("<b>", "").Replace("<i>", "").Replace("<B>", "").Replace("<I>", "").Replace(@"\n", Environment.NewLine)
+
+
 let private extractAOE2HDHistoryFile(fn: string, lid: int, lang: string) = 
-    AssemblyResourceTools.createCardRecordForStrings(lid, "", lang, "masculine")([| ("card", File.ReadAllText(fn, Encoding.UTF8)) |] |> Map.ofArray)
+    AssemblyResourceTools.createCardRecordForStrings(lid, "", lang, "masculine")([| ("card", aoe2MassageText(File.ReadAllText(fn, Encoding.UTF8))) |] |> Map.ofArray)
 
 let private getHistoryLessonName(fn: string) = 
     Path.GetFileNameWithoutExtension(fn).Replace("-utf8", "")
@@ -39,10 +43,11 @@ let private extractAOE2HDCampaignStrings(path: string, db: LLDatabase, g: GameRe
             File.ReadAllLines(p, Encoding.UTF8)
             |> Array.map(fun l -> l.Trim())
             |> Array.filter(fun l -> not(l.StartsWith("//")) && not(String.IsNullOrWhiteSpace(l)))
+
         let kvPairForLine(l: string) = 
             let m = aoe2HDCampaignStringRegex.Match(l)
             if m.Success then
-                [| (m.Groups.[1].Value, m.Groups.[2].Value) |]
+                [| (m.Groups.[1].Value, aoe2MassageText(m.Groups.[2].Value)) |]
             else
                 [||]
 
@@ -67,7 +72,7 @@ let private extractAOE2HDLauncherStrings(path: string, db: LLDatabase, g: GameRe
         let kvPairForLine(l: string) = 
             let m = aoe2HDLauncherStringRegex.Match(l)
             if m.Success then
-                [| (m.Groups.[1].Value, m.Groups.[2].Value) |]
+                [| (m.Groups.[1].Value, m.Groups.[2].Value.TrimStart([| '"' |]).TrimEnd([| '"' |])) |]
             else
                 [||]
 
