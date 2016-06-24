@@ -16,6 +16,7 @@
       "../MadballsBaboInvasion.fs"
       "../CivilizationGames.fs"
       "../ParadoxStrategyGames.fs"
+      "../AgeOfEmpiresGames.fs"
       "../SimpleGames.fs"
       "../OneOffGamesPlugin.fs"
       "../AssemblyInfoStatic.fs"

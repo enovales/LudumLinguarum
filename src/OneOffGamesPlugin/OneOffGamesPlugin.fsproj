@@ -57,17 +57,6 @@
   <Target Name="AfterBuild">
   </Target>
   -->
-  <Choose>
-    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.5.2'">
-      <ItemGroup>
-        <Reference Include="YamlDotNet">
-          <HintPath>..\..\packages\YamlDotNet\lib\net35\YamlDotNet.dll</HintPath>
-          <Private>True</Private>
-          <Paket>True</Paket>
-        </Reference>
-      </ItemGroup>
-    </When>
-  </Choose>
   <ItemGroup>
     <Compile Include="..\..\paket-files\enovales\SegaAFSTools\src\SegaAFSTools\AFS.fs">
       <Paket>True</Paket>
@@ -88,6 +77,7 @@
     <Compile Include="MadballsBaboInvasion.fs" />
     <Compile Include="CivilizationGames.fs" />
     <Compile Include="ParadoxStrategyGames.fs" />
+    <Compile Include="AgeOfEmpiresGames.fs" />
     <Compile Include="SimpleGames.fs" />
     <Compile Include="OneOffGamesPlugin.fs" />
     <Compile Include="AssemblyInfoStatic.fs" />
@@ -127,4 +117,15 @@
       <Private>True</Private>
     </ProjectReference>
   </ItemGroup>
+  <Choose>
+    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.5.2'">
+      <ItemGroup>
+        <Reference Include="YamlDotNet">
+          <HintPath>..\..\packages\YamlDotNet\lib\net35\YamlDotNet.dll</HintPath>
+          <Private>True</Private>
+          <Paket>True</Paket>
+        </Reference>
+      </ItemGroup>
+    </When>
+  </Choose>
 </Project>
