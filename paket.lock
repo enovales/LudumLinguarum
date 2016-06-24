@@ -3,6 +3,9 @@ NUGET
   remote: https://www.nuget.org/api/v2
     CsvHelper (2.15)
     FSharp.Core (4.0.0.1) - redirects: force
+    PInvoke.Kernel32 (0.3.2)
+      PInvoke.Windows.Core (>= 0.3.2)
+    PInvoke.Windows.Core (0.3.2)
     SQLite (3.12.2)
       SQLite.UWP.Native (>= 3.12.2)
     SQLite.Native (3.12.2)
