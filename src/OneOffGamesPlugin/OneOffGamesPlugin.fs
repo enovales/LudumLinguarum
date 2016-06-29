@@ -8,34 +8,37 @@ open System.Reflection
 
 type OneOffGamesPlugin() = 
     let mutable outStream: TextWriter option = None
-    let kof2002Name = "The King of Fighters 2002 Unlimited Match"
-    let kof98Name = "The King of Fighters '98 Ultimate Match"
-    let jetSetRadioName = "Jet Set Radio"
-    let skullsOfTheShogunName = "Skulls of the Shogun"
-    let magicalDropVName = "Magical Drop V"
-    let audiosurfName = "Audiosurf"
-    let bastionName = "Bastion"
-    let magickaName = "Magicka"
-    let wormsArmageddonName = "Worms Armageddon"
-    let puzzleChroniclesName = "Puzzle Chronicles"
-    let puzzleKingdomsName = "Puzzle Kingdoms"
-    let puzzleQuest2Name = "Puzzle Quest 2"
-    let pillarsOfEternityName = "Pillars of Eternity"
-    let orcsMustDieName = "Orcs Must Die!"
-    let hatofulBoyfriendName = "Hatoful Boyfriend"
-    let hatofulBoyfriendHolidayStarName = "Hatoful Boyfriend: Holiday Star"
-    let hellYeahName = "Hell Yeah!"
-    let madballsBaboInvasionName = "Madballs: Babo Invasion"
-    let spaceChannel5Part2Name = "Space Channel 5: Part 2"
-    let civ4Name = "Sid Meier's Civilization IV"
-    let civ4WarlordsName = "Sid Meier's Civilization IV: Warlords"
-    let civ4BeyondTheSwordName = "Sid Meier's Civilization IV: Beyond the Sword"
-    let civ4ColonizationName = "Sid Meier's Civilization IV: Colonization"
-    let eu3Name = "Europa Universalis III"
-    let hoi3Name = "Hearts of Iron 3"
-    let victoria2Name = "Victoria 2"
-    let eu4Name = "Europa Universalis IV"
-    let aoe2HDName = "Age of Empires II: HD Edition"
+    let handlerMapping = 
+        [|
+            ("The King of Fighters 2002 Unlimited Match", XUIGames.ExtractKOF2002)
+            ("The King of Fighters '98 Ultimate Match", XUIGames.ExtractKOF98)
+            ("Jet Set Radio", JetSetRadio.JetSetRadio.ExtractJetSetRadio)
+            ("Skulls of the Shogun", SimpleGames.ExtractSkullsOfTheShogun)
+            ("Magical Drop V", SimpleGames.ExtractMagicalDropV)
+            ("Audiosurf", SimpleGames.ExtractAudiosurf)
+            ("Bastion", SimpleGames.ExtractBastion)
+            ("Magicka", Magicka.ExtractMagicka)
+            ("Worms Armageddon", WormsArmageddon.ExtractWormsArmageddon)
+            ("Puzzle Chronicles", PuzzleQuestGames.ExtractPuzzleChronicles)
+            ("Puzzle Kingdoms", PuzzleQuestGames.ExtractPuzzleKingdoms)
+            ("Puzzle Quest 2", PuzzleQuestGames.ExtractPuzzleQuest2)
+            ("Pillars of Eternity", PillarsOfEternity.ExtractPillarsOfEternity)
+            ("Orcs Must Die!", OrcsMustDie.ExtractOrcsMustDie)
+            ("Hatoful Boyfriend", SimpleGames.ExtractHatofulBoyfriend)
+            ("Hatoful Boyfriend: Holiday Star", SimpleGames.ExtractHatofulBoyfriendHolidayStar)
+            ("Hell Yeah!", SimpleGames.ExtractHellYeah)
+            ("Madballs: Babo Invasion", MadballsBaboInvasion.ExtractMadballsBaboInvasion)
+            ("Space Channel 5: Part 2", SpaceChannel5.ExtractSpaceChannel5Part2)
+            ("Sid Meier's Civilization IV", CivilizationGames.ExtractCiv4)
+            ("Sid Meier's Civilization IV: Warlords", CivilizationGames.ExtractCiv4Warlords)
+            ("Sid Meier's Civilization IV: Beyond the Sword", CivilizationGames.ExtractCiv4BeyondTheSword)
+            ("Sid Meier's Civilization IV: Colonization", CivilizationGames.ExtractCiv4Colonization)
+            ("Europa Universalis III", ParadoxStrategyGames.ExtractEU3)
+            ("Hearts of Iron 3", ParadoxStrategyGames.ExtractHOI3)
+            ("Victoria 2", ParadoxStrategyGames.ExtractVictoria2)
+            ("Europa Universalis IV", ParadoxStrategyGames.ExtractEU4)
+            ("Age of Empires II: HD Edition", AgeOfEmpiresGames.ExtractAOE2HD)
+        |] |> Map.ofArray
 
     interface IPlugin with
         member this.Load(tw: TextWriter, [<ParamArray>] args: string[]) = 
@@ -44,69 +47,10 @@ type OneOffGamesPlugin() =
         member this.Parameters = [||]
     interface IGameExtractorPlugin with
         member this.SupportedGames: string array = 
-            [|
-                kof2002Name
-                kof98Name
-                jetSetRadioName
-                skullsOfTheShogunName
-                magicalDropVName
-                audiosurfName
-                bastionName
-                magickaName
-                wormsArmageddonName
-                puzzleChroniclesName
-                puzzleKingdomsName
-                puzzleQuest2Name
-                pillarsOfEternityName
-                orcsMustDieName
-                hatofulBoyfriendName
-                hatofulBoyfriendHolidayStarName
-                hellYeahName
-                madballsBaboInvasionName
-                spaceChannel5Part2Name
-                civ4Name
-                civ4WarlordsName
-                civ4BeyondTheSwordName
-                civ4ColonizationName
-                eu3Name
-                hoi3Name
-                victoria2Name
-                eu4Name
-                aoe2HDName
-            |]
+            handlerMapping |> Map.toArray |> Array.map (fun (k, _) -> k)
+
         member this.ExtractAll(game: string, path: string, db: LLDatabase, [<ParamArray>] args: string[]) = 
             this.LogWriteLine("Searching for game handler for '" + game + "'") |> ignore
-            let handlerMapping = 
-                [|
-                    (kof2002Name, XUIGames.ExtractKOF2002)
-                    (kof98Name, XUIGames.ExtractKOF98)
-                    (jetSetRadioName, JetSetRadio.JetSetRadio.ExtractJetSetRadio)
-                    (skullsOfTheShogunName, SimpleGames.ExtractSkullsOfTheShogun)
-                    (magicalDropVName, SimpleGames.ExtractMagicalDropV)
-                    (audiosurfName, SimpleGames.ExtractAudiosurf)
-                    (bastionName, SimpleGames.ExtractBastion)
-                    (magickaName, Magicka.ExtractMagicka)
-                    (wormsArmageddonName, WormsArmageddon.ExtractWormsArmageddon)
-                    (puzzleChroniclesName, PuzzleQuestGames.ExtractPuzzleChronicles)
-                    (puzzleKingdomsName, PuzzleQuestGames.ExtractPuzzleKingdoms)
-                    (puzzleQuest2Name, PuzzleQuestGames.ExtractPuzzleQuest2)
-                    (pillarsOfEternityName, PillarsOfEternity.ExtractPillarsOfEternity)
-                    (orcsMustDieName, OrcsMustDie.ExtractOrcsMustDie)
-                    (hatofulBoyfriendName, SimpleGames.ExtractHatofulBoyfriend)
-                    (hatofulBoyfriendHolidayStarName, SimpleGames.ExtractHatofulBoyfriendHolidayStar)
-                    (hellYeahName, SimpleGames.ExtractHellYeah)
-                    (madballsBaboInvasionName, MadballsBaboInvasion.ExtractMadballsBaboInvasion)
-                    (spaceChannel5Part2Name, SpaceChannel5.ExtractSpaceChannel5Part2)
-                    (civ4Name, CivilizationGames.ExtractCiv4)
-                    (civ4WarlordsName, CivilizationGames.ExtractCiv4Warlords)
-                    (civ4BeyondTheSwordName, CivilizationGames.ExtractCiv4BeyondTheSword)
-                    (civ4ColonizationName, CivilizationGames.ExtractCiv4Colonization)
-                    (eu3Name, ParadoxStrategyGames.ExtractEU3)
-                    (hoi3Name, ParadoxStrategyGames.ExtractHOI3)
-                    (victoria2Name, ParadoxStrategyGames.ExtractVictoria2)
-                    (eu4Name, ParadoxStrategyGames.ExtractEU4)
-                    (aoe2HDName, AgeOfEmpiresGames.ExtractAOE2HD)
-                |] |> Map.ofArray
 
             if (handlerMapping |> Map.containsKey(game)) then
                 // create game entry, and then run handler
