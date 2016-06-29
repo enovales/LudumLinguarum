@@ -36,6 +36,7 @@ type OneOffGamesPlugin() =
     let victoria2Name = "Victoria 2"
     let eu4Name = "Europa Universalis IV"
     let aoe2HDName = "Age of Empires II: HD Edition"
+    let galacticBattlegroundsSagaName = "Star Wars: Galactic Battlegrounds Saga"
 
     interface IPlugin with
         member this.Load(tw: TextWriter, [<ParamArray>] args: string[]) = 
@@ -73,6 +74,7 @@ type OneOffGamesPlugin() =
                 victoria2Name
                 eu4Name
                 aoe2HDName
+                galacticBattlegroundsSagaName
             |]
         member this.ExtractAll(game: string, path: string, db: LLDatabase, [<ParamArray>] args: string[]) = 
             this.LogWriteLine("Searching for game handler for '" + game + "'") |> ignore
@@ -106,6 +108,7 @@ type OneOffGamesPlugin() =
                     (victoria2Name, ParadoxStrategyGames.ExtractVictoria2)
                     (eu4Name, ParadoxStrategyGames.ExtractEU4)
                     (aoe2HDName, AgeOfEmpiresGames.ExtractAOE2HD)
+                    (galacticBattlegroundsSagaName, SimpleGames.ExtractGalacticBattlegroundsSaga)
                 |] |> Map.ofArray
 
             if (handlerMapping |> Map.containsKey(game)) then

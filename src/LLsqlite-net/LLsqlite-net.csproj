@@ -51,6 +51,7 @@
     <Compile Include="..\..\paket-files\praeclarum\sqlite-net\src\SQLiteAsync.cs">
       <Link>SQLiteAsync.cs</Link>
     </Compile>
+    <Compile Include="PInvokeHelpers.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="..\..\packages\SQLite.Native\runtimes\win7-x64\native\sqlite3.dll">

@@ -10,3 +10,5 @@
 #r "System.Xml.dll"
 #r "System.Xml.Linq.dll"
 #r "../../../packages/YamlDotNet/lib/net35/YamlDotNet.dll"
+#r "../../../packages/PInvoke.Kernel32/lib/net40/PInvoke.Kernel32.dll"
+#r "../../../packages/PInvoke.Windows.Core/lib/portable-net45+win+wpa81+MonoAndroid10+xamarinios10+MonoTouch10/PInvoke.Windows.Core.dll"
