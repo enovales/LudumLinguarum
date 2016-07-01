@@ -1,4 +1,4 @@
-#### 0.10.0 - June 21 2016
+#### 0.10.0 - June 30 2016
 * Added support for:
   * [Space Channel 5: Part 2]() \[en, jp, de, es, fr, it\]
   * [Puzzle Kingdoms]() \[de, en, es, fr, it\]
