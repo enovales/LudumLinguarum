@@ -6,6 +6,7 @@ open LudumLinguarumPlugins
 open System
 open System.IO
 open System.Reflection
+open System.Text
 open System.Text.RegularExpressions
 
 /// <summary>
@@ -82,11 +83,17 @@ type DumpTextConfiguration() =
     [<CommandLine.Option("content-filter-regex", Required = false, HelpText = "An optional regular expression filter for the contents of the strings being dumped.")>]
     member val ContentFilterRegex = ".*" with get, set
 
-    [<CommandLine.Option("languages", Required = true, HelpText = "The list of languages which should be dumped.")>]
-    member val Languages: string array = [||] with get, set
+    [<CommandLine.Option("languages", Required = true, Separator = ',', HelpText = "The comma-separated list of languages which should be dumped.")>]
+    member val Languages: string seq = Seq.empty with get, set
 
     [<CommandLine.Option("include-key", Required = false, HelpText = "Optionally includes the internal key used to distinguish the string in a tabbed column.")>]
     member val IncludeKey = false with get, set
+
+    [<CommandLine.Option("include-language", Required = false, HelpText = "Optionally includes the language tag for each string in a tabbed column.")>]
+    member val IncludeLanguage = false with get, set
+
+    [<CommandLine.Option("include-lesson", Required = false, HelpText = "Optionally includes the lesson name for each string in a tabbed column.")>]
+    member val IncludeLesson = false with get, set
 
 /// <summary>
 /// Root configuration for the program.
@@ -267,21 +274,35 @@ let runDumpTextAction(otw: TextWriter, db: LLDatabase)(vc: DumpTextConfiguration
         (fun (c: CardRecord) -> regex.IsMatch(c.Text))
 
     let languagesFilter(c: CardRecord) = 
-        vc.Languages |> Array.contains(c.LanguageTag)
+        vc.Languages |> Seq.contains(c.LanguageTag)
 
     let dumpCardsForLesson(l: LessonRecord) = 
         let dumpCard(c: CardRecord) = 
-            if vc.IncludeKey then
-                otw.WriteLine(c.Key + "\t" + c.Text)
-            else
-                otw.WriteLine(c.Text)
+            let includeKeyPrefix = 
+                if vc.IncludeKey then
+                    c.Key + "\t"
+                else
+                    ""
+
+            let includeLanguagePrefix = 
+                if vc.IncludeLanguage then
+                    c.LanguageTag + "\t"
+                else
+                    ""
+
+            let includeLessonPrefix = 
+                if vc.IncludeLesson then
+                    l.Name + "\t"
+                else
+                    ""
+
+            otw.WriteLine(includeLessonPrefix + includeKeyPrefix + includeLanguagePrefix + c.Text.Replace(Environment.NewLine, " ").Replace("\n", " ").Replace("\r", " ").Replace("\t", "    "))
 
         db.CardsFromLesson(l)
         |> Array.filter languagesFilter
         |> Array.filter contentFilter
-        |> Array.groupBy(fun c -> c.LanguageTag)
-        |> Array.map(fun (_, s) -> s |> Array.sortBy(fun c -> c.Key))
-        |> Array.collect(fun (l: string, s: CardRecord array) -> s)
+        |> Array.groupBy(fun c -> c.Key)
+        |> Array.collect(fun (_, cs) -> cs |> Array.sortBy(fun c -> c.LanguageTag))
         |> Array.iter dumpCard
 
     gameOpt
@@ -300,7 +321,7 @@ let runConfiguration(clp: CommandLine.Parser, argv: string array)(c: LudumLingua
         if (String.IsNullOrWhiteSpace(c.LogFile)) then
             System.Console.Out
         else
-            new StreamWriter(c.LogFile) :> TextWriter
+            new StreamWriter(c.LogFile, false, Encoding.UTF8) :> TextWriter
 
     let instantiatePluginType(t: Type) = 
         try
