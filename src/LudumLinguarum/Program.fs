@@ -95,6 +95,9 @@ type DumpTextConfiguration() =
     [<CommandLine.Option("include-lesson", Required = false, HelpText = "Optionally includes the lesson name for each string in a tabbed column.")>]
     member val IncludeLesson = false with get, set
 
+    [<CommandLine.Option("sample-size", Required = false, HelpText = "If set, only includes a random sample of the number of strings specified.")>]
+    member val SampleSize = 0 with get, set
+
 /// <summary>
 /// Root configuration for the program.
 /// </summary>
@@ -276,38 +279,57 @@ let runDumpTextAction(otw: TextWriter, db: LLDatabase)(vc: DumpTextConfiguration
     let languagesFilter(c: CardRecord) = 
         vc.Languages |> Seq.contains(c.LanguageTag)
 
-    let dumpCardsForLesson(l: LessonRecord) = 
-        let dumpCard(c: CardRecord) = 
-            let includeKeyPrefix = 
-                if vc.IncludeKey then
-                    c.Key + "\t"
-                else
-                    ""
+    let dumpCard(c: CardRecord) = 
+        let includeKeyPrefix = 
+            if vc.IncludeKey then
+                c.Key + "\t"
+            else
+                ""
 
-            let includeLanguagePrefix = 
-                if vc.IncludeLanguage then
-                    c.LanguageTag + "\t"
-                else
-                    ""
+        let includeLanguagePrefix = 
+            if vc.IncludeLanguage then
+                c.LanguageTag + "\t"
+            else
+                ""
 
-            let includeLessonPrefix = 
-                if vc.IncludeLesson then
-                    l.Name + "\t"
-                else
-                    ""
+        let includeLessonPrefix = 
+            if vc.IncludeLesson then
+                (db.Lessons |> Array.find(fun l -> l.ID = c.LessonID)).Name + "\t"
+            else
+                ""
 
-            otw.WriteLine(includeLessonPrefix + includeKeyPrefix + includeLanguagePrefix + c.Text.Replace(Environment.NewLine, " ").Replace("\n", " ").Replace("\r", " ").Replace("\t", "    "))
+        otw.WriteLine(includeLessonPrefix + includeKeyPrefix + includeLanguagePrefix + c.Text.Replace(Environment.NewLine, " ").Replace("\n", " ").Replace("\r", " ").Replace("\t", "    "))
 
+    let getCardsForLesson(l: LessonRecord) = 
         db.CardsFromLesson(l)
         |> Array.filter languagesFilter
         |> Array.filter contentFilter
         |> Array.groupBy(fun c -> c.Key)
         |> Array.collect(fun (_, cs) -> cs |> Array.sortBy(fun c -> c.LanguageTag))
-        |> Array.iter dumpCard
+
+    // If a sample size was set, then generate a set of sampled keys of the appropriate
+    // size, and then filter on those. Unfortunately, we need to sample on the tuple of
+    // lesson and key, which makes this a little bit unwieldy.
+    let sampleCards(cards: CardRecord array) = 
+        let sampledIndices(sampleSize: int, eligibleCardCount: int) = 
+            let r = new Random()
+            Seq.initInfinite(fun _ -> r.Next(eligibleCardCount)) |> Seq.distinct |> Seq.take(sampleSize) |> Array.ofSeq
+
+        let cardsByLessonAndKey = 
+            cards
+            |> Array.groupBy(fun c -> (c.LessonID, c.Key))
+
+        if vc.SampleSize = 0 then
+            cards
+        else
+            sampledIndices(Math.Min(vc.SampleSize, cardsByLessonAndKey.Length), cardsByLessonAndKey.Length)
+            |> Array.map(fun i -> cardsByLessonAndKey |> Array.item(i)) 
+            |> Array.collect(fun (_, c) -> c)
 
     gameOpt
-    |> Option.map(fun t -> db.Lessons |> Array.filter(lessonsForGameFilter(t.ID)) |> Array.filter lessonNameFilter)
-    |> Option.iter(Array.iter dumpCardsForLesson)
+    |> Option.map(fun g -> db.Lessons |> Array.filter(lessonsForGameFilter(g.ID)) |> Array.filter lessonNameFilter)
+    |> Option.map(fun lessons -> (lessons |> Array.collect getCardsForLesson) |> sampleCards)
+    |> Option.iter(fun cards -> cards |> Array.iter dumpCard)
 
 let runConfiguration(clp: CommandLine.Parser, argv: string array)(c: LudumLinguarumConfiguration) = 
     let pluginManager = new PluginManager()
