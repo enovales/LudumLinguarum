@@ -6,6 +6,7 @@ open LudumLinguarumPlugins
 open System
 open System.IO
 open System.Reflection
+open System.Text
 open System.Text.RegularExpressions
 
 /// <summary>
@@ -70,6 +71,32 @@ type DeleteLessonsConfiguration() =
 
     [<CommandLine.Option("lesson-name", Required = false, HelpText = "The name of the lesson to delete. Either this or filter-regex must be specified.")>]
     member val LessonName = "" with get, set
+
+[<CommandLine.Verb("dump-text", HelpText = "Dumps extracted strings for inspection.")>]
+type DumpTextConfiguration() = 
+    [<CommandLine.Option(Required = true, HelpText = "The name of the game for which text should be dumped.")>]
+    member val Game = "" with get, set
+
+    [<CommandLine.Option("lesson-filter-regex", Required = false, HelpText = "An optional regular expression filter for the name of lessons to dump.")>]
+    member val LessonFilterRegex = ".*" with get, set
+
+    [<CommandLine.Option("content-filter-regex", Required = false, HelpText = "An optional regular expression filter for the contents of the strings being dumped.")>]
+    member val ContentFilterRegex = ".*" with get, set
+
+    [<CommandLine.Option("languages", Required = true, Separator = ',', HelpText = "The comma-separated list of languages which should be dumped.")>]
+    member val Languages: string seq = Seq.empty with get, set
+
+    [<CommandLine.Option("include-key", Required = false, HelpText = "Optionally includes the internal key used to distinguish the string in a tabbed column.")>]
+    member val IncludeKey = false with get, set
+
+    [<CommandLine.Option("include-language", Required = false, HelpText = "Optionally includes the language tag for each string in a tabbed column.")>]
+    member val IncludeLanguage = false with get, set
+
+    [<CommandLine.Option("include-lesson", Required = false, HelpText = "Optionally includes the lesson name for each string in a tabbed column.")>]
+    member val IncludeLesson = false with get, set
+
+    [<CommandLine.Option("sample-size", Required = false, HelpText = "If set, only includes a random sample of the number of strings specified.")>]
+    member val SampleSize = 0 with get, set
 
 /// <summary>
 /// Root configuration for the program.
@@ -224,6 +251,86 @@ let runDeleteLessonsAction(otw: TextWriter, db: LLDatabase)(vc: DeleteLessonsCon
     |> Option.map(fun t -> db.Lessons |> Array.filter(lessonsForGameFilter(t.ID)) |> Array.filter lessonNameFilter)
     |> Option.iter(Array.iter deleteLesson)
 
+/// <summary>
+/// Runs the 'dump-text' action.
+/// </summary>
+/// <param name="otw">output destination</param>
+/// <param name="db">content database</param>
+/// <param name="vc">configuration for the action</param>
+let runDumpTextAction(otw: TextWriter, db: LLDatabase)(vc: DumpTextConfiguration) = 
+    let games = db.Games
+    let filter(g: GameRecord) = vc.Game = g.Name
+    let gameOpt = 
+        games
+        |> Array.filter filter
+        |> Array.tryHead
+
+    let lessonsForGameFilter(id: int)(l: LessonRecord) = 
+        l.GameID = id
+
+    let lessonNameFilter = 
+        let regex = new Regex(vc.LessonFilterRegex)
+        (fun (t: LessonRecord) -> regex.IsMatch(t.Name))
+
+    let contentFilter = 
+        let regex = new Regex(vc.ContentFilterRegex)
+        (fun (c: CardRecord) -> regex.IsMatch(c.Text))
+
+    let languagesFilter(c: CardRecord) = 
+        vc.Languages |> Seq.contains(c.LanguageTag)
+
+    let dumpCard(c: CardRecord) = 
+        let includeKeyPrefix = 
+            if vc.IncludeKey then
+                c.Key + "\t"
+            else
+                ""
+
+        let includeLanguagePrefix = 
+            if vc.IncludeLanguage then
+                c.LanguageTag + "\t"
+            else
+                ""
+
+        let includeLessonPrefix = 
+            if vc.IncludeLesson then
+                (db.Lessons |> Array.find(fun l -> l.ID = c.LessonID)).Name + "\t"
+            else
+                ""
+
+        otw.WriteLine(includeLessonPrefix + includeKeyPrefix + includeLanguagePrefix + c.Text.Replace(Environment.NewLine, " ").Replace("\n", " ").Replace("\r", " ").Replace("\t", "    "))
+
+    let getCardsForLesson(l: LessonRecord) = 
+        db.CardsFromLesson(l)
+        |> Array.filter languagesFilter
+        |> Array.filter contentFilter
+        |> Array.groupBy(fun c -> c.Key)
+        |> Array.collect(fun (_, cs) -> cs |> Array.sortBy(fun c -> c.LanguageTag))
+
+    // If a sample size was set, then generate a set of sampled keys of the appropriate
+    // size, and then filter on those. Unfortunately, we need to sample on the tuple of
+    // lesson and key, which makes this a little bit unwieldy.
+    let sampleCards(cards: CardRecord array) = 
+        let sampledIndices(sampleSize: int, eligibleCardCount: int) = 
+            let r = new Random()
+            Seq.initInfinite(fun _ -> r.Next(eligibleCardCount)) |> Seq.distinct |> Seq.take(sampleSize) |> Array.ofSeq
+
+        let cardsByLessonAndKey = 
+            cards
+            |> Array.groupBy(fun c -> (c.LessonID, c.Key))
+
+        if vc.SampleSize = 0 then
+            cards
+        else
+            sampledIndices(Math.Min(vc.SampleSize, cardsByLessonAndKey.Length), cardsByLessonAndKey.Length)
+            |> Array.map(fun i -> cardsByLessonAndKey |> Array.item(i)) 
+            |> Array.collect(fun (_, c) -> c)
+
+    gameOpt
+    |> Option.map(fun g -> db.Lessons |> Array.filter(lessonsForGameFilter(g.ID)) |> Array.filter lessonNameFilter)
+    |> Option.map(fun lessons -> (lessons |> Array.collect getCardsForLesson) |> sampleCards)
+    |> Option.iter(fun cards -> cards |> Array.iter dumpCard)
+
 let runConfiguration(clp: CommandLine.Parser, argv: string array)(c: LudumLinguarumConfiguration) = 
     let pluginManager = new PluginManager()
     let iPluginManager = pluginManager :> IPluginManager
@@ -236,7 +343,7 @@ let runConfiguration(clp: CommandLine.Parser, argv: string array)(c: LudumLingua
         if (String.IsNullOrWhiteSpace(c.LogFile)) then
             System.Console.Out
         else
-            new StreamWriter(c.LogFile) :> TextWriter
+            new StreamWriter(c.LogFile, false, Encoding.UTF8) :> TextWriter
 
     let instantiatePluginType(t: Type) = 
         try
@@ -283,7 +390,8 @@ let runConfiguration(clp: CommandLine.Parser, argv: string array)(c: LudumLingua
             ListSupportedGamesConfiguration, 
             ListLessonsConfiguration, 
             DeleteGameConfiguration, 
-            DeleteLessonsConfiguration
+            DeleteLessonsConfiguration,
+            DumpTextConfiguration
          >(argv)
          .WithParsed<ImportConfiguration>(new Action<ImportConfiguration>(runImportAction(iPluginManager, otw, lldb, argv)))
          .WithParsed<CardExport.AnkiExporterConfiguration>(new Action<CardExport.AnkiExporterConfiguration>(runExportAnkiAction(iPluginManager, otw, lldb)))
@@ -293,6 +401,7 @@ let runConfiguration(clp: CommandLine.Parser, argv: string array)(c: LudumLingua
          .WithParsed<ListLessonsConfiguration>(new Action<ListLessonsConfiguration>(runListLessonsAction(otw, lldb)))
          .WithParsed<DeleteGameConfiguration>(new Action<DeleteGameConfiguration>(runDeleteGameAction(otw, lldb)))
          .WithParsed<DeleteLessonsConfiguration>(new Action<DeleteLessonsConfiguration>(runDeleteLessonsAction(otw, lldb)))
+         .WithParsed<DumpTextConfiguration>(new Action<DumpTextConfiguration>(runDumpTextAction(otw, lldb)))
          |> ignore
     finally
         otw.Flush() |> ignore
