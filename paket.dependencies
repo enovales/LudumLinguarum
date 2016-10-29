@@ -12,7 +12,8 @@ nuget YamlDotNet
 nuget PInvoke.Kernel32
 nuget PInvoke.User32
 github icsharpcode/SharpZipLib
-git https://github.com/gsscoder/commandline.git master build: "build.cmd", OS: windows
+//git https://github.com/gsscoder/commandline.git master build: "build.cmd", OS: windows
+nuget CommandLineParser 2.0.275-beta
 github enovales/SegaAFSTools src/SegaAFSTools/AFS.fs
 
 group Build

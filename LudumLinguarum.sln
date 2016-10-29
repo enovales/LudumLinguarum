@@ -29,6 +29,9 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "content", "content", "{8E6D5255-776D-4B61-85F9-73C37AA1FB9A}"
 	ProjectSection(SolutionItems) = preProject
 		docs\content\index.fsx = docs\content\index.fsx
+		docs\content\license.md = docs\content\license.md
+		docs\content\release-notes.md = docs\content\release-notes.md
+		docs\content\supported-games.md = docs\content\supported-games.md
 		docs\content\tutorial.fsx = docs\content\tutorial.fsx
 	EndProjectSection
 EndProject
@@ -53,8 +56,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OneOffGamesData", "src\OneOffGamesData\OneOffGamesData.csproj", "{42818C9B-D028-47A4-8629-B2753C185915}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LLsqlite-net", "src\LLsqlite-net\LLsqlite-net.csproj", "{5399C00C-AF4D-46DE-ADA4-C20E02D4B26B}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommandLine", "paket-files\gsscoder\commandline\src\CommandLine\CommandLine.csproj", "{E1BD3C65-49C3-49E7-BABA-C60980CB3F20}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ICSharpCode.SharpZipLib", "paket-files\icsharpcode\SharpZipLib\ICSharpCode.SharpZipLib\ICSharpCode.SharpZipLib.csproj", "{0E7413FF-EB9E-4714-ACF2-BE3A6A7B2FFD}"
 EndProject
@@ -100,10 +101,6 @@ Global
 		{5399C00C-AF4D-46DE-ADA4-C20E02D4B26B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5399C00C-AF4D-46DE-ADA4-C20E02D4B26B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5399C00C-AF4D-46DE-ADA4-C20E02D4B26B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{E1BD3C65-49C3-49E7-BABA-C60980CB3F20}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E1BD3C65-49C3-49E7-BABA-C60980CB3F20}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E1BD3C65-49C3-49E7-BABA-C60980CB3F20}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E1BD3C65-49C3-49E7-BABA-C60980CB3F20}.Release|Any CPU.Build.0 = Release|Any CPU
 		{0E7413FF-EB9E-4714-ACF2-BE3A6A7B2FFD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{0E7413FF-EB9E-4714-ACF2-BE3A6A7B2FFD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0E7413FF-EB9E-4714-ACF2-BE3A6A7B2FFD}.Release|Any CPU.ActiveCfg = Release|Any CPU

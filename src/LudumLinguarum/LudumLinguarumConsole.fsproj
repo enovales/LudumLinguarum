@@ -25,7 +25,7 @@
     <OtherFlags>--warnon:1182</OtherFlags>
     <StartArguments>delete-game --game="Star Wars: Knights of the Old Republic II"</StartArguments>
     <StartArguments>import --game="Magicka" --game-dir="C:\Program Files (x86)\Steam\steamapps\common\Magicka"</StartArguments>
-    <StartArguments>import --game="Age of Empires II: HD Edition" --game-dir="C:\Program Files (x86)\Steam\steamapps\common\Age2HD"</StartArguments>
+    <StartArguments>dump-text --game="Age of Empires II: HD Edition" --languages="en,de,fr"  --include-key=true --include-language=true --sample-size=10</StartArguments>
     <StartAction>Program</StartAction>
     <StartProgram>C:\projects\LudumLinguarum\src\LudumLinguarum\bin\Debug\LudumLinguarum.exe</StartProgram>
   </PropertyGroup>
@@ -79,11 +79,6 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\paket-files\gsscoder\commandline\src\CommandLine\CommandLine.csproj">
-      <Name>CommandLine</Name>
-      <Project>{e1bd3c65-49c3-49e7-baba-c60980cb3f20}</Project>
-      <Private>True</Private>
-    </ProjectReference>
     <ProjectReference Include="..\InfinityAuroraEnginePlugins\InfinityAuroraEnginePlugins.fsproj">
       <Name>InfinityAuroraEnginePlugins</Name>
       <Project>{551ec15e-2d53-4ed8-bd64-e1dc64a228a3}</Project>
@@ -112,4 +107,15 @@
       <Private>True</Private>
     </ProjectReference>
   </ItemGroup>
+  <Choose>
+    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.5.2'">
+      <ItemGroup>
+        <Reference Include="CommandLine">
+          <HintPath>..\..\packages\CommandLineParser\lib\net45\CommandLine.dll</HintPath>
+          <Private>True</Private>
+          <Paket>True</Paket>
+        </Reference>
+      </ItemGroup>
+    </When>
+  </Choose>
 </Project>

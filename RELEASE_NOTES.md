@@ -1,4 +1,8 @@
-#### 0.10.0 - June 21 2016
+#### 0.11.0 - July 10 2016
+* A new 'dump-text' command was added, which allows extracted game text (optionally subject to filtering or 
+random sampling) to be dumped to a tab-separated text file.
+
+#### 0.10.0 - June 30 2016
 * Added support for:
   * [Space Channel 5: Part 2]() \[en, jp, de, es, fr, it\]
   * [Puzzle Kingdoms]() \[de, en, es, fr, it\]
