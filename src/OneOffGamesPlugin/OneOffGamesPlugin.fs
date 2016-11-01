@@ -38,7 +38,6 @@ type OneOffGamesPlugin() =
             ("Victoria 2", ParadoxStrategyGames.ExtractVictoria2)
             ("Europa Universalis IV", ParadoxStrategyGames.ExtractEU4)
             ("Age of Empires II: HD Edition", AgeOfEmpiresGames.ExtractAOE2HD)
-            ("Star Wars: Galactic Battlegrounds Saga", SimpleGames.ExtractGalacticBattlegroundsSaga)
         |] |> Map.ofArray
 
     interface IPlugin with

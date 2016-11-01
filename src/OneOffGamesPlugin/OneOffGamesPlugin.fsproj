@@ -78,6 +78,7 @@
     <Compile Include="CivilizationGames.fs" />
     <Compile Include="ParadoxStrategyGames.fs" />
     <Compile Include="AgeOfEmpiresGames.fs" />
+    <Compile Include="StarWarsGBS.fs" />
     <Compile Include="SimpleGames.fs" />
     <Compile Include="OneOffGamesPlugin.fs" />
     <Compile Include="AssemblyInfoStatic.fs" />
@@ -120,6 +121,116 @@
   <Choose>
     <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.5.2'">
       <ItemGroup>
+        <Reference Include="CommandLine">
+          <HintPath>..\..\packages\CommandLineParser\lib\net45\CommandLine.dll</HintPath>
+          <Private>True</Private>
+          <Paket>True</Paket>
+        </Reference>
+      </ItemGroup>
+    </When>
+  </Choose>
+  <Choose>
+    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.5.2'">
+      <ItemGroup>
+        <Reference Include="LANGIDMappings">
+          <HintPath>..\..\packages\LANGIDMappings\lib\net452\LANGIDMappings.dll</HintPath>
+          <Private>True</Private>
+          <Paket>True</Paket>
+        </Reference>
+      </ItemGroup>
+    </When>
+  </Choose>
+  <Choose>
+    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.5.2'">
+      <ItemGroup>
+        <Reference Include="PInvoke.AdvApi32">
+          <HintPath>..\..\packages\PInvoke.AdvApi32\lib\net40\PInvoke.AdvApi32.dll</HintPath>
+          <Private>True</Private>
+          <Paket>True</Paket>
+        </Reference>
+      </ItemGroup>
+    </When>
+  </Choose>
+  <Choose>
+    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.5.2'">
+      <ItemGroup>
+        <Reference Include="PInvoke.BCrypt">
+          <HintPath>..\..\packages\PInvoke.BCrypt\lib\net40\PInvoke.BCrypt.dll</HintPath>
+          <Private>True</Private>
+          <Paket>True</Paket>
+        </Reference>
+      </ItemGroup>
+    </When>
+  </Choose>
+  <Choose>
+    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.5.2'">
+      <ItemGroup>
+        <Reference Include="PInvoke.Crypt32">
+          <HintPath>..\..\packages\PInvoke.Crypt32\lib\net40\PInvoke.Crypt32.dll</HintPath>
+          <Private>True</Private>
+          <Paket>True</Paket>
+        </Reference>
+      </ItemGroup>
+    </When>
+  </Choose>
+  <Choose>
+    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.5.2'">
+      <ItemGroup>
+        <Reference Include="PInvoke.DbgHelp">
+          <HintPath>..\..\packages\PInvoke.DbgHelp\lib\portable-net45+win+wpa81+MonoAndroid10+xamarinios10+MonoTouch10\PInvoke.DbgHelp.dll</HintPath>
+          <Private>True</Private>
+          <Paket>True</Paket>
+        </Reference>
+      </ItemGroup>
+    </When>
+  </Choose>
+  <Choose>
+    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.5.2'">
+      <ItemGroup>
+        <Reference Include="PInvoke.DwmApi">
+          <HintPath>..\..\packages\PInvoke.DwmApi\lib\net40\PInvoke.DwmApi.dll</HintPath>
+          <Private>True</Private>
+          <Paket>True</Paket>
+        </Reference>
+      </ItemGroup>
+    </When>
+  </Choose>
+  <Choose>
+    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.5.2'">
+      <ItemGroup>
+        <Reference Include="PInvoke.Gdi32">
+          <HintPath>..\..\packages\PInvoke.Gdi32\lib\net40\PInvoke.Gdi32.dll</HintPath>
+          <Private>True</Private>
+          <Paket>True</Paket>
+        </Reference>
+      </ItemGroup>
+    </When>
+  </Choose>
+  <Choose>
+    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.5.2'">
+      <ItemGroup>
+        <Reference Include="PInvoke.Hid">
+          <HintPath>..\..\packages\PInvoke.Hid\lib\net40\PInvoke.Hid.dll</HintPath>
+          <Private>True</Private>
+          <Paket>True</Paket>
+        </Reference>
+      </ItemGroup>
+    </When>
+  </Choose>
+  <Choose>
+    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.5.2'">
+      <ItemGroup>
+        <Reference Include="PInvoke.ImageHlp">
+          <HintPath>..\..\packages\PInvoke.ImageHlp\lib\net40\PInvoke.ImageHlp.dll</HintPath>
+          <Private>True</Private>
+          <Paket>True</Paket>
+        </Reference>
+      </ItemGroup>
+    </When>
+  </Choose>
+  <Choose>
+    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.5.2'">
+      <ItemGroup>
         <Reference Include="PInvoke.Kernel32">
           <HintPath>..\..\packages\PInvoke.Kernel32\lib\net40\PInvoke.Kernel32.dll</HintPath>
           <Private>True</Private>
@@ -131,8 +242,150 @@
   <Choose>
     <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.5.2'">
       <ItemGroup>
+        <Reference Include="PInvoke.Msi">
+          <HintPath>..\..\packages\PInvoke.Msi\lib\net40\PInvoke.Msi.dll</HintPath>
+          <Private>True</Private>
+          <Paket>True</Paket>
+        </Reference>
+      </ItemGroup>
+    </When>
+  </Choose>
+  <Choose>
+    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.5.2'">
+      <ItemGroup>
+        <Reference Include="PInvoke.NCrypt">
+          <HintPath>..\..\packages\PInvoke.NCrypt\lib\net40\PInvoke.NCrypt.dll</HintPath>
+          <Private>True</Private>
+          <Paket>True</Paket>
+        </Reference>
+      </ItemGroup>
+    </When>
+  </Choose>
+  <Choose>
+    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.5.2'">
+      <ItemGroup>
+        <Reference Include="PInvoke.NetApi32">
+          <HintPath>..\..\packages\PInvoke.NetApi32\lib\net40\PInvoke.NetApi32.dll</HintPath>
+          <Private>True</Private>
+          <Paket>True</Paket>
+        </Reference>
+      </ItemGroup>
+    </When>
+  </Choose>
+  <Choose>
+    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.5.2'">
+      <ItemGroup>
+        <Reference Include="PInvoke.NTDll">
+          <HintPath>..\..\packages\PInvoke.NTDll\lib\net40\PInvoke.NTDll.dll</HintPath>
+          <Private>True</Private>
+          <Paket>True</Paket>
+        </Reference>
+      </ItemGroup>
+    </When>
+  </Choose>
+  <Choose>
+    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.5.2'">
+      <ItemGroup>
+        <Reference Include="PInvoke.Psapi">
+          <HintPath>..\..\packages\PInvoke.Psapi\lib\net40\PInvoke.Psapi.dll</HintPath>
+          <Private>True</Private>
+          <Paket>True</Paket>
+        </Reference>
+      </ItemGroup>
+    </When>
+  </Choose>
+  <Choose>
+    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.5.2'">
+      <ItemGroup>
+        <Reference Include="PInvoke.SetupApi">
+          <HintPath>..\..\packages\PInvoke.SetupApi\lib\net40\PInvoke.SetupApi.dll</HintPath>
+          <Private>True</Private>
+          <Paket>True</Paket>
+        </Reference>
+      </ItemGroup>
+    </When>
+  </Choose>
+  <Choose>
+    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.5.2'">
+      <ItemGroup>
+        <Reference Include="PInvoke.Kernel32">
+          <HintPath>..\..\packages\PInvoke.SHCore\lib\net40\PInvoke.Kernel32.dll</HintPath>
+          <Private>True</Private>
+          <Paket>True</Paket>
+        </Reference>
+        <Reference Include="PInvoke.SHCore">
+          <HintPath>..\..\packages\PInvoke.SHCore\lib\net40\PInvoke.SHCore.dll</HintPath>
+          <Private>True</Private>
+          <Paket>True</Paket>
+        </Reference>
+        <Reference Include="PInvoke.User32">
+          <HintPath>..\..\packages\PInvoke.SHCore\lib\net40\PInvoke.User32.dll</HintPath>
+          <Private>True</Private>
+          <Paket>True</Paket>
+        </Reference>
+      </ItemGroup>
+    </When>
+  </Choose>
+  <Choose>
+    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.5.2'">
+      <ItemGroup>
+        <Reference Include="PInvoke.Shell32">
+          <HintPath>..\..\packages\PInvoke.Shell32\lib\net40\PInvoke.Shell32.dll</HintPath>
+          <Private>True</Private>
+          <Paket>True</Paket>
+        </Reference>
+      </ItemGroup>
+    </When>
+  </Choose>
+  <Choose>
+    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.5.2'">
+      <ItemGroup>
+        <Reference Include="PInvoke.User32">
+          <HintPath>..\..\packages\PInvoke.User32\lib\net40\PInvoke.User32.dll</HintPath>
+          <Private>True</Private>
+          <Paket>True</Paket>
+        </Reference>
+      </ItemGroup>
+    </When>
+  </Choose>
+  <Choose>
+    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.5.2'">
+      <ItemGroup>
+        <Reference Include="PInvoke.Userenv">
+          <HintPath>..\..\packages\PInvoke.Userenv\lib\net40\PInvoke.Userenv.dll</HintPath>
+          <Private>True</Private>
+          <Paket>True</Paket>
+        </Reference>
+      </ItemGroup>
+    </When>
+  </Choose>
+  <Choose>
+    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.5.2'">
+      <ItemGroup>
+        <Reference Include="PInvoke.UxTheme">
+          <HintPath>..\..\packages\PInvoke.UxTheme\lib\net40\PInvoke.UxTheme.dll</HintPath>
+          <Private>True</Private>
+          <Paket>True</Paket>
+        </Reference>
+      </ItemGroup>
+    </When>
+  </Choose>
+  <Choose>
+    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.5.2'">
+      <ItemGroup>
         <Reference Include="PInvoke.Windows.Core">
           <HintPath>..\..\packages\PInvoke.Windows.Core\lib\portable-net45+win+wpa81+MonoAndroid10+xamarinios10+MonoTouch10\PInvoke.Windows.Core.dll</HintPath>
+          <Private>True</Private>
+          <Paket>True</Paket>
+        </Reference>
+      </ItemGroup>
+    </When>
+  </Choose>
+  <Choose>
+    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.5.2'">
+      <ItemGroup>
+        <Reference Include="PInvoke.Windows.ShellScalingApi">
+          <HintPath>..\..\packages\PInvoke.Windows.ShellScalingApi\lib\net40\PInvoke.Windows.ShellScalingApi.dll</HintPath>
           <Private>True</Private>
           <Paket>True</Paket>
         </Reference>

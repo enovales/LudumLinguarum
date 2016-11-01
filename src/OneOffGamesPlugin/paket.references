@@ -1,4 +1,6 @@
-﻿YamlDotNet
-PInvoke.Kernel32
+﻿CommandLineParser
+YamlDotNet
+PInvoke.Win32
+LANGIDMappings
 
 File: AFS.fs

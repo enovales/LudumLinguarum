@@ -1,11 +1,7 @@
 ﻿module SimpleGames
 
-#nowarn "9"         // for resource module loading for Star Wars: Galactic Battlegrounds Saga
-
 open CsvTools
 open LLDatabase
-open PInvoke
-open PInvokeHelpers
 open System
 open System.IO
 open System.Text.RegularExpressions
@@ -380,84 +376,5 @@ let ExtractHatofulBoyfriendHolidayStar(path: string, db: LLDatabase, g: GameReco
 
     filesToExtract
     |> Array.collect (File.ReadAllLines >> Array.filter(String.IsNullOrWhiteSpace >> not) >> hbGenerateCardsForLines(lessonEntryWithId.ID))
-    |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
-    |> db.CreateOrUpdateCards
-
-(***************************************************************************)
-(****************** Star Wars: Galactic Battlegrounds Saga *****************)
-(***************************************************************************)
-let ExtractGalacticBattlegroundsSaga(path: string, db: LLDatabase, g: GameRecord, args: string array) = 
-    let mainLessonEntry = {
-        LessonRecord.GameID = g.ID
-        ID = 0
-        Name = "Main Game Text"
-    }
-    let mainLessonEntryWithId = { mainLessonEntry with ID = db.CreateOrUpdateLesson(mainLessonEntry) }
-    let x1LessonEntry = {
-        LessonRecord.GameID = g.ID
-        ID = 0
-        Name = "Expansion 1 Text"
-    }
-    let x1LessonEntryWithId = { x1LessonEntry with ID = db.CreateOrUpdateLesson(x1LessonEntry) }
-
-    let modulesToExtract = 
-        [|
-            (Path.Combine(path, @"game\language.dll"), mainLessonEntryWithId.ID)
-            (Path.Combine(path, @"game\language_x1.dll"), x1LessonEntryWithId.ID)
-        |]
-
-    let extractCardsForModule((modulePath: string, lid: int)) = 
-        let moduleHandle = PInvoke.Kernel32.LoadLibraryEx(modulePath, nativeint 0, PInvoke.Kernel32.LoadLibraryExFlags.LOAD_LIBRARY_AS_IMAGE_RESOURCE)
-        let mutable resourceNameList = []
-        let enumResourceNamesCallback(unusedModuleHandle: nativeint)(resourceType: nativeptr<char>)(resourceName: nativeptr<char>)(lParam: nativeint) = 
-            let processedResourceName = 
-                if (PInvoke.Kernel32.IS_INTRESOURCE(resourceName)) then
-                    ("#" + Microsoft.FSharp.NativeInterop.NativePtr.toNativeInt(resourceName).ToInt64().ToString())
-                else
-                    new String(resourceName)
-
-            resourceNameList <- processedResourceName :: resourceNameList
-            true
-
-        let mutable resourceLanguagesList = []
-        let enumResourceLanguagesCallback(hModule: nativeint)(lpszType: string)(lpszName: string)(wIDLanguage: uint16)(lParam: nativeint) = 
-            // add distinct language to languages list
-            resourceLanguagesList <- (wIDLanguage :: resourceLanguagesList) |> List.distinct
-            true
-
-        let callbackDelegate = new PInvoke.Kernel32.EnumResNameProc(enumResourceNamesCallback)
-        if not(PInvoke.Kernel32.EnumResourceNames(moduleHandle, PInvoke.Kernel32.MAKEINTRESOURCE(6), callbackDelegate, nativeint 0)) then
-            failwith("failed to enumerate string resources for [" + modulePath + "]")
-
-        let enumLanguagesForResourceName(n: string) = 
-            PInvokeHelpers.PInvokeDefs.EnumResourceLanguages(
-                moduleHandle.DangerousGetHandle(), 
-                new String(PInvoke.Kernel32.MAKEINTRESOURCE(6)), 
-                n, 
-                new PInvokeDefs.EnumResLangDelegate(enumResourceLanguagesCallback),
-                nativeint 0
-            )
-            |> ignore
-
-        // For all string resources, get all languages, and build up a list of available
-        // languages.
-        resourceNameList
-        |> List.iter enumLanguagesForResourceName
-
-        // Now, for each language, try and get the string for each string resource.
-        let getCardsForLanguage(langID: uint16) = 
-            let mutable uiNumLanguagesSet: uint32 = 1
-            PInvokeDefs.SetThreadPreferredUILanguages(0, langID.ToString("X4"), &uiNumLanguagesSet) |> ignore
-
-            let mutable uiNumLanguages: uint32 = 0
-            PInvokeDefs.GetThreadPreferredUILanguages(0, )
-            [||]
-
-        resourceLanguagesList
-        |> Seq.collect getCardsForLanguage
-        |> Array.ofSeq
-
-    modulesToExtract
-    |> Array.collect extractCardsForModule
     |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
     |> db.CreateOrUpdateCards

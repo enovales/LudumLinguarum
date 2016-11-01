@@ -4,4 +4,4 @@
 #r "System.Core.dll"
 #r "System.dll"
 #r "System.Numerics.dll"
-#r "../../../paket-files/gsscoder/commandline/src/CommandLine/bin/Debug/CommandLine.dll"
+#r "../../../packages/CommandLineParser/lib/net45/CommandLine.dll"

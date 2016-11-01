@@ -17,6 +17,7 @@
       "../CivilizationGames.fs"
       "../ParadoxStrategyGames.fs"
       "../AgeOfEmpiresGames.fs"
+      "../StarWarsGBS.fs"
       "../SimpleGames.fs"
       "../OneOffGamesPlugin.fs"
       "../AssemblyInfoStatic.fs"
