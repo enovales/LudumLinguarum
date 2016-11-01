@@ -8,6 +8,7 @@ open OneOffGamesData
 open PInvoke
 open System
 open System.IO
+open System.Text.RegularExpressions
 
 // don't warn about native conversions
 #nowarn "9"
@@ -43,6 +44,16 @@ let private getResourceStrings(languageDll: Kernel32.SafeLibraryHandle)(name: na
     |> Array.ofList
 
 
+let private formattingRegexes = 
+    [|
+        new Regex(@"\<.*\>")
+    |]
+
+let internal stripFormattingTags(s: string) = 
+    Array.fold (fun (a: string)(r: Regex) -> r.Replace(a, "")) s formattingRegexes
+
+let private stringEndsInDotTxt(s: string) = s.EndsWith(".txt", StringComparison.InvariantCultureIgnoreCase)
+let private stringIsJustNumbersAndCommas(s: string) = s.ToCharArray() |> Array.forall(fun c -> (c = ',') || (c |> Char.IsDigit))
 
 (***************************************************************************)
 (****************** Star Wars: Galactic Battlegrounds Saga *****************)
@@ -81,13 +92,26 @@ let private runExtractGBS(path: string, db: LLDatabase, g: GameRecord)(settings:
                                 let mutable sb: nativeptr<char> = NativeInterop.NativePtr.ofNativeInt<char>(nativeint 0)
                                 let charsOutput = User32.LoadString(moduleHandle.DangerousGetHandle(), uint32 sid, &sb, 0)
                                 if charsOutput > 0 then
-                                    let localizedString = (new string(sb)).Substring(0, charsOutput)
-                                    AssemblyResourceTools.createCardRecordForStrings(
-                                        lid, 
-                                        Path.GetFileNameWithoutExtension(modulePath), 
-                                        language, 
-                                        "masculine"
-                                    )(Map([| (sid.ToString(), localizedString) |]))
+                                    let localizedString = 
+                                        ((new string(sb)).Substring(0, charsOutput)
+                                        |> stripFormattingTags).Trim()
+
+                                    let invalidityTests = 
+                                        [|
+                                            stringEndsInDotTxt
+                                            stringIsJustNumbersAndCommas
+                                        |]
+
+                                    if (invalidityTests |> Array.exists(fun t -> t(localizedString))) then
+                                        [||]
+                                    else
+                                        AssemblyResourceTools.createCardRecordForStrings(
+                                            lid, 
+                                            Path.GetFileNameWithoutExtension(modulePath), 
+                                            language, 
+                                            "masculine"
+                                        )(Map([| (sid.ToString(), localizedString) |]))
+
                                 else
                                     [||]
                                 )
