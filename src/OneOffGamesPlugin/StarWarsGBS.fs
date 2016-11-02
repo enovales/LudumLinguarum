@@ -54,6 +54,12 @@ let internal stripFormattingTags(s: string) =
 
 let private stringEndsInDotTxt(s: string) = s.EndsWith(".txt", StringComparison.InvariantCultureIgnoreCase)
 let private stringIsJustNumbersAndCommas(s: string) = s.ToCharArray() |> Array.forall(fun c -> (c = ',') || (c |> Char.IsDigit))
+let private stringIsTooShort(s: string) = s.Length <= 1
+let private stringIsParenOrBracketChar(s: string) = 
+    match s with
+    | _ when (s.Length = 3) && (s.Chars(0) = '(') && (s.Chars(2) = ')') -> true
+    | _ when (s.Length = 3) && (s.Chars(0) = '[') && (s.Chars(2) = ']') -> true
+    | _ -> false
 
 (***************************************************************************)
 (****************** Star Wars: Galactic Battlegrounds Saga *****************)
@@ -100,21 +106,26 @@ let private runExtractGBS(path: string, db: LLDatabase, g: GameRecord)(settings:
                                         [|
                                             stringEndsInDotTxt
                                             stringIsJustNumbersAndCommas
+                                            stringIsTooShort
+                                            stringIsParenOrBracketChar
                                         |]
 
                                     if (invalidityTests |> Array.exists(fun t -> t(localizedString))) then
                                         [||]
                                     else
-                                        AssemblyResourceTools.createCardRecordForStrings(
-                                            lid, 
-                                            Path.GetFileNameWithoutExtension(modulePath), 
-                                            language, 
-                                            "masculine"
-                                        )(Map([| (sid.ToString(), localizedString) |]))
-
+                                        [| (sid, localizedString) |]
                                 else
                                     [||]
                                 )
+        |> Array.distinctBy(fun (_, s) -> s)
+        |> Array.collect(fun (sid, localizedString) -> 
+                            AssemblyResourceTools.createCardRecordForStrings(
+                                lid, 
+                                Path.GetFileNameWithoutExtension(modulePath) + "_", 
+                                language, 
+                                "masculine"
+                            )(Map([| (sid.ToString(), localizedString) |]))
+                        )
 
     modulesToExtract
     |> Array.collect(extractCardsForModule(settings.LanguageTag))
