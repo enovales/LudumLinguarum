@@ -1,3 +1,7 @@
+#### 0.12.0 - November 3 2016
+* Added support for:
+	* [Star Wars Galactic Battlegrounds Saga]() \[de, en, es, fr\]
+
 #### 0.11.0 - July 10 2016
 * A new 'dump-text' command was added, which allows extracted game text (optionally subject to filtering or 
 random sampling) to be dumped to a tab-separated text file.
