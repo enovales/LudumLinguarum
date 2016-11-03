@@ -1,9 +1,7 @@
 ﻿module SimpleGames
 
-open AssemblyResourceTools
 open CsvTools
 open LLDatabase
-open OneOffGamesUtils
 open System
 open System.IO
 open System.Text.RegularExpressions

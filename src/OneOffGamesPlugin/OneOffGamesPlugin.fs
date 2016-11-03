@@ -47,6 +47,7 @@ type OneOffGamesPlugin() =
         member this.Parameters = [||]
     interface IGameExtractorPlugin with
         member this.SupportedGames: string array = 
+
             handlerMapping |> Map.toArray |> Array.map (fun (k, _) -> k)
 
         member this.ExtractAll(game: string, path: string, db: LLDatabase, [<ParamArray>] args: string[]) = 

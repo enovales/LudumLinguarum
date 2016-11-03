@@ -25,7 +25,7 @@
     <OtherFlags>--warnon:1182</OtherFlags>
     <StartArguments>delete-game --game="Star Wars: Knights of the Old Republic II"</StartArguments>
     <StartArguments>import --game="Magicka" --game-dir="C:\Program Files (x86)\Steam\steamapps\common\Magicka"</StartArguments>
-    <StartArguments>dump-text --game="Age of Empires II: HD Edition" --languages="en,de,fr"  --include-key=true --include-language=true --sample-size=10</StartArguments>
+    <StartArguments>import --game="Star Wars Galactic Battlegrounds Saga" --game-dir="C:\Program Files (x86)\Steam\steamapps\common\STAR WARS - Galactic Battlegrounds Saga"</StartArguments>
     <StartAction>Program</StartAction>
     <StartProgram>C:\projects\LudumLinguarum\src\LudumLinguarum\bin\Debug\LudumLinguarum.exe</StartProgram>
   </PropertyGroup>
