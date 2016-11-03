@@ -13,6 +13,10 @@ open System.Text.RegularExpressions
 // don't warn about native conversions
 #nowarn "9"
 
+/// <summary>
+/// Plugin settings, because we need to be able to specify a language that is
+/// being extracted.
+/// </summary>
 type GBSPluginSettings() = 
     [<CommandLine.Option("language-tag", Default = "en", Required = false)>]
     member val LanguageTag = "en" with get, set
@@ -27,7 +31,9 @@ let private getResourceNames(languageDll: Kernel32.SafeLibraryHandle) =
             true
 
     let enumNameDelegate = new Kernel32.EnumResNameProc(enumNameProc)
-    let namesSuccess = Kernel32.EnumResourceNames(languageDll, Kernel32.RT_STRING, enumNameDelegate, nativeint 0)
+    if not(Kernel32.EnumResourceNames(languageDll, Kernel32.RT_STRING, enumNameDelegate, nativeint 0)) then
+        failwith "unable to enumerate string resource names"
+
     resourceNameList
 
 let private getLanguagesForNamedResource(languageDll: Kernel32.SafeLibraryHandle)(name: nativeint) = 
@@ -49,9 +55,10 @@ let private formattingRegexes =
         new Regex(@"\<.*\>")
     |]
 
-let internal stripFormattingTags(s: string) = 
+let private stripFormattingTags(s: string) = 
     Array.fold (fun (a: string)(r: Regex) -> r.Replace(a, "")) s formattingRegexes
 
+// Filters for strings that we don't want to extract.
 let private stringEndsInDotTxt(s: string) = s.EndsWith(".txt", StringComparison.InvariantCultureIgnoreCase)
 let private stringIsJustNumbersAndCommas(s: string) = s.ToCharArray() |> Array.forall(fun c -> (c = ',') || (c |> Char.IsDigit))
 let private stringIsTooShort(s: string) = s.Length <= 1
@@ -61,9 +68,6 @@ let private stringIsParenOrBracketChar(s: string) =
     | _ when (s.Length = 3) && (s.Chars(0) = '[') && (s.Chars(2) = ']') -> true
     | _ -> false
 
-(***************************************************************************)
-(****************** Star Wars: Galactic Battlegrounds Saga *****************)
-(***************************************************************************)
 let private runExtractGBS(path: string, db: LLDatabase, g: GameRecord)(settings: GBSPluginSettings) = 
     let mainLessonEntry = {
         LessonRecord.GameID = g.ID
@@ -84,7 +88,7 @@ let private runExtractGBS(path: string, db: LLDatabase, g: GameRecord)(settings:
             (Path.Combine(path, @"game\language_x1.dll"), x1LessonEntryWithId.ID)
         |]
 
-    let extractCardsForModule(language: string)((modulePath: string, lid: int)) = 
+    let extractCardsForModule(language: string)(modulePath: string, lid: int) = 
         let moduleHandle = PInvoke.Kernel32.LoadLibraryEx(modulePath, nativeint 0, PInvoke.Kernel32.LoadLibraryExFlags.LOAD_LIBRARY_AS_IMAGE_RESOURCE)
         let resourceNames = getResourceNames(moduleHandle)
         let stringIds = 
@@ -92,31 +96,32 @@ let private runExtractGBS(path: string, db: LLDatabase, g: GameRecord)(settings:
             |> List.map int
             |> List.collect (fun n -> [(n - 1) * 16 .. ((n - 1) * 16) + 15])
 
+        let createCardForStringId(sid: int) = 
+            let mutable sb: nativeptr<char> = NativeInterop.NativePtr.ofNativeInt<char>(nativeint 0)
+            let charsOutput = User32.LoadString(moduleHandle.DangerousGetHandle(), uint32 sid, &sb, 0)
+            if charsOutput > 0 then
+                let localizedString = 
+                    ((new string(sb)).Substring(0, charsOutput)
+                    |> stripFormattingTags).Trim()
+
+                let invalidityTests = 
+                    [|
+                        stringEndsInDotTxt
+                        stringIsJustNumbersAndCommas
+                        stringIsTooShort
+                        stringIsParenOrBracketChar
+                    |]
+
+                if (invalidityTests |> Array.exists(fun t -> t(localizedString))) then
+                    [||]
+                else
+                    [| (sid, localizedString) |]
+            else
+                [||]
+
         stringIds
         |> Array.ofList
-        |> Array.collect (fun sid ->
-                                let mutable sb: nativeptr<char> = NativeInterop.NativePtr.ofNativeInt<char>(nativeint 0)
-                                let charsOutput = User32.LoadString(moduleHandle.DangerousGetHandle(), uint32 sid, &sb, 0)
-                                if charsOutput > 0 then
-                                    let localizedString = 
-                                        ((new string(sb)).Substring(0, charsOutput)
-                                        |> stripFormattingTags).Trim()
-
-                                    let invalidityTests = 
-                                        [|
-                                            stringEndsInDotTxt
-                                            stringIsJustNumbersAndCommas
-                                            stringIsTooShort
-                                            stringIsParenOrBracketChar
-                                        |]
-
-                                    if (invalidityTests |> Array.exists(fun t -> t(localizedString))) then
-                                        [||]
-                                    else
-                                        [| (sid, localizedString) |]
-                                else
-                                    [||]
-                                )
+        |> Array.collect createCardForStringId
         |> Array.distinctBy(fun (_, s) -> s)
         |> Array.collect(fun (sid, localizedString) -> 
                             AssemblyResourceTools.createCardRecordForStrings(
@@ -166,7 +171,7 @@ type StarWarsGBSPlugin() =
             }
             let gameEntryWithId = { gameEntry with ID = db.CreateOrUpdateGame(gameEntry) }
             this.LogWriteLine("Game entry for " + game + " updated.") |> ignore
-            ExtractGalacticBattlegroundsSaga(path, db, gameEntryWithId, args)
+            ExtractGalacticBattlegroundsSaga(path, db, gameEntryWithId, args) |> ignore
             ()                
 
     member private this.LogWrite(s: string) = 
