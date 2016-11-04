@@ -18,6 +18,7 @@
       "../ParadoxStrategyGames.fs"
       "../AgeOfEmpiresGames.fs"
       "../StarWarsGBS.fs"
+      "../SonicAdventureDX.fs"
       "../SimpleGames.fs"
       "../OneOffGamesPlugin.fs"
       "../AssemblyInfoStatic.fs"
