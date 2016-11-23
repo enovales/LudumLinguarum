@@ -75,6 +75,7 @@
     <Compile Include="AssemblyResourceTools.fs" />
     <Compile Include="CsvTools.fs" />
     <Compile Include="YamlTools.fs" />
+    <Compile Include="StreamTools.fs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />

@@ -10,8 +10,9 @@ open System.Text
 /// </summary>
 /// <param name="br"></param>
 let internal readOffsetsFromSimpleBin(br: BinaryReader) = 
+    let rw = new StreamTools.ReaderWrapper(br)
     let rec readOffsets(prev: uint32 list) = 
-        match br.ReadUInt32() with
+        match rw.ReadUInt32() with
         | n when n = 0xFFFFFFFFu -> prev
         | n -> readOffsets(n :: prev)
 
@@ -51,21 +52,79 @@ let internal readStringsFromSimpleBin(stream: Stream, encoding: Encoding) =
         if stream.Seek(int64 o, SeekOrigin.Begin) <> int64 o then
             failwith "couldn't seek to correct location"
 
-        br.ReadBytes(int l) |> encoding.GetChars
+        let chars = br.ReadBytes(int l) |> encoding.GetChars
+        new String(chars)
 
     offsetsAndLengths
     |> Array.map readString
 
+type ExtractionFunction = int * Encoding * string * string -> CardRecord array
+
+/// <summary>
+/// Extracts a set of cards from a simple bin string file.
+/// </summary>
+/// <param name="lid">lesson ID to use</param>
+/// <param name="encoding">text encoding to use</param>
+/// <param name="language">language being extracted</param>
+/// <param name="path">path to the file</param>
+let private extractCardsForSimpleBin(lid: int, encoding: Encoding, language: string, path: string) = 
+    use fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)
+
+    readStringsFromSimpleBin(fs, encoding)
+    |> Array.distinct
+    |> Array.mapi (fun i s -> (i.ToString(), s.TrimStart([| char 0 |]).Trim()))
+    |> Map.ofArray
+    |> AssemblyResourceTools.createCardRecordForStrings(lid, "", language, "masculine")
+
 let ExtractSonicAdventureDX(path: string, db: LLDatabase, g: GameRecord, args: string array) = 
-    let lessonEntry = {
-        LessonRecord.GameID = g.ID;
-        ID = 0;
-        Name = "Game Text"
-    }
-    let lessonEntryWithId = { lessonEntry with ID = db.CreateOrUpdateLesson(lessonEntry) }
+    // make a lesson for each file that we need to extract.
+    let filesToExtract: (string * ExtractionFunction) array = 
+        [|
+            (@"system\CHAODX_MESSAGE_BLACKMARKET_{0}.BIN", extractCardsForSimpleBin)
+            (@"system\CHAODX_MESSAGE_HINT_{0}.BIN", extractCardsForSimpleBin)
+            (@"system\CHAODX_MESSAGE_ITEM_{0}.BIN", extractCardsForSimpleBin)
+            (@"system\CHAODX_MESSAGE_ODEKAKE_{0}.BIN", extractCardsForSimpleBin)
+            (@"system\CHAODX_MESSAGE_PLAYERACTION_{0}.BIN", extractCardsForSimpleBin)
+            (@"system\CHAODX_MESSAGE_RACE_{0}.BIN", extractCardsForSimpleBin)
+            (@"system\CHAODX_MESSAGE_SYSTEM_{0}.BIN", extractCardsForSimpleBin)
+            (@"system\MSGALITEM_{0}.BIN", extractCardsForSimpleBin)
+            (@"system\MSGALKINDERBL_{0}.BIN", extractCardsForSimpleBin)
+            (@"system\MSGALKINDERPR_{0}.BIN", extractCardsForSimpleBin)
+            (@"system\MSGALWARN_{0}.BIN", extractCardsForSimpleBin)
+            // TODO: add support for other file types, including files like
+            // PAST_MES_*_*.BIN
+            // MR_MES_*_*.BIN
+            // SS_MES_*_*.BIN
+        |]
 
-    let cards = [||]
+    let makeLesson(name: string) = 
+        let lessonEntry = {
+                LessonRecord.GameID = g.ID;
+                ID = 0;
+                Name = name
+            }
 
-    cards
+        { lessonEntry with ID = db.CreateOrUpdateLesson(lessonEntry) }
+
+    let getCardsForTuple(t: string * ExtractionFunction * LessonRecord) = 
+        let (fileRelativePath, fn, lesson) = t
+        let languages = 
+            [|
+                ("E", "en", Encoding.GetEncoding("Windows-1252"))
+                ("F", "fr", Encoding.GetEncoding("Windows-1252"))
+                ("G", "de", Encoding.GetEncoding("Windows-1252"))
+                ("J", "ja", Encoding.GetEncoding("shift_jis"))
+                ("S", "es", Encoding.GetEncoding("Windows-1252"))
+            |]
+
+        let getCardsForLanguage(suffix: string, language: string, encoding: Encoding) = 
+            fn(lesson.ID, encoding, language, Path.Combine(path, String.Format(fileRelativePath, suffix)))
+
+        languages
+        |> Array.collect getCardsForLanguage
+
+    filesToExtract
+    |> Array.map (fun (path, fn) -> (path, fn, makeLesson(path)))
+    |> Array.collect getCardsForTuple
     |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
     |> db.CreateOrUpdateCards
