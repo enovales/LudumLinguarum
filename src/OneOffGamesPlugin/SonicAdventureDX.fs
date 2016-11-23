@@ -4,6 +4,7 @@ open LLDatabase
 open System
 open System.IO
 open System.Text
+open System.Text.RegularExpressions
 
 /// <summary>
 /// Reads the 0xFFFFFFFF-terminated offset block at the start of a simple bin file.
@@ -61,6 +62,13 @@ let internal readStringsFromSimpleBin(stream: Stream, encoding: Encoding) =
 type ExtractionFunction = int * Encoding * string * string -> CardRecord array
 
 /// <summary>
+/// Used to normalize any whitespace in strings to a single space.
+/// </summary>
+/// <param name="s">string to normalize</param>
+let private cleanupString(s: string) = 
+    Regex.Replace(s, @"\s+", " ")
+
+/// <summary>
 /// Extracts a set of cards from a simple bin string file.
 /// </summary>
 /// <param name="lid">lesson ID to use</param>
@@ -72,6 +80,7 @@ let private extractCardsForSimpleBin(lid: int, encoding: Encoding, language: str
 
     readStringsFromSimpleBin(fs, encoding)
     |> Array.distinct
+    |> Array.map cleanupString
     |> Array.mapi (fun i s -> (i.ToString(), s.TrimStart([| char 0 |]).Trim()))
     |> Map.ofArray
     |> AssemblyResourceTools.createCardRecordForStrings(lid, "", language, "masculine")
