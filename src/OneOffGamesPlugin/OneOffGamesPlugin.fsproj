@@ -79,6 +79,7 @@
     <Compile Include="ParadoxStrategyGames.fs" />
     <Compile Include="AgeOfEmpiresGames.fs" />
     <Compile Include="StarWarsGBS.fs" />
+    <Compile Include="SonicAdventureDX.fs" />
     <Compile Include="SimpleGames.fs" />
     <Compile Include="OneOffGamesPlugin.fs" />
     <Compile Include="AssemblyInfoStatic.fs" />

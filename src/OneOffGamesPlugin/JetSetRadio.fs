@@ -14,21 +14,6 @@ open System.Reflection
 open System.Text
 open System.Text.RegularExpressions
 
-type ReaderWrapper(br: BinaryReader) = 
-    let needToConvert = BitConverter.IsLittleEndian
-    member this.Seek(offset: int64) = br.BaseStream.Seek(offset, SeekOrigin.Begin)
-    member this.ReadByte() = br.ReadByte()
-    member this.ReadBytes(count: int) = br.ReadBytes(count)
-    member this.ReadUInt16() = 
-        let bytes = br.ReadBytes(2)
-        if needToConvert then Array.Reverse(bytes)
-        BitConverter.ToUInt16(bytes, 0)
-
-    member this.ReadUInt32() = 
-        let bytes = br.ReadBytes(4)
-        if needToConvert then Array.Reverse(bytes)
-        BitConverter.ToUInt32(bytes, 0)
-
 // **************************************************************************
 // Custom instructions code
 // **************************************************************************
@@ -382,7 +367,7 @@ type JSRStringsHeader =
         languageCount: uint8;
         stringCount: uint16;
     }
-    static member FromBinaryReader(br: ReaderWrapper) = 
+    static member FromBinaryReader(br: StreamTools.ReaderWrapper) = 
         {
             JSRStringsHeader.languageCount = br.ReadByte();
             stringCount = br.ReadUInt16()
@@ -393,7 +378,7 @@ type JSRStringTableEntry =
         offset: uint32;
         substringLengths: uint16 array
     }
-    static member FromBinaryReader(br: ReaderWrapper) = 
+    static member FromBinaryReader(br: StreamTools.ReaderWrapper) = 
         let offset = br.ReadUInt32()
         let languageCount = Enum.GetValues(typeof<LanguageType>).Length
 
@@ -409,7 +394,7 @@ type JSRString =
     {
         substrings: string array
     }
-    static member FromBinaryReader(br: ReaderWrapper, ste: JSRStringTableEntry) = 
+    static member FromBinaryReader(br: StreamTools.ReaderWrapper, ste: JSRStringTableEntry) = 
         let encoding = new UnicodeEncoding(true, false, false)
         br.Seek(int64 ste.offset) |> ignore
         {
@@ -425,7 +410,7 @@ type JSRStringsBinary(stringsByLanguage: JSRString array) =
     static member FromFile(path: string) = 
         use fs = new MemoryStream(File.ReadAllBytes(path))
         use br = new BinaryReader(fs)
-        let rw = new ReaderWrapper(br)
+        let rw = new StreamTools.ReaderWrapper(br)
 
         // read the header, then each string table entry, followed by all of the strings.
         let header = JSRStringsHeader.FromBinaryReader(rw)

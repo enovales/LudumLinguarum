@@ -38,6 +38,7 @@ type OneOffGamesPlugin() =
             ("Victoria 2", ParadoxStrategyGames.ExtractVictoria2)
             ("Europa Universalis IV", ParadoxStrategyGames.ExtractEU4)
             ("Age of Empires II: HD Edition", AgeOfEmpiresGames.ExtractAOE2HD)
+            ("Sonic Adventure DX", SonicAdventureDX.ExtractSonicAdventureDX)
         |] |> Map.ofArray
 
     interface IPlugin with
