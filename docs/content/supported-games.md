@@ -27,7 +27,7 @@ Games supported, and languages supported (for games that are a single download f
 * [Sid Meier's Civilization IV: Colonization](http://store.steampowered.com/app/16810/) \[de, en, es, fr, it\]
 * [Sid Meier's Civilization IV: Warlords](http://store.steampowered.com/app/3990/) \[de, en, es, fr, it\]
 * [Skulls of the Shogun](http://store.steampowered.com/app/228960/) \[de, en, es, fr, it, ja, ko, pt, ru, zh\]
-* [Sonic Adventure DX](http://store.steampowered.com/app/71250/) \[de, en, es, fr, it, ja]
+* [Sonic Adventure DX](http://store.steampowered.com/app/71250/) \[de, en, es, fr, it, ja\]
 * [Space Channel 5: Part 2](http://store.steampowered.com/app/71260/) \[en, jp, de, es, fr, it\]
 * [Star Wars Galactic Battlegrounds Saga](http://store.steampowered.com/app/356500/) \[de, en, es, fr\]
 * [Star Wars: Knights of the Old Republic](http://store.steampowered.com/app/32370)
