@@ -1,6 +1,6 @@
-#### 0.12.0 - November 3 2016
+#### 0.12.0 - November 28 2016
 * Added support for:
-    * [Sonic Adventure DX]() (partial) \[de, en, es, fr, it\]
+    * [Sonic Adventure DX]() (partial) \[de, en, es, fr, it, ja\]
 	* [Star Wars Galactic Battlegrounds Saga]() \[de, en, es, fr\]
 
 #### 0.11.0 - July 10 2016
