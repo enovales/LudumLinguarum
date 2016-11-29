@@ -1,3 +1,5 @@
+#### 0.13.0 - November 29 2016
+
 #### 0.12.0 - November 28 2016
 * Added support for:
     * [Sonic Adventure DX]() (partial) \[de, en, es, fr, it, ja\]
