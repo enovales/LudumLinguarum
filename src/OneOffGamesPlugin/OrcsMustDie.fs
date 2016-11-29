@@ -19,6 +19,7 @@ let internal generateCardsForXElement(lessonID: int, language: string, keyRoot: 
     xel.Descendants()
     |> Seq.filter(fun t -> t.Name.LocalName = "String")
     |> Seq.map generateKVForTextElement
+    |> Seq.distinctBy(fun (_,v) -> v)
     |> Map.ofSeq
     |> AssemblyResourceTools.createCardRecordForStrings(lessonID, keyRoot, language, "masculine")
 
@@ -87,39 +88,53 @@ let internal createLesson(gameID: int, db: LLDatabase)(title: string): LessonRec
     }
     { lessonEntry with ID = db.CreateOrUpdateLesson(lessonEntry) }
 
-let ExtractOrcsMustDie(path: string, db: LLDatabase, g: GameRecord, args: string array) = 
-    let configuredLessonCreator = createLesson(g.ID, db)
-    let languageMap = 
-        [|
-            (@"Localization\de", "de")
-            (@"Localization\default", "en")
-            (@"Localization\es", "es")
-            (@"Localization\fr", "fr")
-            (@"Localization\it", "it")
-            (@"Localization\ja", "ja")
-            (@"Localization\pl", "pl")
-            (@"Localization\pt", "pt")
-            (@"Localization\ru", "ru")
-        |]
-        |> Map.ofArray
-
-    // create a single lesson for the game, because there isn't that much text
-    let lessonEntry = {
-        LessonRecord.GameID = g.ID;
-        ID = 0;
-        Name = "Game Text"
-    }
-    let lessonEntryWithId = { lessonEntry with ID = db.CreateOrUpdateLesson(lessonEntry) }
-
-    // load zips in reverse order, so the call to distinct will preserve the most recent ones
+let private extractOMDZips(assetZips: string array, db: LLDatabase, l: LessonRecord, languageMap: Map<string, string>) = 
     let cardKeyAndLanguage(c: CardRecord) = c.LanguageTag + c.Key
-    [|
-        "data.zip"
-        "datademo.zip"
-    |]
-    |> Array.collect((fun p -> Path.Combine(path, p)) >> generateCardsForAssetZip(languageMap, lessonEntryWithId))
+
+    assetZips
+    |> Array.collect(generateCardsForAssetZip(languageMap, l))
     |> Array.distinctBy cardKeyAndLanguage
     |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
     |> db.CreateOrUpdateCards
 
-    ()
+// Both Orcs Must Die! games have the same set of localizations.
+let private languageMap = 
+    [|
+        (@"Localization\de", "de")
+        (@"Localization\default", "en")
+        (@"Localization\es", "es")
+        (@"Localization\fr", "fr")
+        (@"Localization\it", "it")
+        (@"Localization\ja", "ja")
+        (@"Localization\pl", "pl")
+        (@"Localization\pt", "pt")
+        (@"Localization\ru", "ru")
+    |]
+    |> Map.ofArray
+
+let ExtractOrcsMustDie(path: string, db: LLDatabase, g: GameRecord, args: string array) = 
+    let configuredLessonCreator = createLesson(g.ID, db)
+    let lessonEntry = configuredLessonCreator("Game Text")
+
+    // load zips in reverse order, so the call to distinct will preserve the most recent ones
+    let assetZips = 
+        [|
+            "data.zip"
+            "datademo.zip"
+        |]
+        |> Array.map(fun p -> Path.Combine(path, p))
+
+    extractOMDZips(assetZips, db, lessonEntry, languageMap)
+
+let ExtractOrcsMustDie2(path: string, db: LLDatabase, g: GameRecord, args: string array) = 
+    let configuredLessonCreator = createLesson(g.ID, db)
+    let lessonEntry = configuredLessonCreator("Game Text")
+
+    // load zips in reverse order, so the call to distinct will preserve the most recent ones
+    let assetZips = 
+        [|
+            "data.zip"
+        |]
+        |> Array.map(fun p -> Path.Combine(path, p))
+
+    extractOMDZips(assetZips, db, lessonEntry, languageMap)

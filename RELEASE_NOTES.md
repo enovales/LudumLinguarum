@@ -1,5 +1,6 @@
 #### 0.13.0 - November 29 2016
 * Added support for:
+    * [Orcs Must Die! 2] \[de, en, es, fr, it, ja, pl, pt, ru\]
 
 #### 0.12.0 - November 28 2016
 * Added support for:
