@@ -12,7 +12,7 @@ open System.Xml.Linq
 /// </summary>
 /// <param name="el">the XML element</param>
 let internal generateKVForTextElement(el: XElement) = 
-    (el.Attribute(XName.Get("_locID")).Value, el.Value)
+    (el.Attribute(XName.Get("_locID")).Value, el.Value.Trim())
 
 let internal generateCardsForXElement(lessonID: int, language: string, keyRoot: string)(xel: XElement) = 
     // the element is the TextLibrary node
