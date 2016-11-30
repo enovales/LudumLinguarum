@@ -13,8 +13,7 @@ In other words, you can spice up your language learning regimen by drilling flas
 Currently only PC games are supported, although there's no technical reason other platforms couldn't be supported -- 
 it's just simpler to work on PC versions of titles.
 
-(The program has currently only been tested on Windows. I'm not sure if it would work running under Mono on Linux or
-OS X -- if you try it out on one of these platforms, please let me know what you find!)
+Ludum Linguarum can only be run on Windows at this time -- it has dependencies on some Windows-only libraries.
 
 # Quick Start
 
@@ -74,7 +73,9 @@ requirement, though -- you can just as easily use this to enable you to play a g
 
 ## What games are supported?
 
-Check [the list of currently supported games here](http://enovales.github.io/LudumLinguarum/supported-games.html).
+Check [the list of currently supported games here](http://enovales.github.io/LudumLinguarum/supported-games.html). The 
+[release notes file](https://github.com/enovales/LudumLinguarum/blob/master/RELEASE_NOTES.md) also lists supported games,
+along with the version number in which they were implemented.
 
 ## Can you send me the flashcard decks for game XYZ?
 
@@ -82,8 +83,13 @@ No. It's copyrighted content. Not gonna happen.
 
 ## Can you add support for XYZ game?
 
-Thanks for asking! The answer is, "maybe," depending on how difficult it is to extract the content from the game. Some 
-characteristics that might make it easier to support a particular game:
+Thanks for asking! The answer is, "maybe," depending on how difficult it is to extract the content from the game.
+
+I've [drawn up a list of games that have been investigated](http://enovales.github.io/LudumLinguarum/unsupported-games.html)
+and are either definitively unsupportable (i.e. their localized text is all stored as bitmaps, etc.), or are unlikely 
+to be supported due to the difficulty in reverse-engineering their file formats.
+
+Some characteristics that might make it easier to support a particular game:
 
 * game files are unencrypted/uncompressed/compressed in a well-known format like ZIP
 * game text is in a well-structured format (XML, JSON, etc.) or in a format with existing framework/library support 
