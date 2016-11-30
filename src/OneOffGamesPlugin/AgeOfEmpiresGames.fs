@@ -139,9 +139,12 @@ let ExtractAOE3(path: string, db: LLDatabase, g: GameRecord, args: string array)
         |]
 
     let generateCardsForXml(xmlPath: string, lesson: LessonRecord) = 
-        use fs = new FileStream(xmlPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)
-        OrcsMustDie.generateCardsForXmlStream(lesson.ID, None, "")(fs)
-        |> Array.map (fun c -> { c with Text = sanitizePipeline(c.Text) })
+        if (File.Exists(xmlPath)) then
+            use fs = new FileStream(xmlPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)
+            OrcsMustDie.generateCardsForXmlStream(lesson.ID, None, "")(fs)
+            |> Array.map (fun c -> { c with Text = sanitizePipeline(c.Text) })
+        else
+            [||]
 
     let xmlCards = 
         stringSources
