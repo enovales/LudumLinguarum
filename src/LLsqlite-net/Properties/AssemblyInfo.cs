@@ -4,11 +4,11 @@ using System.Reflection;
 [assembly: AssemblyTitleAttribute("LLsqlite-net")]
 [assembly: AssemblyProductAttribute("LudumLinguarum")]
 [assembly: AssemblyDescriptionAttribute("Tools for extracting localized content from games, and turning them into language learning content.")]
-[assembly: AssemblyVersionAttribute("0.12.0")]
-[assembly: AssemblyFileVersionAttribute("0.12.0")]
+[assembly: AssemblyVersionAttribute("0.13.0")]
+[assembly: AssemblyFileVersionAttribute("0.13.0")]
 namespace System {
     internal static class AssemblyVersionInformation {
-        internal const string Version = "0.12.0";
-        internal const string InformationalVersion = "0.12.0";
+        internal const string Version = "0.13.0";
+        internal const string InformationalVersion = "0.13.0";
     }
 }
