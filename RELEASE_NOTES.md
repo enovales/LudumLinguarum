@@ -1,6 +1,7 @@
 #### 0.13.0 - November 29 2016
 * Added support for:
 	* [Age of Empires III](http://store.steampowered.com/app/105450/) \[de, en, es, fr, it\]
+	* [Crusader Kings II](http://store.steampowered.com/app/203770/) \[de, en, es, fr\]
     * [Orcs Must Die! 2](http://store.steampowered.com/app/201790/) \[de, en, es, fr, it, ja, pl, pt, ru\]
 
 #### 0.12.0 - November 28 2016
