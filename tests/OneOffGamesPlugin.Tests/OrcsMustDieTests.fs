@@ -17,13 +17,43 @@ type OrcsMustDieTests() =
     member this.``Calling generateCardsForXml returns a card for an XML document with a single localized string``() = 
         let xml = """<?xml version="1.0" encoding="UTF-16"?>
 <StringTable version ='0'>
+   <Language name ='Unused'>
+      <String _locID ='12345'>content</String>
+   </Language>
+</StringTable>
+"""
+        let lessonID = 0
+        let generated = OrcsMustDie.generateCardsForXml(lessonID, Some("en"), "keyroot")(xml)
+        let expected =
+            [|
+                {
+                    CardRecord.ID = 0
+                    LessonID = lessonID
+                    Text = "content"
+                    Gender = "masculine"
+                    Key = "keyroot12345masculine"
+                    GenderlessKey = "keyroot12345"
+                    KeyHash = 0
+                    GenderlessKeyHash = 0
+                    SoundResource = ""
+                    LanguageTag = "en"
+                    Reversible = true
+                }
+            |]
+
+        Assert.AreEqual(expected, generated)
+
+    [<Test>]
+    member this.``Calling generateCardsForXml autodetects the language to use from the XML string, if one is not specified``() = 
+        let xml = """<?xml version="1.0" encoding="UTF-16"?>
+<StringTable version ='0'>
    <Language name ='English'>
       <String _locID ='12345'>content</String>
    </Language>
 </StringTable>
 """
         let lessonID = 0
-        let generated = OrcsMustDie.generateCardsForXml(lessonID, "en", "keyroot")(xml)
+        let generated = OrcsMustDie.generateCardsForXml(lessonID, None, "keyroot")(xml)
         let expected =
             [|
                 {
