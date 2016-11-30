@@ -6,6 +6,24 @@ open System.IO
 open System.Text
 open System.Text.RegularExpressions
 
+let private formattingRegexes = 
+    [|
+        new Regex(@"\<.*\>")
+    |]
+
+let private stripFormattingTags(s: string) = 
+    Array.fold (fun (a: string)(r: Regex) -> r.Replace(a, "")) s formattingRegexes
+
+let private trimString(s: string) = s.Trim()
+let private replaceEscapeChars(s: string) = s.Replace(@"\r", " ").Replace(@"\n", " ")
+let private consolidateWhitespace(s: string) = Regex.Replace(s, @"\s+", " ")
+
+let private sanitizePipeline =
+    stripFormattingTags >> replaceEscapeChars >> consolidateWhitespace >> trimString
+
+/////////////////////////////////////////////////////////////////////////////
+// Age of Empires II HD
+
 let private aoe2HDLanguages = [| "br"; "de"; "en"; "es"; "fr"; "it"; "jp"; "ko"; "nl"; "ru"; "zh" |]
 
 let internal createLesson(gameID: int, db: LLDatabase)(title: string): LessonRecord = 
@@ -103,3 +121,41 @@ let ExtractAOE2HD(path: string, db: LLDatabase, g: GameRecord, args: string arra
     |> Array.collect id
     |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
     |> db.CreateOrUpdateCards
+
+/////////////////////////////////////////////////////////////////////////////
+
+/////////////////////////////////////////////////////////////////////////////
+// Age of Empires III
+
+let ExtractAOE3(path: string, db: LLDatabase, g: GameRecord, args: string array) = 
+    let stringSources = 
+        [|
+            (@"bin\data\stringtable.xml", "Base Game")
+            (@"bin\data\stringtablex.xml", "Warchiefs Expansion")
+            (@"bin\data\stringtabley.xml", "Asian Dynasties Expansion")
+            (@"bin\data\unithelpstrings.xml", "Base Game Unit Help")
+            (@"bin\data\unithelpstringsx.xml", "Warchiefs Expansion Unit Help")
+            (@"bin\data\unithelpstringsy.xml", "Asian Dynasties Expansion Unit Help")
+        |]
+
+    let generateCardsForXml(xmlPath: string, lesson: LessonRecord) = 
+        if (File.Exists(xmlPath)) then
+            use fs = new FileStream(xmlPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)
+            OrcsMustDie.generateCardsForXmlStream(lesson.ID, None, "")(fs)
+            |> Array.map (fun c -> { c with Text = sanitizePipeline(c.Text) })
+        else
+            [||]
+
+    let xmlCards = 
+        stringSources
+        |> Array.map (fun (p, lessonName) -> (Path.Combine(path, p), createLesson(g.ID, db)(lessonName)))
+        |> Array.collect generateCardsForXml
+        |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
+        |> Array.distinctBy(fun c -> c.Text)
+
+    // TODO: extract launcher strings from resource DLLs?
+    xmlCards
+    |> db.CreateOrUpdateCards
+
+
+/////////////////////////////////////////////////////////////////////////////

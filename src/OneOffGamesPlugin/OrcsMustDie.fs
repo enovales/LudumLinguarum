@@ -14,7 +14,40 @@ open System.Xml.Linq
 let internal generateKVForTextElement(el: XElement) = 
     (el.Attribute(XName.Get("_locID")).Value, el.Value.Trim())
 
-let internal generateCardsForXElement(lessonID: int, language: string, keyRoot: string)(xel: XElement) = 
+/// <summary>
+/// Generates a set of cards for localized strings underneath a root XML element. A language
+/// name to use can be passed in, or it can be determined from the 'name' attribute on the
+/// Language node.
+/// 
+/// (Some games using this format have the language name correctly specified in the XML file.
+/// Others do not, so this needs to be specified manually.)
+/// </summary>
+/// <param name="lessonID">the lesson ID to use for the generated cards</param>
+/// <param name="languageOpt">the optional language to use for the cards -- if None, 
+/// then the language will be autodetected.</param>
+/// <param name="keyRoot">root name for the Key field of the generated cards</param>
+/// <param name="xel">XML element to process</param>
+let internal generateCardsForXElement(lessonID: int, languageOpt: string option, keyRoot: string)(xel: XElement) = 
+    let language = 
+        match languageOpt with
+        | Some(l) -> 
+            // use the language that was specified
+            l
+        | None ->
+            // use the language name from the 'Language' node's 'name' attribute.
+            let languageNode = 
+                xel.Descendants()
+                |> Seq.find(fun t -> t.Name.LocalName = "Language")
+            
+            let languageName = languageNode.Attribute(XName.Get("name")).Value
+            match languageName with
+            | "English" -> "en"
+            | "French" -> "fr"
+            | "German" -> "de"
+            | "Spanish" -> "es"
+            | "Italian" -> "it"
+            | _ -> failwith "unrecognized language name in Language name attribute"
+
     // the element is the TextLibrary node
     xel.Descendants()
     |> Seq.filter(fun t -> t.Name.LocalName = "String")
@@ -23,9 +56,9 @@ let internal generateCardsForXElement(lessonID: int, language: string, keyRoot: 
     |> Map.ofSeq
     |> AssemblyResourceTools.createCardRecordForStrings(lessonID, keyRoot, language, "masculine")
 
-let internal generateCardsForXmlStream(lessonID: int, language: string, keyRoot: string)(stream: Stream) = 
+let internal generateCardsForXmlStream(lessonID: int, languageOpt: string option, keyRoot: string)(stream: Stream) = 
     let xel = XElement.Load(stream)
-    generateCardsForXElement(lessonID, language, keyRoot)(xel)
+    generateCardsForXElement(lessonID, languageOpt, keyRoot)(xel)
 
 /// <summary>
 /// Generates a set of cards for a single localization XML file.
@@ -34,10 +67,10 @@ let internal generateCardsForXmlStream(lessonID: int, language: string, keyRoot:
 /// <param name="language">the language of this content</param>
 /// <param name="keyRoot">root to use for keys in the generated cards -- should correspond to the file name from which the content was pulled</param>
 /// <param name="xmlContent">the XML content to parse</param>
-let internal generateCardsForXml(lessonID: int, language: string, keyRoot: string)(xmlContent: string) = 
+let internal generateCardsForXml(lessonID: int, languageOpt: string option, keyRoot: string)(xmlContent: string) = 
     use stringReader = new StringReader(xmlContent)
     let xel = XElement.Load(stringReader)
-    generateCardsForXElement(lessonID, language, keyRoot)(xel)
+    generateCardsForXElement(lessonID, languageOpt, keyRoot)(xel)
 
 /// <summary>
 /// Generates a set of cards for a single asset zip from OMD.
@@ -73,7 +106,7 @@ let internal generateCardsForAssetZip(languageMap: Map<string, string>, lesson: 
             memoryStream
 
         zipEntries
-        |> Seq.collect(getStreamForZipEntry >> generateCardsForXmlStream(lesson.ID, language, lesson.Name))
+        |> Seq.collect(getStreamForZipEntry >> generateCardsForXmlStream(lesson.ID, Some(language), lesson.Name))
         |> Array.ofSeq
 
     languageMap

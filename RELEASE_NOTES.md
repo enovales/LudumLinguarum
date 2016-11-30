@@ -1,11 +1,12 @@
 #### 0.13.0 - November 29 2016
 * Added support for:
-    * [Orcs Must Die! 2] \[de, en, es, fr, it, ja, pl, pt, ru\]
+	* [Age of Empires III](http://store.steampowered.com/app/105450/) \[de, en, es, fr, it\]
+    * [Orcs Must Die! 2](http://store.steampowered.com/app/201790/) \[de, en, es, fr, it, ja, pl, pt, ru\]
 
 #### 0.12.0 - November 28 2016
 * Added support for:
-    * [Sonic Adventure DX]() (partial) \[de, en, es, fr, it, ja\]
-	* [Star Wars Galactic Battlegrounds Saga]() \[de, en, es, fr\]
+    * [Sonic Adventure DX](http://store.steampowered.com/app/71250/) (partial) \[de, en, es, fr, it, ja\]
+	* [Star Wars Galactic Battlegrounds Saga](http://store.steampowered.com/app/356500/) \[de, en, es, fr\]
 
 #### 0.11.0 - July 10 2016
 * A new 'dump-text' command was added, which allows extracted game text (optionally subject to filtering or 
@@ -13,16 +14,17 @@ random sampling) to be dumped to a tab-separated text file.
 
 #### 0.10.0 - June 30 2016
 * Added support for:
-  * [Space Channel 5: Part 2]() \[en, jp, de, es, fr, it\]
-  * [Puzzle Kingdoms]() \[de, en, es, fr, it\]
-  * [Sid Meier's Civilization IV]() \[de, en, es, fr, it\]
-  * [Sid Meier's Civilization IV: Warlords]() \[de, en, es, fr, it\]
-  * [Sid Meier's Civilization IV: Beyond the Sword]() \[de, en, es, fr, it\]
-  * [Sid Meier's Civilization IV: Colonization]() \[de, en, es, fr, it\]
-  * [Europa Universalis III]() \[en, de\]
-  * [Europa Universalis IV]() \[de, en, es, fr\]
-  * [Hearts of Iron 3]() \[de, en, fr\]
-  * [Victoria 2]() \[de, en, fr\]
+  * [Age of Empires II HD](http://store.steampowered.com/app/221380/) \[cn, de, en, es, fr, it, ja, ko, nl, pt, ru\]
+  * [Space Channel 5: Part 2](http://store.steampowered.com/app/71260/) \[en, jp, de, es, fr, it\]
+  * [Puzzle Kingdoms](http://store.steampowered.com/app/23700/) \[de, en, es, fr, it\]
+  * [Sid Meier's Civilization IV](http://store.steampowered.com/app/3900/) \[de, en, es, fr, it\]
+  * [Sid Meier's Civilization IV: Warlords](http://store.steampowered.com/app/3990/) \[de, en, es, fr, it\]
+  * [Sid Meier's Civilization IV: Beyond the Sword](http://store.steampowered.com/app/8800/) \[de, en, es, fr, it\]
+  * [Sid Meier's Civilization IV: Colonization](http://store.steampowered.com/app/16810/) \[de, en, es, fr, it\]
+  * [Europa Universalis III](http://store.steampowered.com/app/25800/) \[en, de\]
+  * [Europa Universalis IV](http://store.steampowered.com/app/236850/) \[de, en, es, fr\]
+  * [Hearts of Iron 3](http://store.steampowered.com/app/25890/) \[de, en, fr\]
+  * [Victoria 2](http://store.steampowered.com/app/42960/) \[de, en, fr\]
 
 #### 0.9.0 - May 23 2016
 * Initial version

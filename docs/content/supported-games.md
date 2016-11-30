@@ -3,6 +3,8 @@
 Games supported, and languages supported (for games that are a single download for all languages):
 
 
+* [Age of Empires II HD](http://store.steampowered.com/app/221380/) \[cn, de, en, es, fr, it, ja, ko, nl, pt, ru\]
+* [Age of Empires III](http://store.steampowered.com/app/105450/) \[de, en, es, fr, it\]
 * [Audiosurf](http://store.steampowered.com/app/12900/) \[en, ru\]
 * [Bastion](http://store.steampowered.com/app/107100/) \[de, en, es, fr, it\]
 * [Europa Universalis III](http://store.steampowered.com/app/25800/) \[en, de\]
@@ -18,6 +20,7 @@ Games supported, and languages supported (for games that are a single download f
 * [Magicka](http://store.steampowered.com/app/42910/) \[de, en, es, fr, hu, it, pl, ru\]
 * [Neverwinter Nights](https://www.gog.com/game/neverwinter_nights_diamond_edition)
 * [Orcs Must Die!](http://store.steampowered.com/app/102600/) \[de, en, es, fr, it, ja, pl, pt, ru\]
+* [Orcs Must Die! 2](http://store.steampowered.com/app/201790/) \[de, en, es, fr, it, ja, pl, pt, ru\]
 * [Pillars of Eternity](http://store.steampowered.com/app/291650/) \[de, en, es, fr, it, ko, pl, ru\]
 * [Puzzle Chronicles](http://store.steampowered.com/app/19020/) \[de, en, en-gb, es, es-mx, fr, fr-ca, it\]
 * [Puzzle Kingdoms](http://store.steampowered.com/app/23700/) \[de, en, es, fr, it\]
