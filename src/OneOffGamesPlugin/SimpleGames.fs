@@ -378,3 +378,47 @@ let ExtractHatofulBoyfriendHolidayStar(path: string, db: LLDatabase, g: GameReco
     |> Array.collect (File.ReadAllLines >> Array.filter(String.IsNullOrWhiteSpace >> not) >> hbGenerateCardsForLines(lessonEntryWithId.ID))
     |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
     |> db.CreateOrUpdateCards
+
+(***************************************************************************)
+(********************************** Braid **********************************)
+(***************************************************************************)
+let ExtractBraid(path: string, db: LLDatabase, g: GameRecord, args: string array) = 
+    let lessonEntry = {
+        LessonRecord.GameID = g.ID
+        ID = 0
+        Name = "Game Text"
+    }
+    let lessonEntryWithId = { lessonEntry with ID = db.CreateOrUpdateLesson(lessonEntry) }
+    let fileNamesToLanguage = 
+        [|
+            ("english", "en")
+            ("french", "fr")
+            ("german", "de")
+            ("italian", "it")
+            ("japanese", "ja")
+            ("korean", "ko")
+            ("polish", "pl")
+            ("portuguese", "pt")
+            ("russian", "ru")
+            ("spanish", "es")
+            ("tchinese", "zh")
+            ("czech", "cs")
+            ("georgian", "ka")
+        |]
+        |> Map.ofArray
+
+    let moFiles = Directory.GetFiles(Path.Combine(path, @"data\strings"), "*.mo", SearchOption.AllDirectories)
+    let createCardsForMoFile(mf: string) = 
+        match fileNamesToLanguage |> Map.tryFind(Path.GetFileNameWithoutExtension(mf).ToLower()) with
+        | Some(language) -> 
+            // ***TODO: read the MO file, extract all original and translated strings, and then
+            // create cards for them.
+            [||]
+        | None -> 
+            // ***TODO: output a message indicating that the language wasn't found
+            [||]
+
+    moFiles
+    |> Array.collect createCardsForMoFile
+    |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
+    |> db.CreateOrUpdateCards

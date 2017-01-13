@@ -1,6 +1,7 @@
 #### 0.13.0 - November 29 2016
 * Added support for:
 	* [Age of Empires III](http://store.steampowered.com/app/105450/) \[de, en, es, fr, it\]
+	* [Braid](http://store.steampowered.com/app/26800/) \[cs, de, en, es, fr, it, ja, ka, ko, pl, pt, ru, zh\]
     * [Orcs Must Die! 2](http://store.steampowered.com/app/201790/) \[de, en, es, fr, it, ja, pl, pt, ru\]
 
 #### 0.12.0 - November 28 2016

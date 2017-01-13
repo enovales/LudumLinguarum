@@ -7,6 +7,7 @@ Games supported, and languages supported (for games that are a single download f
 * [Age of Empires III](http://store.steampowered.com/app/105450/) \[de, en, es, fr, it\]
 * [Audiosurf](http://store.steampowered.com/app/12900/) \[en, ru\]
 * [Bastion](http://store.steampowered.com/app/107100/) \[de, en, es, fr, it\]
+* [Braid](http://store.steampowered.com/app/26800/) \[cs, de, en, es, fr, it, ja, ka, ko, pl, pt, ru, zh\]
 * [Europa Universalis III](http://store.steampowered.com/app/25800/) \[en, de\]
 * [Europa Universalis IV](http://store.steampowered.com/app/236850/) \[de, en, es, fr\]
 * [Hatoful Boyfriend](http://store.steampowered.com/app/310080/) \[de, en, es, fr, it, ja, ru\]
