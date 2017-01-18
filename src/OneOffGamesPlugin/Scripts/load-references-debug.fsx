@@ -34,3 +34,4 @@
 #r "../../../packages/PInvoke.Windows.ShellScalingApi/lib/net40/PInvoke.Windows.ShellScalingApi.dll"
 #r "../../../packages/CommandLineParser/lib/net45/CommandLine.dll"
 #r "../../../paket-files/icsharpcode/SharpZipLib/bin/Debug/ICSharpCode.SharpZipLib.dll"
+#r "../../../packages/FsGettextUtils/lib/net461/FsGettextUtils.dll"
