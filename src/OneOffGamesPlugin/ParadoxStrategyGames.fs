@@ -9,6 +9,9 @@ open System.Xml.Linq
 open YamlDotNet.RepresentationModel
 open YamlTools
 
+/////////////////////////////////////////////////////////////////////////////
+// General functions for dealing with Paradox strategy games
+
 let internal localizationsAndEncodings = 
     [|
         ("en", Encoding.GetEncoding("Windows-1252"))
@@ -26,6 +29,12 @@ let internal localizationsAndEncodings =
         ("fi", Encoding.GetEncoding("Windows-1252"))
     |]
 
+/// <summary>
+/// Generates cards for semicolon-separated files.
+/// </summary>
+/// <param name="lessonID">the lesson ID to use</param>
+/// <param name="keyRoot">root for the Key field of generated cards</param>
+/// <param name="ssvBytes">raw bytes of the SSV file</param>
 let internal generateCardsForSSVContent(lessonID: int, keyRoot: string)(ssvBytes: byte array) = 
     let extractor = CsvTools.extractFieldsForLine(";")
     let cardsForLine(i: int, lang: string)(fields: string array) = 
@@ -86,6 +95,8 @@ let internal createLesson(gameID: int, db: LLDatabase)(title: string): LessonRec
     }
     { lessonEntry with ID = db.CreateOrUpdateLesson(lessonEntry) }
 
+/////////////////////////////////////////////////////////////////////////////
+// Europa Universalis III
 let ExtractEU3(path: string, db: LLDatabase, g: GameRecord, args: string array) = 
     let lesson = createLesson(g.ID, db)("Game Text")
 
@@ -93,6 +104,8 @@ let ExtractEU3(path: string, db: LLDatabase, g: GameRecord, args: string array) 
     |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
     |> db.CreateOrUpdateCards
 
+/////////////////////////////////////////////////////////////////////////////
+// Hearts of Iron III
 let ExtractHOI3(path: string, db: LLDatabase, g: GameRecord, args: string array) = 
     // Hearts of Iron 3 has better grouping in its localization files, so we'll
     // go ahead and create a lesson for each one.
@@ -102,6 +115,8 @@ let ExtractHOI3(path: string, db: LLDatabase, g: GameRecord, args: string array)
     |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
     |> db.CreateOrUpdateCards
 
+/////////////////////////////////////////////////////////////////////////////
+// Victoria II
 let ExtractVictoria2(path: string, db: LLDatabase, g: GameRecord, args: string array) = 
     let lesson = createLesson(g.ID, db)("Game Text")
 
@@ -109,6 +124,8 @@ let ExtractVictoria2(path: string, db: LLDatabase, g: GameRecord, args: string a
     |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
     |> db.CreateOrUpdateCards
 
+/////////////////////////////////////////////////////////////////////////////
+// Europa Universalis IV
 let internal eu4NumericKeyAnnotationRegex = new Regex(@"^(?:\s*\S+:)([0-9]+)(?:.*)", RegexOptions.None)
 let rec internal eu4StripNumericKeyAnnotations(s: string) = 
     let m = eu4NumericKeyAnnotationRegex.Match(s)
@@ -195,3 +212,26 @@ let ExtractEU4(path: string, db: LLDatabase, g: GameRecord, args: string array) 
     |> db.CreateOrUpdateCards
 
     ()
+
+/////////////////////////////////////////////////////////////////////////////
+// Crusader Kings II
+
+let ExtractCrusaderKings2(path: string, db: LLDatabase, g: GameRecord, args: string array) = 
+    // Crusader Kings II has better grouping in its localization files, so we'll
+    // go ahead and create a lesson for each one that is not blacklisted.
+    let fileBlacklist = 
+        [|
+            "WikipediaLinks"
+            "z_PLACEHOLDER_DO_NOT_FORGET_ME"
+            "z_proofreading_temp"
+            "z_notranslate"
+        |]
+    let isFileBlacklisted s = fileBlacklist |> Array.contains(Path.GetFileNameWithoutExtension(s))
+
+    let lessonGenerator = createLesson(g.ID, db)
+    Directory.GetFiles(Path.Combine(path, "localisation"), "*.csv")
+    |> Array.filter(isFileBlacklisted >> not)
+    |> Array.collect(fun p -> generateCardsForFile(lessonGenerator(Path.GetFileNameWithoutExtension(p)).ID)(p))
+    |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
+    |> Array.distinctBy(fun c -> c.Text)
+    |> db.CreateOrUpdateCards
