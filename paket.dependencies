@@ -13,6 +13,7 @@ nuget YamlDotNet
 //nuget PInvoke.User32
 nuget PInvoke.Win32
 nuget LANGIDMappings
+nuget FsGettextUtils
 github icsharpcode/SharpZipLib
 //git https://github.com/gsscoder/commandline.git master build: "build.cmd", OS: windows
 nuget CommandLineParser 2.0.275-beta

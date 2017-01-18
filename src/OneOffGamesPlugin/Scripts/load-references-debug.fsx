@@ -1,6 +1,5 @@
 // Warning: generated file; your changes could be lost when a new file is generated.
 #I __SOURCE_DIRECTORY__
-#r "../../../paket-files/icsharpcode/SharpZipLib/bin/Debug/ICSharpCode.SharpZipLib.dll"
 #r "../../LLsqlite-net/bin/Debug/LLsqlite-net.dll"
 #r "../../LudumLinguarumLib/bin/Debug/LudumLinguarumLib.dll"
 #r "../../OneOffGamesData/bin/Debug/OneOffGamesData.dll"
@@ -34,3 +33,4 @@
 #r "../../../packages/PInvoke.UxTheme/lib/net40/PInvoke.UxTheme.dll"
 #r "../../../packages/PInvoke.Windows.ShellScalingApi/lib/net40/PInvoke.Windows.ShellScalingApi.dll"
 #r "../../../packages/CommandLineParser/lib/net45/CommandLine.dll"
+#r "../../../paket-files/icsharpcode/SharpZipLib/bin/Debug/ICSharpCode.SharpZipLib.dll"
