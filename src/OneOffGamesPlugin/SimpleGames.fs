@@ -1,9 +1,11 @@
 ﻿module SimpleGames
 
 open CsvTools
+open FsGettextUtils.MoFile
 open LLDatabase
 open System
 open System.IO
+open System.Text
 open System.Text.RegularExpressions
 open System.Xml.Linq
 
@@ -376,5 +378,80 @@ let ExtractHatofulBoyfriendHolidayStar(path: string, db: LLDatabase, g: GameReco
 
     filesToExtract
     |> Array.collect (File.ReadAllLines >> Array.filter(String.IsNullOrWhiteSpace >> not) >> hbGenerateCardsForLines(lessonEntryWithId.ID))
+    |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
+    |> db.CreateOrUpdateCards
+
+(***************************************************************************)
+(********************************** Braid **********************************)
+(***************************************************************************)
+let ExtractBraid(path: string, db: LLDatabase, g: GameRecord, args: string array) = 
+    let lessonEntry = {
+        LessonRecord.GameID = g.ID
+        ID = 0
+        Name = "Game Text"
+    }
+    let lessonEntryWithId = { lessonEntry with ID = db.CreateOrUpdateLesson(lessonEntry) }
+    let fileNamesToLanguage = 
+        [|
+            ("english", "en"); ("french", "fr"); ("german", "de"); ("italian", "it"); ("japanese", "ja")
+            ("korean", "ko"); ("polish", "pl"); ("portuguese", "pt"); ("russian", "ru"); ("spanish", "es")
+            ("tchinese", "zh"); ("czech", "cs"); ("georgian", "ka")
+        |]
+        |> Map.ofArray
+
+    let moFiles = Directory.GetFiles(Path.Combine(path, @"data\strings"), "*.mo", SearchOption.AllDirectories)
+    let createCardForStringPair(lesson: LessonRecord, language: string)(data: int * (MoString * MoString)) = 
+        let (index, (original, translated)) = data
+        let key = 
+            if String.IsNullOrWhiteSpace(original.singular) then
+                index.ToString()
+            else
+                original.singular
+
+        {
+            CardRecord.ID = 0
+            CardRecord.Gender = "masculine"
+            CardRecord.GenderlessKey = key
+            CardRecord.GenderlessKeyHash = 0
+            CardRecord.Key = key
+            CardRecord.KeyHash = 0
+            CardRecord.LanguageTag = language
+            CardRecord.LessonID = lesson.ID
+            CardRecord.Reversible = true
+            CardRecord.SoundResource = ""
+            CardRecord.Text = translated.singular.Trim().Replace('\r', ' ').Replace('\n', ' ').Replace('\t', ' ')
+        }
+
+    let createCardsForMoInfo(l: LessonRecord, s: Stream, mi: MoFileInfo, language: string) = 
+        if (mi.translatedStringLengthsAndOffsets.Length = 0) then
+            [||]
+        else
+            let possibleMimeHeader = GetTranslatedStrings(s, mi, Encoding.UTF8)([| 0 |]) |> Seq.head
+            let (encoding, originalStringsStart, translatedStringsStart) = 
+                match GetEncodingFromMIMEHeader(possibleMimeHeader.singular) with
+                | Some(e) -> (e, 1, 1)
+                | _ -> (Encoding.UTF8, 0, 0)
+
+            GetTranslatedStrings(s, mi, encoding)(seq { translatedStringsStart..mi.translatedStringLengthsAndOffsets.Length - 1})
+            |> Seq.zip(GetOriginalStrings(s, mi, encoding)(seq { originalStringsStart..mi.originalStringLengthsAndOffsets.Length - 1}))
+            |> Seq.filter(fun (os, _) -> not(os.singular.StartsWith("credits_")))
+            |> Seq.mapi(fun idx t -> (idx, t))
+            |> Seq.map(createCardForStringPair(l, language))
+            |> Array.ofSeq
+
+    let createCardsForMoFile(l: LessonRecord)(mf: string) = 
+        match fileNamesToLanguage |> Map.tryFind(Path.GetFileNameWithoutExtension(mf).ToLower()) with
+        | Some(language) -> 
+            // ***TODO: read the MO file, extract all original and translated strings, and then
+            // create cards for them.
+            use fs = new FileStream(mf, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)
+            let mi = GetMoInfo(fs)
+            createCardsForMoInfo(l, fs, mi, language)
+        | None -> 
+            // ***TODO: output a message indicating that the language wasn't found
+            [||]
+
+    moFiles
+    |> Array.collect(createCardsForMoFile(lessonEntryWithId))
     |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
     |> db.CreateOrUpdateCards

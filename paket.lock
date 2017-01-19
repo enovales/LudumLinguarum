@@ -1,8 +1,10 @@
-FRAMEWORK: NET452
+FRAMEWORK: NET461
 NUGET
   remote: https://www.nuget.org/api/v2
     CommandLineParser (2.0.275-beta)
-    CsvHelper (2.15.0.1)
+    CsvHelper (2.16.3)
+    FsGettextUtils (0.1.1)
+      FSharp.Core
     FSharp.Core (4.0.0.1) - redirects: force
     LANGIDMappings (0.1.2)
       FSharp.Core
@@ -87,22 +89,20 @@ NUGET
     PInvoke.Windows.Core (0.3.152)
     PInvoke.Windows.ShellScalingApi (0.3.152)
       PInvoke.Windows.Core (>= 0.3.152)
-    sqlite (3.12.2)
-      SQLite.UWP.Native (>= 3.12.2)
-    SQLite.Native (3.12.2)
-    SQLite.UWP.Native (3.12.2)
-    YamlDotNet (3.9)
+    sqlite (3.13)
+    SQLite.Native (3.12.3)
+    YamlDotNet (4.0)
 GITHUB
   remote: praeclarum/sqlite-net
-    FULLPROJECT (724fb390d84ea56ffe36f09d43be432164e676f6)
+    FULLPROJECT (7b526ab9df894c068dc35a18329b56226027fe8e)
   remote: icsharpcode/SharpZipLib
-    FULLPROJECT (d9debfd72e53283a30bad3c3a6a4c3ccc0af63c3)
+    FULLPROJECT (9ad7f5845222c99ff009a1daddedc051d25a06b9)
   remote: enovales/SegaAFSTools
     src/SegaAFSTools/AFS.fs (e42e32efc7db30b168530fdc1f0ffda0a6d9e256)
 GROUP Build
 NUGET
   remote: https://www.nuget.org/api/v2
-    FAKE (4.29.2)
+    FAKE (4.50)
     FSharp.Compiler.Service (2.0.0.6)
     FSharp.Formatting (2.14.4)
       FSharp.Compiler.Service (2.0.0.6)
@@ -115,12 +115,12 @@ NUGET
     Microsoft.Net.Http (2.2.29) - framework: net10, net11, net20, net30, net35, net40, net40-full
       Microsoft.Bcl (>= 1.1.10)
       Microsoft.Bcl.Build (>= 1.0.14)
-    Octokit (0.20)
+    Octokit (0.24)
       Microsoft.Net.Http  - framework: net10, net11, net20, net30, net35, net40, net40-full
     SourceLink.Fake (1.1)
 GITHUB
   remote: fsharp/FAKE
-    modules/Octokit/Octokit.fsx (c56456abac6b744c3bb95b217687db19fd19b367)
+    modules/Octokit/Octokit.fsx (82bf328cc145d8843e43ac2075c97a0990efc0ca)
       Octokit (>= 0.20)
 GROUP Test
 NUGET

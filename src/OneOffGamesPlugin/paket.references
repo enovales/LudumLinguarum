@@ -2,5 +2,6 @@
 YamlDotNet
 PInvoke.Win32
 LANGIDMappings
+FsGettextUtils
 
 File: AFS.fs

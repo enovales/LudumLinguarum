@@ -42,6 +42,7 @@ type OneOffGamesPlugin() =
             ("Age of Empires II: HD Edition", AgeOfEmpiresGames.ExtractAOE2HD)
             ("Age of Empires III", AgeOfEmpiresGames.ExtractAOE3)
             ("Sonic Adventure DX", SonicAdventureDX.ExtractSonicAdventureDX)
+            ("Braid", SimpleGames.ExtractBraid)
         |] |> Map.ofArray
 
     interface IPlugin with
