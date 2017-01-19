@@ -4,6 +4,7 @@
     * [Braid](http://store.steampowered.com/app/26800/) \[cs, de, en, es, fr, it, ja, ka, ko, pl, pt, ru, zh\]
     * [Crusader Kings II](http://store.steampowered.com/app/203770/) \[de, en, es, fr\]
     * [Orcs Must Die! 2](http://store.steampowered.com/app/201790/) \[de, en, es, fr, it, ja, pl, pt, ru\]
+	* [Transistor](http://store.steampowered.com/app/237930/) \[de, en, es, fr, it, ja, pl, pt, ru, zh]
 
 #### 0.12.0 - November 28 2016
 * Added support for:

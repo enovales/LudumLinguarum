@@ -161,9 +161,9 @@ let ExtractAudiosurf(path: string, db: LLDatabase, g: GameRecord, args: string a
     ()
 
 (***************************************************************************)
-(********************************* Bastion *********************************)
+(************************** Bastion and Transistor *************************)
 (***************************************************************************)
-let ExtractBastion(path: string, db: LLDatabase, g: GameRecord, args: string array) = 
+let private extractSupergiantGame(path: string, db: LLDatabase, g: GameRecord, args: string array) = 
     let lessonGameTextEntry = {
         LessonRecord.GameID = g.ID;
         ID = 0;
@@ -177,12 +177,18 @@ let ExtractBastion(path: string, db: LLDatabase, g: GameRecord, args: string arr
     }
     let lessonSubtitlesEntryWithId = { lessonSubtitlesEntry with ID = db.CreateOrUpdateLesson(lessonSubtitlesEntry) }
 
+    let stripLanguageRegion(l: string) = 
+        if l.Contains("-") then
+            l.Substring(0, l.IndexOf("-"))
+        else
+            l
+
+
     // Subtitle handling
     let subtitleDirectories = Directory.GetDirectories(Path.Combine(path, @"Content\Subtitles"))
-    let subtitleLineRegex = new Regex("^(.+?),(.+)")
     let generateCardsForSubtitles(subtitleDir: string) = 
         let files = Directory.GetFiles(subtitleDir, "*.csv")
-        let language = Path.GetFileName(subtitleDir).ToLowerInvariant()
+        let language = stripLanguageRegion(Path.GetFileName(subtitleDir).ToLowerInvariant())
         let mungeText(s: string) = 
             s.Trim().TrimStart('"').TrimEnd('"').Replace(@"\n", " ")
         let extractStringKeyAndStringForLine(i: int)(s: string) = 
@@ -193,7 +199,7 @@ let ExtractBastion(path: string, db: LLDatabase, g: GameRecord, args: string arr
                 else
                     stringKey
 
-            (keyToUse, stringValue)
+            (keyToUse, stringValue |> mungeText)
 
         let subtitlesForFile(subtitlePath: string) = 
             File.ReadAllLines(subtitlePath) 
@@ -220,6 +226,7 @@ let ExtractBastion(path: string, db: LLDatabase, g: GameRecord, args: string arr
                     (new Regex(@"\\Color\s[^\s]*\s"), "")
                     (new Regex(@"\\UpgradeStatInteger\s[^\s]*\s"), "")
                     (new Regex(@"\\UpgradeStatPercent\s[^\s]*\s"), "")
+                    (new Regex(@"\\Format Text[^\s]*"), "")
                 |]
             regexesToRemove |> Array.fold (fun (u: string)(t: Regex, replacement: string) -> t.Replace(u, replacement)) s
 
@@ -245,7 +252,7 @@ let ExtractBastion(path: string, db: LLDatabase, g: GameRecord, args: string arr
     // LaunchText.xml handling
     let generateCardsForLaunchText = 
         let generateCardsForHelpTextElement(el: XElement) = 
-            let language = el.Attribute(XName.Get("lang")).Value
+            let language = stripLanguageRegion(el.Attribute(XName.Get("lang")).Value)
             let generateStringsForTextElement(e: XElement) = 
                 (e.Attribute(XName.Get("Id")).Value, e.Attribute(XName.Get("DisplayName")).Value)
 
@@ -277,8 +284,12 @@ let ExtractBastion(path: string, db: LLDatabase, g: GameRecord, args: string arr
     |> Array.collect id
     |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
     |> db.CreateOrUpdateCards
+    
+let ExtractBastion(path: string, db: LLDatabase, g: GameRecord, args: string array) = 
+    extractSupergiantGame(path, db, g, args)
 
-    ()
+let ExtractTransistor(path: string, db: LLDatabase, g: GameRecord, args: string array) = 
+    extractSupergiantGame(path, db, g, args)
 
 let internal hbFormatTokenRegexes = 
     [|
