@@ -43,6 +43,8 @@ type OneOffGamesPlugin() =
             ("Age of Empires III", AgeOfEmpiresGames.ExtractAOE3)
             ("Sonic Adventure DX", SonicAdventureDX.ExtractSonicAdventureDX)
             ("Braid", SimpleGames.ExtractBraid)
+            ("IHF Handball Challenge 12", SimpleGames.ExtractIHFHandballChallenge12)
+            ("IHF Handball Challenge 14", SimpleGames.ExtractIHFHandballChallenge14)
         |] |> Map.ofArray
 
     interface IPlugin with
