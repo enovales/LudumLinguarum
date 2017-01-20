@@ -455,3 +455,65 @@ let ExtractBraid(path: string, db: LLDatabase, g: GameRecord, args: string array
     |> Array.collect(createCardsForMoFile(lessonEntryWithId))
     |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
     |> db.CreateOrUpdateCards
+
+(***************************************************************************)
+(************************** IHF Handball Challenge *************************)
+(***************************************************************************)
+let private extractIHFHandballChallenge(path: string, db: LLDatabase, g: GameRecord, args: string array) = 
+    let subtrees = [| "application"; "hud"; "gui" |]
+    let makeLesson(n: string) = 
+        let lessonEntry = {
+            LessonRecord.GameID = g.ID
+            ID = 0
+            Name = n
+        }
+        { lessonEntry with ID = db.CreateOrUpdateLesson(lessonEntry) }
+
+    let subtreesAndLessons = 
+        (subtrees |> Array.map makeLesson)
+        |> Array.zip(subtrees)
+
+    let getCardsForXml(lang: string, fn: string) = 
+        let sanitizeXml(s: string) = 
+            s.Replace(new String([| char 0x1b |]), "")
+
+        let sanitized = File.ReadAllText(fn) |> sanitizeXml
+        let xel = XElement.Load(new StringReader(sanitized))
+
+        let getCardsForSubtree(subtreeName: string, lesson: LessonRecord) = 
+            let getKeyAndValueForElement(entry: XElement) = 
+                let key = (entry.Descendants(XName.Get("key")) |> Array.ofSeq |> Seq.head).Value
+                let regexesToRemove = 
+                    [| 
+                        (new Regex(@"\[.*?\]"), "")
+                        (new Regex(@"\s\s+"), " ")
+                    |]
+
+                let rawValue =
+                    (entry.Descendants(XName.Get("value")) |> Array.ofSeq |> Seq.head).Value
+
+                let sanitizedValue = 
+                    regexesToRemove |> Array.fold (fun (u: string)(t: Regex, replacement: string) -> t.Replace(u, replacement)) rawValue
+
+                (key, sanitizedValue)
+
+            xel.Descendants(XName.Get(subtreeName)) 
+            |> Seq.collect(fun r -> r.Descendants(XName.Get("entry")))
+            |> Array.ofSeq 
+            |> Array.map getKeyAndValueForElement
+            |> Map.ofArray
+            |> AssemblyResourceTools.createCardRecordForStrings(lesson.ID, subtreeName, lang, "masculine")
+
+        subtreesAndLessons
+        |> Array.collect getCardsForSubtree
+
+    Directory.GetDirectories(Path.Combine(path, @"language"))
+    |> Array.map (fun d -> (Path.GetFileName(d), Path.Combine(d, @"XMLData\i18n.xml")))
+    |> Array.collect getCardsForXml
+    |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
+    |> db.CreateOrUpdateCards
+
+let ExtractIHFHandballChallenge12(path: string, db: LLDatabase, g: GameRecord, args: string array) = 
+    extractIHFHandballChallenge(path, db, g, args)
+let ExtractIHFHandballChallenge14(path: string, db: LLDatabase, g: GameRecord, args: string array) = 
+    extractIHFHandballChallenge(path, db, g, args)
