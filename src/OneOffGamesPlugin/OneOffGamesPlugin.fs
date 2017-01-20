@@ -44,6 +44,8 @@ type OneOffGamesPlugin() =
             ("Sonic Adventure DX", SonicAdventureDX.ExtractSonicAdventureDX)
             ("Braid", SimpleGames.ExtractBraid)
             ("Transistor", SimpleGames.ExtractTransistor)
+            ("IHF Handball Challenge 12", SimpleGames.ExtractIHFHandballChallenge12)
+            ("IHF Handball Challenge 14", SimpleGames.ExtractIHFHandballChallenge14)
         |] |> Map.ofArray
 
     interface IPlugin with

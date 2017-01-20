@@ -15,6 +15,8 @@ Games supported, and languages supported (for games that are a single download f
 * [Hatoful Boyfriend: Holiday Star](http://store.steampowered.com/app/377080/) \[de, fr\]
 * [Hearts of Iron 3](http://store.steampowered.com/app/25890/) \[de, en, fr\]
 * [Hell Yeah!](http://store.steampowered.com/app/205230/) \[en, de, es, fr, it, ja\]
+* [IHF Handball Challenge 12](http://store.steampowered.com/app/283490/) \[de, dk, en, es, hu, it, pt\]
+* [IHF Handball Challenge 14](http://store.steampowered.com/app/279460/) \[de, dk, en, es, fr, pl, se\]
 * [Jade Empire](http://store.steampowered.com/app/7110/) 
 * [Jet Set Radio](http://store.steampowered.com/app/205950/) \[de, en, es, fr, it, ja, jp\]
 * [Madballs: Babo Invasion](http://store.steampowered.com/app/25700/) \[de, en, es, fr, it, ja, ko, pt, ru, zh\]
