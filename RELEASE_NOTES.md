@@ -4,8 +4,9 @@
     * [Braid](http://store.steampowered.com/app/26800/) \[cs, de, en, es, fr, it, ja, ka, ko, pl, pt, ru, zh\]
     * [Crusader Kings II](http://store.steampowered.com/app/203770/) \[de, en, es, fr\]
     * [Orcs Must Die! 2](http://store.steampowered.com/app/201790/) \[de, en, es, fr, it, ja, pl, pt, ru\]
-	* [IHF Handball Challenge 12](http://store.steampowered.com/app/283490/) \[de, dk, en, es, hu, it, pt\]
-	* [IHF Handball Challenge 14](http://store.steampowered.com/app/279460/) \[de, dk, en, es, fr, pl, se\]
+    * [Transistor](http://store.steampowered.com/app/237930/) \[de, en, es, fr, it, ja, pl, pt, ru, zh]
+    * [IHF Handball Challenge 12](http://store.steampowered.com/app/283490/) \[de, dk, en, es, hu, it, pt\]
+    * [IHF Handball Challenge 14](http://store.steampowered.com/app/279460/) \[de, dk, en, es, fr, pl, se\]
 
 #### 0.12.0 - November 28 2016
 * Added support for:

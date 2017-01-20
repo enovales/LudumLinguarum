@@ -41,5 +41,6 @@ Games supported, and languages supported (for games that are a single download f
 * [Star Wars: Knights of the Old Republic II](http://store.steampowered.com/app/208580/)
 * [The King of Fighters '98 Ultimate Match](http://store.steampowered.com/app/222420/) \[en, ja\]
 * [The King of Fighters 2002 Unlimited Match](http://store.steampowered.com/app/222440/) \[en, ja\]
+* [Transistor](http://store.steampowered.com/app/237930/) \[de, en, es, fr, it, ja, pl, pt, ru, zh]
 * [Victoria 2](http://store.steampowered.com/app/42960/) \[de, en, fr\]
 * [Worms Armageddon](http://store.steampowered.com/app/217200/) \[de, en, es, fr, it, nl, pt, ru, sv\]
