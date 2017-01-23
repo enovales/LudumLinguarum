@@ -1,38 +1,21 @@
 ﻿module CardExport
 
+open Argu
 open LLDatabase
 open LudumLinguarumPlugins
 open System
 open System.IO
 open System.Text.RegularExpressions
 
-[<CommandLine.Verb("export-anki", HelpText = "Export content as Anki flashcards")>]
-type AnkiExporterConfiguration() = 
-    [<CommandLine.Option("game", Required = true, HelpText = "The game for which cards should be exported")>]
-    member val GameToExport = "" with get, set
-
-    [<CommandLine.Option("lesson", Required = false, HelpText = "If specified, limits the export to a single lesson")>]
-    member val LessonToExport = "" with get, set
-
-    [<CommandLine.Option("lesson-regex", Required = false, HelpText = "If specified, uses the regex to match lessons to export")>]
-    member val LessonRegexToExport = "" with get, set
-
-    [<CommandLine.Option("export-path", Required = true, HelpText = "The path to which the text file containing importable Anki cards should be written")>]
-    member val ExportPath = "" with get, set
-
-    /// <summary>
-    /// The language of the exported data to use for the "recognition"
-    /// side of cards.
-    /// </summary>
-    [<CommandLine.Option("recognition-language", Required = true, HelpText = "The 'source' language for the flash card")>]
-    member val RecognitionLanguage = "" with get, set
-
-    /// <summary>
-    /// The language of the exported data to use for the "production"
-    /// side of cards.
-    /// </summary>
-    [<CommandLine.Option("production-language", Required = true, HelpText = "The 'target' language for the flash card -- what you want to practice recalling")>]
-    member val ProductionLanguage = "" with get, set
+type AnkiExporterConfiguration =
+    {
+        GameToExport: string
+        LessonToExport: string option
+        LessonRegexToExport: string option
+        ExportPath: string
+        RecognitionLanguage: string
+        ProductionLanguage: string
+    }
 
 type AnkiExporter(iPluginManager: IPluginManager, outputTextWriter: TextWriter, 
                   llDatabase: LLDatabase, config: AnkiExporterConfiguration) = 
@@ -129,14 +112,5 @@ type AnkiExporter(iPluginManager: IPluginManager, outputTextWriter: TextWriter,
         ()
 
     member this.RunExportAction() = 
-        let lessonParam =
-            match config.LessonToExport with
-            | "" -> None
-            | l -> Some(l)
-        let regexParam = 
-            match config.LessonRegexToExport with
-            | "" -> None
-            | l -> Some(l)
-
-        this.RunGameExport(config.GameToExport, lessonParam, regexParam)
+        this.RunGameExport(config.GameToExport, config.LessonToExport, config.LessonRegexToExport)
         ()

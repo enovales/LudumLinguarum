@@ -35,3 +35,4 @@
 #r "../../../packages/CommandLineParser/lib/net45/CommandLine.dll"
 #r "../../../paket-files/icsharpcode/SharpZipLib/bin/Debug/ICSharpCode.SharpZipLib.dll"
 #r "../../../packages/FsGettextUtils/lib/net461/FsGettextUtils.dll"
+#r "../../../packages/Argu/lib/net40/Argu.dll"

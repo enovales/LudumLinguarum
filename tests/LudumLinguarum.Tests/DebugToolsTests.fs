@@ -202,8 +202,8 @@ type StreamStringScannerTests() =
 
 [<TestFixture>]
 type TextScannerTests() = 
-    let minimalStringConfig = new TextScannerConfiguration()
-    let tooLongStringConfig = new TextScannerConfiguration()
+    let minimalStringConfig = { TextScannerConfiguration.Empty with MinimumLength = 1 }
+    let tooLongStringConfig = { TextScannerConfiguration.Empty with MinimumLength = 10 }
     let testContainsTrie = 
         Trie.Root(
             [| Trie.Node('a', 
@@ -214,10 +214,6 @@ type TextScannerTests() =
 
     let minimalScanner = new NaiveTextScanner(minimalStringConfig, testContainsTrie)
     let tooLongScanner = new NaiveTextScanner(tooLongStringConfig, testContainsTrie)
-
-    do
-        minimalStringConfig.MinimumLength <- 1
-        tooLongStringConfig.MinimumLength <- 10
 
     [<Test>]
     member this.``Scanning an empty file returns no strings``() = 

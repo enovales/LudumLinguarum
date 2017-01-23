@@ -1,5 +1,6 @@
 ﻿module StarWarsGBS
 
+open Argu
 open CommandLine
 open FSharp.Core
 open LLDatabase
@@ -17,9 +18,13 @@ open System.Text.RegularExpressions
 /// Plugin settings, because we need to be able to specify a language that is
 /// being extracted.
 /// </summary>
-type GBSPluginSettings() = 
-    [<CommandLine.Option("language-tag", Default = "en", Required = false)>]
-    member val LanguageTag = "en" with get, set
+type internal GBSPluginArgs =
+    | [<Mandatory>] LanguageTag of string
+    with
+        interface IArgParserTemplate with
+            member this.Usage = 
+                match this with
+                | LanguageTag _ -> "The installed language of the game."
 
 let private getResourceNames(languageDll: Kernel32.SafeLibraryHandle) = 
     let mutable resourceNameList = []
@@ -68,7 +73,7 @@ let private stringIsParenOrBracketChar(s: string) =
     | _ when (s.Length = 3) && (s.Chars(0) = '[') && (s.Chars(2) = ']') -> true
     | _ -> false
 
-let private runExtractGBS(path: string, db: LLDatabase, g: GameRecord)(settings: GBSPluginSettings) = 
+let private runExtractGBS(path: string, db: LLDatabase, g: GameRecord)(settings: ParseResults<GBSPluginArgs>) = 
     let mainLessonEntry = {
         LessonRecord.GameID = g.ID
         ID = 0
@@ -133,18 +138,18 @@ let private runExtractGBS(path: string, db: LLDatabase, g: GameRecord)(settings:
                         )
 
     modulesToExtract
-    |> Array.collect(extractCardsForModule(settings.LanguageTag))
+    |> Array.collect(extractCardsForModule(settings.GetResult(<@ LanguageTag @>)))
     |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
     |> db.CreateOrUpdateCards
 
 let ExtractGalacticBattlegroundsSaga(path: string, db: LLDatabase, g: GameRecord, args: string array) = 
-    let parser = new CommandLine.Parser(fun t ->
-        t.HelpWriter <- System.Console.Out
-        t.IgnoreUnknownArguments <- true)
+    let parser = ArgumentParser.Create<GBSPluginArgs>()
+    let results = parser.Parse(args)
 
-    parser
-        .ParseArguments<GBSPluginSettings>(args)
-        .WithParsed(new Action<GBSPluginSettings>(runExtractGBS(path, db, g)))
+    if (results.IsUsageRequested) || (results.GetAllResults() |> List.isEmpty) then
+        Console.WriteLine(parser.PrintUsage())
+    else
+        runExtractGBS(path, db, g)(results)
 
 type StarWarsGBSPlugin() = 
     let mutable outStream: TextWriter option = None
@@ -155,7 +160,6 @@ type StarWarsGBSPlugin() =
         member this.Name = "starwarsgbs"
         member this.Parameters = 
             [|
-                new GBSPluginSettings()
             |]
     interface IGameExtractorPlugin with
         member this.SupportedGames: string array = 

@@ -5,3 +5,4 @@
 #r "System.dll"
 #r "System.Numerics.dll"
 #r "../../../packages/CommandLineParser/lib/net45/CommandLine.dll"
+#r "../../../packages/Argu/lib/net40/Argu.dll"
