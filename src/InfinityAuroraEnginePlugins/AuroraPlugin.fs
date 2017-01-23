@@ -1,7 +1,6 @@
 ﻿namespace InfinityAuroraEnginePlugins
 
 open Argu
-open CommandLine
 open LLDatabase
 open LudumLinguarumPlugins
 open InfinityAuroraEnginePlugins.CommonTypes
@@ -30,58 +29,6 @@ type AuroraPluginArgs =
                 | ExtractDialogues _ -> "Whether or not content from dialogues should be extracted"
                 | Extract2DAs _ -> "Whether or not content from 2DAs should be extracted"
                 | ExtractAll _ -> "Shortcut for extracting all types of content"
-
-type AuroraPluginSettings() = 
-    [<CommandLine.Option("language-tag", Default = "en", Required = false)>]
-    member val LanguageTag = "en" with get, set
-
-type NWN1PluginSettings() = 
-    inherit AuroraPluginSettings()
-
-    [<CommandLine.Option("extract-dialogues", Default = false, Required = false)>]
-    member val ExtractDialogues = false with get, set
-
-    [<CommandLine.Option("extract-2das", Default = true, Required = false)>]
-    member val Extract2DAs = true with get, set
-
-    [<CommandLine.Option("extract-all", Default = false, Required = false)>]
-    member val ExtractAll = false with get, set
-
-type JadeEmpirePluginSettings() = 
-    inherit AuroraPluginSettings()
-
-    [<CommandLine.Option("extract-dialogues", Default = false, Required = false)>]
-    member val ExtractDialogues = false with get, set
-
-    [<CommandLine.Option("extract-2das", Default = true, Required = false)>]
-    member val Extract2DAs = true with get, set
-
-    [<CommandLine.Option("extract-all", Default = false, Required = false)>]
-    member val ExtractAll = false with get, set
-
-type KOTOR1PluginSettings() = 
-    inherit AuroraPluginSettings()
-
-    [<CommandLine.Option("extract-dialogues", Default = false, Required = false)>]
-    member val ExtractDialogues = false with get, set
-
-    [<CommandLine.Option("extract-2das", Default = true, Required = false)>]
-    member val Extract2DAs = true with get, set
-
-    [<CommandLine.Option("extract-all", Default = false, Required = false)>]
-    member val ExtractAll = false with get, set
-
-type KOTOR2PluginSettings() = 
-    inherit AuroraPluginSettings()
-
-    [<CommandLine.Option("extract-dialogues", Default = false, Required = false)>]
-    member val ExtractDialogues = false with get, set
-
-    [<CommandLine.Option("extract-2das", Default = true, Required = false)>]
-    member val Extract2DAs = true with get, set
-
-    [<CommandLine.Option("extract-all", Default = false, Required = false)>]
-    member val ExtractAll = false with get, set
 
 type private ExtractionContext<'TalkTableString when 'TalkTableString :> ITalkTableString> = {
     gameResources: IGenericResource seq;
@@ -112,10 +59,6 @@ type AuroraPlugin() =
         member this.Name = "aurora"
         member this.Parameters = 
             [| 
-                new AuroraPluginSettings() :> Object; 
-                new NWN1PluginSettings() :> Object;
-                new JadeEmpirePluginSettings() :> Object;
-                new KOTOR1PluginSettings() :> Object
             |]
     end
     interface IGameExtractorPlugin with
