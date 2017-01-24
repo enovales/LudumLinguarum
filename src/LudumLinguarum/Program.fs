@@ -180,7 +180,17 @@ let runImportAction(iPluginManager: IPluginManager,
         failwith("Could not find installed plugin for '" + vc.GetResult(<@ ImportArgs.Game @>) + "'")
 
 let runExportAnkiAction(iPluginManager: IPluginManager, 
-                        outputTextWriter: TextWriter, llDatabase: LLDatabase)(vc: CardExport.AnkiExporterConfiguration) = 
+                        outputTextWriter: TextWriter, llDatabase: LLDatabase)(args: ParseResults<ExportAnkiArgs>) = 
+    let vc = 
+        {
+            CardExport.AnkiExporterConfiguration.GameToExport = args.GetResult(<@ ExportAnkiArgs.Game @>)
+            CardExport.AnkiExporterConfiguration.ExportPath = args.GetResult(<@ ExportAnkiArgs.Export_Path @>)
+            CardExport.AnkiExporterConfiguration.LessonToExport = args.TryGetResult(<@ ExportAnkiArgs.Lesson @>)
+            CardExport.AnkiExporterConfiguration.LessonRegexToExport = args.TryGetResult(<@ ExportAnkiArgs.Lesson_Regex @>)
+            CardExport.AnkiExporterConfiguration.RecognitionLanguage = args.GetResult(<@ ExportAnkiArgs.Recognition_Language @>)
+            CardExport.AnkiExporterConfiguration.ProductionLanguage = args.GetResult(<@ ExportAnkiArgs.Production_Language @>)
+        }
+
     let exporter = new CardExport.AnkiExporter(iPluginManager, outputTextWriter, llDatabase, vc)
     exporter.RunExportAction()
 
@@ -213,8 +223,9 @@ let runListGamesAction(otw: TextWriter, db: LLDatabase)(vc: ParseResults<ListGam
     let games = db.Games
     let regexFilter = makeGameRegexFilter(vc.TryGetResult(<@ ListGamesArgs.Filter_Regex @>))
     let languagesFilter(g: GameRecord, languages: string array) = 
-        vc.GetResult(<@ ListGamesArgs.Languages @>)
-        |> Seq.forall(fun l -> languages |> Array.contains(l)) 
+        match vc.TryGetResult(<@ ListGamesArgs.Languages @>) with
+        | Some(parameterLanguages) -> parameterLanguages |> Seq.forall(fun l -> languages |> Array.contains(l)) 
+        | _ -> true
 
     let languagesForGame(g: GameRecord) = 
         db.Lessons 
@@ -450,6 +461,8 @@ let main argv =
     | Some(Delete_Game dga) -> runDeleteGameAction(otw, lldb)(dga)
     | Some(Delete_Lessons dla) -> runDeleteLessonsAction(otw, lldb)(dla)
     | Some(Dump_Text dta) -> runDumpTextAction(otw, lldb)(dta)
+    | Some(Export_Anki eaa) -> runExportAnkiAction(iPluginManager, otw, lldb)(eaa)
+    | Some(Scan_For_Text sfta) -> runScanForTextAction(otw)(sfta)
     | None -> ()
     | _ -> failwith "unrecognized subcommand"
 
