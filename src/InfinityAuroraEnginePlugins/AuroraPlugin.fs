@@ -17,7 +17,7 @@ open System.IO
 open System.Text.RegularExpressions
 
 type AuroraPluginArgs = 
-    | [<Mandatory>] LanguageTag of string
+    | [<Mandatory; EqualsAssignment>] LanguageTag of string
     | ExtractDialogues of bool
     | Extract2DAs of bool
     | ExtractAll of bool

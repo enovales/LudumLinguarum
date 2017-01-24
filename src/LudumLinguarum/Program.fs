@@ -13,12 +13,14 @@ open System.Text.RegularExpressions
 type ImportArgs = 
     | [<Mandatory; EqualsAssignment>] Game of string
     | [<Mandatory; EqualsAssignment>] Game_Dir of string
+    | [<GatherUnrecognized; Hidden>] Plugin_Arguments of values:string
     with 
         interface IArgParserTemplate with
             member this.Usage = 
                 match this with
                 | Game _ -> "game to import"
                 | Game_Dir _ -> "directory where the game is located"
+                | Plugin_Arguments _ -> "additional arguments for import"
 and ListGamesArgs = 
     | [<EqualsAssignment>] Filter_Regex of string
     | Languages of string list
@@ -126,7 +128,6 @@ and [<RequireSubcommandAttribute>] BaseArgs =
     | [<CliPrefix(CliPrefix.None)>] Dump_Text of ParseResults<DumpTextArgs>
     | [<CliPrefix(CliPrefix.None)>] Export_Anki of ParseResults<ExportAnkiArgs>
     | [<CliPrefix(CliPrefix.None)>] Scan_For_Text of ParseResults<ScanForTextArgs>
-    | [<MainCommand>] Plugin_Arguments of string
     with
         interface IArgParserTemplate with
             member this.Usage =
@@ -143,7 +144,6 @@ and [<RequireSubcommandAttribute>] BaseArgs =
                 | Dump_Text _ -> "Dumps extracted strings for inspection."
                 | Export_Anki _ -> "Exports extracted text for use with the Anki spaced repetition program"
                 | Scan_For_Text _ -> "Used to scan arbitrary binary data for strings, to locate localized content"
-                | Plugin_Arguments _ -> ""
 
 let private makeGameRegexFilter(reOpt: string option) = 
     match reOpt with
@@ -170,11 +170,16 @@ let private makeLessonNameFilter(nameOpt: string option) =
     | _ -> fun (_: LessonRecord) -> true
 
 let runImportAction(iPluginManager: IPluginManager, 
-                    _: TextWriter, llDatabase: LLDatabase, argv: string array)(vc: ParseResults<ImportArgs>) = 
+                    _: TextWriter, llDatabase: LLDatabase)(vc: ParseResults<ImportArgs>) = 
     let pluginOpt = iPluginManager.GetPluginForGame(vc.GetResult(<@ ImportArgs.Game @>))
     match pluginOpt with
     | Some(plugin) -> 
         // run the import action with the plugin
+        let argv = 
+            match vc.TryGetResult(<@ ImportArgs.Plugin_Arguments @>) with
+            | Some(args) -> args.Split([| '\r'; '\n'; ' '; '\t' |], StringSplitOptions.RemoveEmptyEntries)
+            | _ -> [||]
+
         plugin.ExtractAll(vc.GetResult(<@ ImportArgs.Game @>), vc.GetResult(<@ ImportArgs.Game_Dir @>), llDatabase, argv)
     | _ ->
         failwith("Could not find installed plugin for '" + vc.GetResult(<@ ImportArgs.Game @>) + "'")
@@ -411,12 +416,12 @@ let private loadAndInstantiatePlugin(iPluginManager: IPluginManager, otw: TextWr
     with
         | _ -> ()
 
-let private loadAllPlugins(iPluginManager: IPluginManager, otw: TextWriter, otherArgs: string array) = 
+let private loadAllPlugins(iPluginManager: IPluginManager, otw: TextWriter) = 
     // try and load all plugins that are alongside this executable
     let bundledPluginsPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
     let bundledPlugins = Directory.GetFiles(bundledPluginsPath, "*.dll", SearchOption.AllDirectories)
     try
-        bundledPlugins |> Array.iter(loadAndInstantiatePlugin(iPluginManager, otw, otherArgs))
+        bundledPlugins |> Array.iter(loadAndInstantiatePlugin(iPluginManager, otw, [||]))
     with
     | ex ->
         otw.WriteLine("Failed to load plugins: " + Environment.NewLine + ex.ToString())
@@ -445,16 +450,10 @@ let main argv =
 
     let lldb = new LLDatabase(fldbPath)
 
-    let remainderOpt = results.TryGetResult(<@ Plugin_Arguments @>)
-    let remainderArgs = 
-        match remainderOpt with
-        | Some(remainder) -> remainder.Split([| '\r'; '\n'; ' '; '\t' |], StringSplitOptions.RemoveEmptyEntries)
-        | _ -> [||]
-
-    loadAllPlugins(iPluginManager, otw, remainderArgs)
+    loadAllPlugins(iPluginManager, otw)
 
     match results.TryGetSubCommand() with
-    | Some(Import ia) -> runImportAction(iPluginManager, otw, lldb, remainderArgs)(ia)
+    | Some(Import ia) -> runImportAction(iPluginManager, otw, lldb)(ia)
     | Some(List_Supported_Games _) -> runListSupportedGamesAction(iPluginManager, otw)
     | Some(List_Games lga) -> runListGamesAction(otw, lldb)(lga)
     | Some(List_Lessons lla) -> runListLessonsAction(otw, lldb)(lla)

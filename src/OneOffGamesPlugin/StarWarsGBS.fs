@@ -19,12 +19,12 @@ open System.Text.RegularExpressions
 /// being extracted.
 /// </summary>
 type internal GBSPluginArgs =
-    | [<Mandatory>] LanguageTag of string
+    | [<Mandatory; EqualsAssignment>] Language_Tag of string
     with
         interface IArgParserTemplate with
             member this.Usage = 
                 match this with
-                | LanguageTag _ -> "The installed language of the game."
+                | Language_Tag _ -> "The installed language of the game."
 
 let private getResourceNames(languageDll: Kernel32.SafeLibraryHandle) = 
     let mutable resourceNameList = []
@@ -138,7 +138,7 @@ let private runExtractGBS(path: string, db: LLDatabase, g: GameRecord)(settings:
                         )
 
     modulesToExtract
-    |> Array.collect(extractCardsForModule(settings.GetResult(<@ LanguageTag @>)))
+    |> Array.collect(extractCardsForModule(settings.GetResult(<@ Language_Tag @>)))
     |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
     |> db.CreateOrUpdateCards
 
