@@ -11,131 +11,131 @@ open System.Text
 open System.Text.RegularExpressions
 
 type ImportArgs = 
-    | [<Mandatory>] Game of string
-    | [<Mandatory>] GameDir of string
+    | [<Mandatory; EqualsAssignment>] Game of string
+    | [<Mandatory; EqualsAssignment>] Game_Dir of string
     with 
         interface IArgParserTemplate with
             member this.Usage = 
                 match this with
                 | Game _ -> "game to import"
-                | GameDir _ -> "directory where the game is located"
+                | Game_Dir _ -> "directory where the game is located"
 and ListGamesArgs = 
-    | FilterRegex of string option
+    | [<EqualsAssignment>] Filter_Regex of string
     | Languages of string list
     with
         interface IArgParserTemplate with
             member this.Usage = 
                 match this with
-                | FilterRegex _ -> "An optional regular expression to filter the list of games"
+                | Filter_Regex _ -> "An optional regular expression to filter the list of games"
                 | Languages _ -> "Specifies a language that the game must support. Apply this multiple times if desired."
 and ListLessonsArgs = 
-    | GameRegex of string option
-    | FilterRegex of string option
+    | [<EqualsAssignment>] Game_Regex of string
+    | [<EqualsAssignment>] Filter_Regex of string
     with
         interface IArgParserTemplate with
             member this.Usage = 
                 match this with
-                | GameRegex _ -> "An optional regular expression to filter the list of games searched"
-                | FilterRegex _ -> "An optional regular expression to filter the list of lessons returned"
+                | Game_Regex _ -> "An optional regular expression to filter the list of games searched"
+                | Filter_Regex _ -> "An optional regular expression to filter the list of lessons returned"
 and DeleteGameArgs = 
-    | [<Mandatory>] Game of string
+    | [<Mandatory; EqualsAssignment>] Game of string
     with
         interface IArgParserTemplate with
             member this.Usage = 
                 match this with
                 | Game _ -> "The name of the game to delete"
 and DeleteLessonsArgs = 
-    | [<Mandatory>] Game of string
-    | FilterRegex of string option
-    | LessonName of string option
+    | [<Mandatory; EqualsAssignment>] Game of string
+    | [<EqualsAssignment>] Filter_Regex of string
+    | [<EqualsAssignment>] Lesson_Name of string
     with
         interface IArgParserTemplate with
             member this.Usage = 
                 match this with
                 | Game _ -> "The name of the game for which lessons are to be deleted."
-                | FilterRegex _ -> "An optional regular expression filter for the name of lessons to delete. Either this or lesson-name must be specified."
-                | LessonName _ -> "The name of the lesson to delete. Either this or filter-regex must be specified."
+                | Filter_Regex _ -> "An optional regular expression filter for the name of lessons to delete. Either this or lesson-name must be specified."
+                | Lesson_Name _ -> "The name of the lesson to delete. Either this or filter-regex must be specified."
 and DumpTextArgs = 
-    | [<Mandatory>] Game of string
-    | LessonFilterRegex of string
-    | ContentFilterRegex of string
+    | [<Mandatory; EqualsAssignment>] Game of string
+    | [<EqualsAssignment>] Lesson_Filter_Regex of string
+    | [<EqualsAssignment>] Content_Filter_Regex of string
     | [<Mandatory>] Languages of string list
-    | IncludeKey of bool
-    | IncludeLanguage of bool
-    | IncludeLesson of bool
-    | SampleSize of int
+    | Include_Key of bool
+    | Include_Language of bool
+    | Include_Lesson of bool
+    | [<EqualsAssignment>] Sample_Size of int
     with
         interface IArgParserTemplate with
             member this.Usage = 
                 match this with
                 | Game _ -> "The name of the game for which text should be dumped."
-                | LessonFilterRegex _ -> "An optional regular expression filter for the name of lessons to dump."
-                | ContentFilterRegex _ -> "An optional regular expression filter for the contents of the strings being dumped."
+                | Lesson_Filter_Regex _ -> "An optional regular expression filter for the name of lessons to dump."
+                | Content_Filter_Regex _ -> "An optional regular expression filter for the contents of the strings being dumped."
                 | Languages _ -> "The comma-separated list of languages which should be dumped."
-                | IncludeKey _ -> "Optionally includes the internal key used to distinguish the string in a tabbed column."
-                | IncludeLanguage _ -> "Optionally includes the language tag for each string in a tabbed column."
-                | IncludeLesson _ -> "Optionally includes the lesson name for each string in a tabbed column."
-                | SampleSize _ -> "If set, only includes a random sample of the number of strings specified."
+                | Include_Key _ -> "Optionally includes the internal key used to distinguish the string in a tabbed column."
+                | Include_Language _ -> "Optionally includes the language tag for each string in a tabbed column."
+                | Include_Lesson _ -> "Optionally includes the lesson name for each string in a tabbed column."
+                | Sample_Size _ -> "If set, only includes a random sample of the number of strings specified."
 and ExportAnkiArgs = 
-    | [<Mandatory>] GameToExport of string
-    | LessonToExport of string option
-    | LessonRegexToExport of string option
-    | [<Mandatory>] ExportPath of string
-    | [<Mandatory>] RecognitionLanguage of string
-    | [<Mandatory>] ProductionLanguage of string
+    | [<Mandatory; EqualsAssignment>] Game of string
+    | [<EqualsAssignment>] Lesson of string
+    | [<EqualsAssignment>] Lesson_Regex of string
+    | [<Mandatory; EqualsAssignment>] Export_Path of string
+    | [<Mandatory; EqualsAssignment>] Recognition_Language of string
+    | [<Mandatory; EqualsAssignment>] Production_Language of string
     with
         interface IArgParserTemplate with
             member this.Usage = 
                 match this with
-                | GameToExport _ -> "The name of the game whose content should be exported"
-                | LessonToExport _ -> "The name of a single lesson to export"
-                | LessonRegexToExport _ -> "A regular expression defining which lesson should be exported"
-                | ExportPath _ -> "The path to which the text file containing importable Anki cards should be written"
-                | RecognitionLanguage _ -> "The 'source' language for the flash card"
-                | ProductionLanguage _ -> "The 'target' language for the flash card -- what you want to practice recalling"
+                | Game _ -> "The name of the game whose content should be exported"
+                | Lesson _ -> "The name of a single lesson to export"
+                | Lesson_Regex _ -> "A regular expression defining which lesson should be exported"
+                | Export_Path _ -> "The path to which the text file containing importable Anki cards should be written"
+                | Recognition_Language _ -> "The 'source' language for the flash card"
+                | Production_Language _ -> "The 'target' language for the flash card -- what you want to practice recalling"
 and ScanForTextArgs = 
-    | [<Mandatory>] Path of string
-    | MinimumLength of int
-    | MaximumLength of int
-    | DictionaryFile of string
+    | [<Mandatory; EqualsAssignment>] Path of string
+    | [<EqualsAssignment>] Minimum_Length of int
+    | [<EqualsAssignment>] Maximum_Length of int
+    | [<EqualsAssignment>] Dictionary_File of string
     with
         interface IArgParserTemplate with
             member this.Usage = 
                 match this with
                 | Path _ -> "The path to recursively search for text"
-                | MinimumLength _ -> "The minimum length of string to match"
-                | MaximumLength _ -> "The maximum length of string to match"
-                | DictionaryFile _ -> "Dictionary used to match words in files"
+                | Minimum_Length _ -> "The minimum length of string to match"
+                | Maximum_Length _ -> "The maximum length of string to match"
+                | Dictionary_File _ -> "Dictionary used to match words in files"
 and [<RequireSubcommandAttribute>] BaseArgs =
-    | DatabasePath of string option
-    | CommandFile of string option
-    | LogFile of string option
+    | [<Inherit; EqualsAssignment>] Database_Path of string
+    | [<Inherit; EqualsAssignment>] Command_File of string
+    | [<Inherit; EqualsAssignment>] Log_File of string
     | [<CliPrefix(CliPrefix.None)>] Import of ParseResults<ImportArgs>
-    | [<CliPrefix(CliPrefix.None)>] ListSupportedGames
-    | [<CliPrefix(CliPrefix.None)>] ListGames of ParseResults<ListGamesArgs>
-    | [<CliPrefix(CliPrefix.None)>] ListLessons of ParseResults<ListLessonsArgs>
-    | [<CliPrefix(CliPrefix.None)>] DeleteGame of ParseResults<DeleteGameArgs>
-    | [<CliPrefix(CliPrefix.None)>] DeleteLessons of ParseResults<DeleteLessonsArgs>
-    | [<CliPrefix(CliPrefix.None)>] DumpText of ParseResults<DumpTextArgs>
-    | [<CliPrefix(CliPrefix.None)>] ExportAnki of ParseResults<ExportAnkiArgs>
-    | [<CliPrefix(CliPrefix.None)>] ScanForText of ParseResults<ScanForTextArgs>
-    | [<GatherUnrecognized>][<HiddenAttribute>] Remainder of string
+    | [<CliPrefix(CliPrefix.None)>] List_Supported_Games
+    | [<CliPrefix(CliPrefix.None)>] List_Games of ParseResults<ListGamesArgs>
+    | [<CliPrefix(CliPrefix.None)>] List_Lessons of ParseResults<ListLessonsArgs>
+    | [<CliPrefix(CliPrefix.None)>] Delete_Game of ParseResults<DeleteGameArgs>
+    | [<CliPrefix(CliPrefix.None)>] Delete_Lessons of ParseResults<DeleteLessonsArgs>
+    | [<CliPrefix(CliPrefix.None)>] Dump_Text of ParseResults<DumpTextArgs>
+    | [<CliPrefix(CliPrefix.None)>] Export_Anki of ParseResults<ExportAnkiArgs>
+    | [<CliPrefix(CliPrefix.None)>] Scan_For_Text of ParseResults<ScanForTextArgs>
+    | [<MainCommand; HiddenAttribute>] Remainder of string
     with
         interface IArgParserTemplate with
             member this.Usage =
                 match this with
-                | DatabasePath _ -> "Path to the SQLite database file to use"
-                | CommandFile _ -> "File from which arguments should be read"
-                | LogFile _ -> "Optional log file to which output should be redirected"
+                | Database_Path _ -> "Path to the SQLite database file to use"
+                | Command_File _ -> "File from which arguments should be read"
+                | Log_File _ -> "Optional log file to which output should be redirected"
                 | Import _ -> "Import localized content from a game"
-                | ListSupportedGames -> "List all games supported for extraction"
-                | ListGames _ -> "List all imported games"
-                | ListLessons _ -> "List lessons, filtering by game and lesson names"
-                | DeleteGame _ -> "Delete a single game"
-                | DeleteLessons _ -> "Delete lessons for a game, filtered by name"
-                | DumpText _ -> "Dumps extracted strings for inspection."
-                | ExportAnki _ -> "Exports extracted text for use with the Anki spaced repetition program"
-                | ScanForText _ -> "Used to scan arbitrary binary data for strings, to locate localized content"
+                | List_Supported_Games -> "List all games supported for extraction"
+                | List_Games _ -> "List all imported games"
+                | List_Lessons _ -> "List lessons, filtering by game and lesson names"
+                | Delete_Game _ -> "Delete a single game"
+                | Delete_Lessons _ -> "Delete lessons for a game, filtered by name"
+                | Dump_Text _ -> "Dumps extracted strings for inspection."
+                | Export_Anki _ -> "Exports extracted text for use with the Anki spaced repetition program"
+                | Scan_For_Text _ -> "Used to scan arbitrary binary data for strings, to locate localized content"
                 | Remainder _ -> ""
 
 let private makeGameRegexFilter(reOpt: string option) = 
@@ -168,7 +168,7 @@ let runImportAction(iPluginManager: IPluginManager,
     match pluginOpt with
     | Some(plugin) -> 
         // run the import action with the plugin
-        plugin.ExtractAll(vc.GetResult(<@ ImportArgs.Game @>), vc.GetResult(<@ ImportArgs.GameDir @>), llDatabase, argv)
+        plugin.ExtractAll(vc.GetResult(<@ ImportArgs.Game @>), vc.GetResult(<@ ImportArgs.Game_Dir @>), llDatabase, argv)
     | _ ->
         failwith("Could not find installed plugin for '" + vc.GetResult(<@ ImportArgs.Game @>) + "'")
 
@@ -181,9 +181,9 @@ let runScanForTextAction(otw: TextWriter)(vc: ParseResults<ScanForTextArgs>) =
     let config = 
         {
             DebugTools.TextScannerConfiguration.Path = vc.GetResult(<@ ScanForTextArgs.Path @>)
-            DebugTools.TextScannerConfiguration.MinimumLength = vc.GetResult(<@ ScanForTextArgs.MinimumLength @>)
-            DebugTools.TextScannerConfiguration.MaximumLength = vc.GetResult(<@ ScanForTextArgs.MaximumLength @>)
-            DebugTools.TextScannerConfiguration.DictionaryFile = vc.GetResult(<@ ScanForTextArgs.DictionaryFile @>)
+            DebugTools.TextScannerConfiguration.MinimumLength = vc.GetResult(<@ ScanForTextArgs.Minimum_Length @>)
+            DebugTools.TextScannerConfiguration.MaximumLength = vc.GetResult(<@ ScanForTextArgs.Maximum_Length @>)
+            DebugTools.TextScannerConfiguration.DictionaryFile = vc.GetResult(<@ ScanForTextArgs.Dictionary_File @>)
         }
     let scanner = new DebugTools.StringScanner(config)
     let results = scanner.Scan()
@@ -204,7 +204,7 @@ let runScanForTextAction(otw: TextWriter)(vc: ParseResults<ScanForTextArgs>) =
 /// <param name="vc">configuration for this verb handler</param>
 let runListGamesAction(otw: TextWriter, db: LLDatabase)(vc: ParseResults<ListGamesArgs>) = 
     let games = db.Games
-    let regexFilter = makeGameRegexFilter(vc.GetResult(<@ ListGamesArgs.FilterRegex @>))
+    let regexFilter = makeGameRegexFilter(vc.TryGetResult(<@ ListGamesArgs.Filter_Regex @>))
     let languagesFilter(g: GameRecord, languages: string array) = 
         vc.GetResult(<@ ListGamesArgs.Languages @>)
         |> Seq.forall(fun l -> languages |> Array.contains(l)) 
@@ -238,13 +238,13 @@ let runListSupportedGamesAction(iPluginManager: IPluginManager, otw: TextWriter)
 let runListLessonsAction(otw: TextWriter, db: LLDatabase)(vc: ParseResults<ListLessonsArgs>) = 
     let allowedGameIds = 
         db.Games
-        |> Array.filter(makeGameRegexFilter(vc.GetResult(<@ ListLessonsArgs.GameRegex @>)))
+        |> Array.filter(makeGameRegexFilter(vc.TryGetResult(<@ ListLessonsArgs.Game_Regex @>)))
         |> Array.map(fun t -> t.ID)
 
     let checkGameFilterForLesson(l: LessonRecord) = 
         allowedGameIds |> Array.contains(l.GameID)
 
-    let lessonFilter = makeLessonRegexFilter(vc.GetResult(<@ ListLessonsArgs.FilterRegex @>))
+    let lessonFilter = makeLessonRegexFilter(vc.TryGetResult(<@ ListLessonsArgs.Filter_Regex @>))
 
     db.Lessons
     |> Array.filter checkGameFilterForLesson
@@ -273,8 +273,8 @@ let runDeleteLessonsAction(otw: TextWriter, db: LLDatabase)(vc: ParseResults<Del
         l.GameID = id
 
     let lessonFilter = 
-        let f1 = makeLessonRegexFilter(vc.GetResult(<@ DeleteLessonsArgs.FilterRegex @>))
-        let f2 = makeLessonNameFilter(vc.GetResult(<@ DeleteLessonsArgs.LessonName @>))
+        let f1 = makeLessonRegexFilter(vc.TryGetResult(<@ DeleteLessonsArgs.Filter_Regex @>))
+        let f2 = makeLessonNameFilter(vc.TryGetResult(<@ DeleteLessonsArgs.Lesson_Name @>))
         fun (l: LessonRecord) -> f1(l) || f2(l)
 
     let deleteLesson(l: LessonRecord) = 
@@ -300,9 +300,9 @@ let runDumpTextAction(otw: TextWriter, db: LLDatabase)(vc: ParseResults<DumpText
     let lessonsForGameFilter(id: int)(l: LessonRecord) = 
         l.GameID = id
 
-    let lessonNameFilter = makeLessonRegexFilter(Some(vc.GetResult(<@ DumpTextArgs.LessonFilterRegex @>)))
+    let lessonNameFilter = makeLessonRegexFilter(Some(vc.GetResult(<@ DumpTextArgs.Lesson_Filter_Regex @>)))
     let contentFilter = 
-        let regex = new Regex(vc.GetResult(<@ DumpTextArgs.ContentFilterRegex @>))
+        let regex = new Regex(vc.GetResult(<@ DumpTextArgs.Content_Filter_Regex @>))
         (fun (c: CardRecord) -> regex.IsMatch(c.Text))
 
     let languagesFilter(c: CardRecord) = 
@@ -310,19 +310,19 @@ let runDumpTextAction(otw: TextWriter, db: LLDatabase)(vc: ParseResults<DumpText
 
     let dumpCard(c: CardRecord) = 
         let includeKeyPrefix = 
-            if vc.GetResult(<@ DumpTextArgs.IncludeKey @>) then
+            if vc.GetResult(<@ DumpTextArgs.Include_Key @>) then
                 c.Key + "\t"
             else
                 ""
 
         let includeLanguagePrefix = 
-            if vc.GetResult(<@ DumpTextArgs.IncludeLanguage @>) then
+            if vc.GetResult(<@ DumpTextArgs.Include_Language @>) then
                 c.LanguageTag + "\t"
             else
                 ""
 
         let includeLessonPrefix = 
-            if vc.GetResult(<@ DumpTextArgs.IncludeLesson @>) then
+            if vc.GetResult(<@ DumpTextArgs.Include_Lesson @>) then
                 (db.Lessons |> Array.find(fun l -> l.ID = c.LessonID)).Name + "\t"
             else
                 ""
@@ -348,7 +348,7 @@ let runDumpTextAction(otw: TextWriter, db: LLDatabase)(vc: ParseResults<DumpText
             cards
             |> Array.groupBy(fun c -> (c.LessonID, c.Key))
 
-        let sampleSize = vc.GetResult(<@ DumpTextArgs.SampleSize @>)
+        let sampleSize = vc.GetResult(<@ DumpTextArgs.Sample_Size @>)
         if sampleSize = 0 then
             cards
         else
@@ -369,7 +369,7 @@ let rec parseCommands(cs: string array) =
         Console.WriteLine(parser.PrintUsage())
         results
     else
-        match results.GetResult(<@ CommandFile @>) with
+        match results.TryGetResult(<@ Command_File @>) with
         | Some(commandFile) ->
             let commands = File.ReadAllText(commandFile)
             let newArgs = commands.Split([| '\n'; '\r'; ' ' |], StringSplitOptions.RemoveEmptyEntries)
@@ -413,12 +413,12 @@ let main argv =
     let iPluginManager = pluginManager :> IPluginManager
 
     let otw = 
-        match results.GetResult(<@ LogFile @>) with
+        match results.TryGetResult(<@ Log_File @>) with
         | Some(lf) -> new StreamWriter(lf, false, Encoding.UTF8) :> TextWriter
         | _ -> System.Console.Out
 
     let fldbPath = 
-        match results.GetResult(<@ DatabasePath @>) with
+        match results.TryGetResult(<@ Database_Path @>) with
         | Some(dbPath) -> dbPath
         | _ -> Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), @"LudumLinguarum\LudumLinguarum.db3")
 
@@ -427,17 +427,22 @@ let main argv =
 
     let lldb = new LLDatabase(fldbPath)
 
-    let remainderArgs = results.GetResult(<@ Remainder @>).Split([| '\r'; '\n'; ' '; '\t' |], StringSplitOptions.RemoveEmptyEntries)
+    let remainderOpt = results.TryGetResult(<@ Remainder @>)
+    let remainderArgs = 
+        match remainderOpt with
+        | Some(remainder) -> remainder.Split([| '\r'; '\n'; ' '; '\t' |], StringSplitOptions.RemoveEmptyEntries)
+        | _ -> [||]
+
     loadAllPlugins(iPluginManager, otw, remainderArgs)
 
     match results.TryGetSubCommand() with
     | Some(Import ia) -> runImportAction(iPluginManager, otw, lldb, remainderArgs)(ia)
-    | Some(ListSupportedGames) -> runListSupportedGamesAction(iPluginManager, otw)
-    | Some(ListGames lga) -> runListGamesAction(otw, lldb)(lga)
-    | Some(ListLessons lla) -> runListLessonsAction(otw, lldb)(lla)
-    | Some(DeleteGame dga) -> runDeleteGameAction(otw, lldb)(dga)
-    | Some(DeleteLessons dla) -> runDeleteLessonsAction(otw, lldb)(dla)
-    | Some(DumpText dta) -> runDumpTextAction(otw, lldb)(dta)
+    | Some(List_Supported_Games) -> runListSupportedGamesAction(iPluginManager, otw)
+    | Some(List_Games lga) -> runListGamesAction(otw, lldb)(lga)
+    | Some(List_Lessons lla) -> runListLessonsAction(otw, lldb)(lla)
+    | Some(Delete_Game dga) -> runDeleteGameAction(otw, lldb)(dga)
+    | Some(Delete_Lessons dla) -> runDeleteLessonsAction(otw, lldb)(dla)
+    | Some(Dump_Text dta) -> runDumpTextAction(otw, lldb)(dta)
     | _ -> failwith "unrecognized subcommand"
 
     0
