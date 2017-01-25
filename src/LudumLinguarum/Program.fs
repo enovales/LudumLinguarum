@@ -203,9 +203,9 @@ let runScanForTextAction(otw: TextWriter)(vc: ParseResults<ScanForTextArgs>) =
     let config = 
         {
             DebugTools.TextScannerConfiguration.Path = vc.GetResult(<@ ScanForTextArgs.Path @>)
-            DebugTools.TextScannerConfiguration.MinimumLength = vc.GetResult(<@ ScanForTextArgs.Minimum_Length @>)
-            DebugTools.TextScannerConfiguration.MaximumLength = vc.GetResult(<@ ScanForTextArgs.Maximum_Length @>)
-            DebugTools.TextScannerConfiguration.DictionaryFile = vc.GetResult(<@ ScanForTextArgs.Dictionary_File @>)
+            DebugTools.TextScannerConfiguration.MinimumLength = vc.GetResult(<@ ScanForTextArgs.Minimum_Length @>, defaultValue = 1)
+            DebugTools.TextScannerConfiguration.MaximumLength = vc.GetResult(<@ ScanForTextArgs.Maximum_Length @>, defaultValue = 10)
+            DebugTools.TextScannerConfiguration.DictionaryFile = vc.GetResult(<@ ScanForTextArgs.Dictionary_File @>, defaultValue = "dictionary.txt")
         }
     let scanner = new DebugTools.StringScanner(config)
     let results = scanner.Scan()
@@ -323,29 +323,34 @@ let runDumpTextAction(otw: TextWriter, db: LLDatabase)(vc: ParseResults<DumpText
     let lessonsForGameFilter(id: int)(l: LessonRecord) = 
         l.GameID = id
 
-    let lessonNameFilter = makeLessonRegexFilter(Some(vc.GetResult(<@ DumpTextArgs.Lesson_Filter_Regex @>)))
+    let lessonNameFilter = makeLessonRegexFilter(vc.TryGetResult(<@ DumpTextArgs.Lesson_Filter_Regex @>))
     let contentFilter = 
-        let regex = new Regex(vc.GetResult(<@ DumpTextArgs.Content_Filter_Regex @>))
-        (fun (c: CardRecord) -> regex.IsMatch(c.Text))
+        match vc.TryGetResult(<@ DumpTextArgs.Content_Filter_Regex @>) with
+        | Some(filterRegex) -> 
+            let regex = new Regex(filterRegex)
+            (fun (c: CardRecord) -> regex.IsMatch(c.Text))
+        | _ -> (fun (_: CardRecord) -> true)
 
     let languagesFilter(c: CardRecord) = 
-        vc.GetResult(<@ DumpTextArgs.Languages @>) |> Seq.contains(c.LanguageTag)
+        match vc.TryGetResult(<@ DumpTextArgs.Languages @>) with
+        | Some(parameterLanguages) -> parameterLanguages |> Seq.contains(c.LanguageTag)
+        | _ -> true
 
     let dumpCard(c: CardRecord) = 
         let includeKeyPrefix = 
-            if vc.GetResult(<@ DumpTextArgs.Include_Key @>) then
+            if vc.Contains(<@ DumpTextArgs.Include_Key @>) then
                 c.Key + "\t"
             else
                 ""
 
         let includeLanguagePrefix = 
-            if vc.GetResult(<@ DumpTextArgs.Include_Language @>) then
+            if vc.Contains(<@ DumpTextArgs.Include_Language @>) then
                 c.LanguageTag + "\t"
             else
                 ""
 
         let includeLessonPrefix = 
-            if vc.GetResult(<@ DumpTextArgs.Include_Lesson @>) then
+            if vc.Contains(<@ DumpTextArgs.Include_Lesson @>) then
                 (db.Lessons |> Array.find(fun l -> l.ID = c.LessonID)).Name + "\t"
             else
                 ""
@@ -371,7 +376,7 @@ let runDumpTextAction(otw: TextWriter, db: LLDatabase)(vc: ParseResults<DumpText
             cards
             |> Array.groupBy(fun c -> (c.LessonID, c.Key))
 
-        let sampleSize = vc.GetResult(<@ DumpTextArgs.Sample_Size @>)
+        let sampleSize = vc.GetResult(<@ DumpTextArgs.Sample_Size @>, defaultValue = 0)
         if sampleSize = 0 then
             cards
         else

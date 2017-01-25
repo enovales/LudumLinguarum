@@ -17,18 +17,18 @@ open System.IO
 open System.Text.RegularExpressions
 
 type AuroraPluginArgs = 
-    | [<Mandatory; EqualsAssignment>] LanguageTag of string
-    | ExtractDialogues of bool
-    | Extract2DAs of bool
-    | ExtractAll of bool
+    | [<Mandatory; EqualsAssignment>] Language_Tag of string
+    | [<EqualsAssignment>] Extract_Dialogues of bool
+    | [<EqualsAssignment>] Extract_2DAs of bool
+    | [<EqualsAssignment>] Extract_All of bool
     with
         interface IArgParserTemplate with
             member this.Usage =
                 match this with
-                | LanguageTag _ -> "The language of the installed version of the game"
-                | ExtractDialogues _ -> "Whether or not content from dialogues should be extracted"
-                | Extract2DAs _ -> "Whether or not content from 2DAs should be extracted"
-                | ExtractAll _ -> "Shortcut for extracting all types of content"
+                | Language_Tag _ -> "The language of the installed version of the game"
+                | Extract_Dialogues _ -> "Whether or not content from dialogues should be extracted (default: false)"
+                | Extract_2DAs _ -> "Whether or not content from 2DAs should be extracted (default: true)"
+                | Extract_All _ -> "Shortcut for extracting all types of content"
 
 type private ExtractionContext<'TalkTableString when 'TalkTableString :> ITalkTableString> = {
     gameResources: IGenericResource seq;
@@ -71,7 +71,7 @@ type AuroraPlugin() =
             |]
         member this.ExtractAll(game: string, path: string, db: LLDatabase, [<ParamArray>] args: string[]) = 
 
-            let parser = ArgumentParser.Create<AuroraPluginArgs>()
+            let parser = ArgumentParser.Create<AuroraPluginArgs>(errorHandler = new ProcessExiter())
             let results = parser.Parse(args)
 
             if (results.IsUsageRequested) || (results.GetAllResults() |> List.isEmpty) then
@@ -110,7 +110,7 @@ type AuroraPlugin() =
             dialogueResources 
             |> Array.map zipResourcesAndLessons
 
-        let languageType = LanguageTypeFromIETFLanguageTag(xc.pluginSettings.GetResult(<@ AuroraPluginArgs.LanguageTag @>))
+        let languageType = LanguageTypeFromIETFLanguageTag(xc.pluginSettings.GetResult(<@ AuroraPluginArgs.Language_Tag @>))
 
         this.LogWriteLine("Dialogues loaded.") |> ignore
 
@@ -151,7 +151,7 @@ type AuroraPlugin() =
                 ID = 0;
                 KeyHash = 0;
                 GenderlessKeyHash = 0;
-                LanguageTag = xc.pluginSettings.GetResult(<@ AuroraPluginArgs.LanguageTag @>);
+                LanguageTag = xc.pluginSettings.GetResult(<@ AuroraPluginArgs.Language_Tag @>);
                 LessonID = l.ID;
                 Reversible = true;
                 SoundResource = String.Empty;
@@ -206,7 +206,7 @@ type AuroraPlugin() =
         (xc: ExtractionContext<'TalkTableString>, orders: TwoDAExtractionOrder<'TalkTableString> array) = 
         this.LogWriteLine("Starting 2DA extraction.") |> ignore
 
-        let languageType = LanguageTypeFromIETFLanguageTag(xc.pluginSettings.GetResult(<@ AuroraPluginArgs.LanguageTag @>))
+        let languageType = LanguageTypeFromIETFLanguageTag(xc.pluginSettings.GetResult(<@ AuroraPluginArgs.Language_Tag @>))
         let allGeneratedCards = orders |> Array.collect(fun (twoDAName, action, lessonName) -> 
             let twoDARes = xc.gameResources |> Seq.tryFind(fun t -> (t.ResourceType = ResType.Twoda) && (t.Name.Value.ToLower() = twoDAName.ToLower()))
             match twoDARes with
@@ -222,7 +222,7 @@ type AuroraPlugin() =
                     lessonEntry with ID = xc.db.CreateOrUpdateLesson(lessonEntry)
                 }
                 
-                let generatedCards = action(xc, twoDAFile, lessonEntryWithId, xc.pluginSettings.GetResult(<@ AuroraPluginArgs.LanguageTag @>))
+                let generatedCards = action(xc, twoDAFile, lessonEntryWithId, xc.pluginSettings.GetResult(<@ AuroraPluginArgs.Language_Tag @>))
                 generatedCards
             | _ -> [||])
 
@@ -377,13 +377,13 @@ type AuroraPlugin() =
         }
         
         let extractedDialogueCards = 
-            if (args.GetResult(<@ AuroraPluginArgs.ExtractAll @>) || args.GetResult(<@ AuroraPluginArgs.ExtractDialogues @>)) then
+            if (args.Contains(<@ AuroraPluginArgs.Extract_All @>) || args.Contains(<@ AuroraPluginArgs.Extract_Dialogues @>)) then
                 this.ExtractDialogues(extractionContext) |> Array.ofSeq
             else
                 [||]
 
         let extracted2DACards = 
-            if (args.GetResult(<@ AuroraPluginArgs.ExtractAll @>) || args.GetResult(<@ AuroraPluginArgs.Extract2DAs @>)) then
+            if (args.Contains(<@ AuroraPluginArgs.Extract_All @>) || args.GetResult(<@ AuroraPluginArgs.Extract_2DAs @>, defaultValue = true)) then
                 this.ExtractNWN12DAs(extractionContext)
             else
                 [||]
@@ -499,13 +499,13 @@ type AuroraPlugin() =
         }
         
         let extractedDialogueCards = 
-            if (args.GetResult(<@ AuroraPluginArgs.ExtractAll @>) || args.GetResult(<@ AuroraPluginArgs.ExtractDialogues @>)) then
+            if (args.Contains(<@ AuroraPluginArgs.Extract_All @>) || args.Contains(<@ AuroraPluginArgs.Extract_Dialogues @>)) then
                 this.ExtractDialogues(extractionContext) |> Array.ofSeq
             else
                 [||]
 
         let extracted2DACards = 
-            if (args.GetResult(<@ AuroraPluginArgs.ExtractAll @>) || args.GetResult(<@ AuroraPluginArgs.Extract2DAs @>)) then
+            if (args.Contains(<@ AuroraPluginArgs.Extract_All @>) || args.GetResult(<@ AuroraPluginArgs.Extract_2DAs @>, defaultValue = true)) then
                 this.ExtractJadeEmpire2DAs(extractionContext)
             else
                 [||]
@@ -618,13 +618,13 @@ type AuroraPlugin() =
         }
         
         let extractedDialogueCards = 
-            if (args.GetResult(<@ AuroraPluginArgs.ExtractAll @>) || args.GetResult(<@ AuroraPluginArgs.ExtractDialogues @>)) then
+            if (args.Contains(<@ AuroraPluginArgs.Extract_All @>) || args.Contains(<@ AuroraPluginArgs.Extract_Dialogues @>)) then
                 this.ExtractDialogues(extractionContext) |> Array.ofSeq
             else
                 [||]
 
         let extracted2DACards = 
-            if (args.GetResult(<@ AuroraPluginArgs.ExtractAll @>) || args.GetResult(<@ AuroraPluginArgs.Extract2DAs @>)) then
+            if (args.Contains(<@ AuroraPluginArgs.Extract_All @>) || args.GetResult(<@ AuroraPluginArgs.Extract_2DAs @>, defaultValue = true)) then
                 this.ExtractKOTOR12DAs(extractionContext)
             else
                 [||]
@@ -752,7 +752,7 @@ type AuroraPlugin() =
             { c with Text = textWithoutImplementationComments(c.Text) }
         
         let extractedDialogueCards = 
-            if (args.GetResult(<@ AuroraPluginArgs.ExtractAll @>) || args.GetResult(<@ AuroraPluginArgs.ExtractDialogues @>)) then
+            if (args.Contains(<@ AuroraPluginArgs.Extract_All @>) || args.Contains(<@ AuroraPluginArgs.Extract_Dialogues @>)) then
                 this.ExtractDialogues(extractionContext) 
                 |> Seq.map removeImplementationComments 
                 |> Array.ofSeq
@@ -760,7 +760,7 @@ type AuroraPlugin() =
                 [||]
 
         let extracted2DACards = 
-            if (args.GetResult(<@ AuroraPluginArgs.ExtractAll @>) || args.GetResult(<@ AuroraPluginArgs.Extract2DAs @>)) then
+            if (args.Contains(<@ AuroraPluginArgs.Extract_All @>) || args.GetResult(<@ AuroraPluginArgs.Extract_2DAs @>, defaultValue = true)) then
                 this.ExtractKOTOR22DAs(extractionContext)
             else
                 [||]

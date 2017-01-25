@@ -143,7 +143,7 @@ let private runExtractGBS(path: string, db: LLDatabase, g: GameRecord)(settings:
     |> db.CreateOrUpdateCards
 
 let ExtractGalacticBattlegroundsSaga(path: string, db: LLDatabase, g: GameRecord, args: string array) = 
-    let parser = ArgumentParser.Create<GBSPluginArgs>()
+    let parser = ArgumentParser.Create<GBSPluginArgs>(errorHandler = new ProcessExiter())
     let results = parser.Parse(args)
 
     if (results.IsUsageRequested) || (results.GetAllResults() |> List.isEmpty) then
