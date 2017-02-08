@@ -7,32 +7,24 @@ open Trie
 
 // Tools useful for development of new plugins.
 
-type TextScannerRangeEndType = 
-    | Undefined
-    | Null
-
 /// <summary>
 /// Configuration for the text-scanning utility.
 /// </summary>
-[<CommandLine.Verb("scan-for-text", HelpText = "Scan for text in files in a path")>]
-type TextScannerConfiguration() = 
-    [<CommandLine.Option(Required = true)>]
-    member val Path = "" with get, set
-
-    [<CommandLine.Option("character-width", Required = false)>]
-    member val CharacterWidth = 1 with get, set
-
-    [<CommandLine.Option("scanner-range-end", Required = false, HelpText = "Rule used to mark the end of a matched range. Used to cut down on the number of output results.")>]
-    member val ScannerRangeEnd = TextScannerRangeEndType.Undefined with get, set
-
-    [<CommandLine.Option("minimum-length", Required = false, HelpText = "The minimum length of string to match")>]
-    member val MinimumLength = 4 with get, set
-
-    [<CommandLine.Option("maximum-length", Required = false, HelpText = "The maximum length of string to match")>]
-    member val MaximumLength = 10 with get, set
-
-    [<CommandLine.Option("dictionary-file", Required = false, HelpText = "Dictionary used to match words in files")>]
-    member val DictionaryFile = "dictionary.txt" with get, set
+type TextScannerConfiguration = 
+    {
+        Path: string
+        MinimumLength: int
+        MaximumLength: int
+        DictionaryFile: string
+    }
+    with
+        static member Empty  = 
+                { 
+                    Path = ""
+                    MinimumLength = 0
+                    MaximumLength = 0
+                    DictionaryFile = ""
+                }
 
 type StringHasher = 
     abstract member Seed: byte array * int -> StringHasher

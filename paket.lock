@@ -1,6 +1,7 @@
 FRAMEWORK: NET461
 NUGET
   remote: https://www.nuget.org/api/v2
+    Argu (3.7)
     CommandLineParser (2.0.275-beta)
     CsvHelper (2.16.3)
     FsGettextUtils (0.1.1)
