@@ -67,7 +67,7 @@ let internal generateCardsForXmlStream(lessonID: int, language: string, keyRoot:
 /// <param name="language">the language of this content</param>
 /// <param name="keyRoot">root to use for keys in the generated cards -- should correspond to the file name from which the content was pulled</param>
 /// <param name="xmlContent">the XML content to parse</param>
-let internal generateCardsForXml(lessonID: int, language: string, keyRoot: string)(xmlContent: string) = 
+let internal generateCardsForXml(lessonID: int, language: string, keyRoot: string)(xmlContent: string) =
     use stringReader = new StringReader(xmlContent)
     let xel = XElement.Load(stringReader)
     generateCardsForXElement(lessonID, language, keyRoot)(xel)
@@ -78,11 +78,12 @@ let internal generateCardsForXml(lessonID: int, language: string, keyRoot: strin
 /// <param name="languageMap">the map of directory names to language codes</param>
 /// <param name="lessonsMap">the map of directory paths (inside the zip) to lesson records</param>
 /// <param name="zipPath">path to the zip file to process</param>
-let internal generateCardsForAssetPath(languageMap: Map<string, string>, lessonsMap: Map<string, LessonRecord>)(assetPath: string): CardRecord array = 
+let internal generateCardsForAssetPath(languageMap: Map<string, string>, lessonsMap: Map<string, LessonRecord>, excludeFiles: string seq)(assetPath: string): CardRecord array = 
     let generateCardsForLessons(language: string)(lessonDir: string, lesson: LessonRecord) = 
         // open all XML files under the directory, and read the contents
         let stringTableFiles = 
             Directory.GetFiles(lessonDir, "*.stringtable", SearchOption.AllDirectories)
+            |> Array.filter (fun fn -> not(excludeFiles |> Seq.contains(Path.GetFileNameWithoutExtension(fn))))
             |> Seq.ofArray
 
         let getStreamForFile(f: string) = 
@@ -143,6 +144,10 @@ let ExtractPillarsOfEternity(path: string, db: LLDatabase, g: GameRecord, args: 
         |> Array.map(fun (k, v) -> (k, configuredLessonCreator(v)))
         |> Map.ofArray
 
+    let fileExclusions = 
+        [|
+        |]
+
     // load zips in reverse order, so the call to distinct will preserve the most recent ones
     let cardKeyAndLanguage(c: CardRecord) = c.LanguageTag + c.Key
     [|
@@ -152,7 +157,63 @@ let ExtractPillarsOfEternity(path: string, db: LLDatabase, g: GameRecord, args: 
     |]
     |> Array.map(fun p -> Path.Combine(path, p))
     |> Array.filter Directory.Exists
-    |> Array.collect(generateCardsForAssetPath(languageMap, lessonsMap))
+    |> Array.collect(generateCardsForAssetPath(languageMap, lessonsMap, fileExclusions))
+    |> Array.distinctBy cardKeyAndLanguage
+    |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
+    |> db.CreateOrUpdateCards
+
+    ()
+
+let ExtractTormentTidesOfNumenera(path: string, db: LLDatabase, g: GameRecord, args: string array) = 
+    let configuredLessonCreator = createLesson(g.ID, db)
+    let languageMap = 
+        [|
+            (@"localized\en", "en")
+            (@"localized\fr", "fr")
+            (@"localized\de", "de")
+            (@"localized\it", "it")
+            (@"localized\es", "es")
+            (@"localized\ko", "ko")
+            (@"localized\pl", "pl")
+            (@"localized\ru", "ru")
+        |]
+        |> Map.ofArray
+
+    // create lessons for each of the subdirectories in the asset zips
+    let lessonsMap = 
+        [|
+            (@"text\game", "Game Text")
+            (@"text\conversations", "Conversations")
+            (@"text\quests", "Quests")
+        |]
+        |> Array.map(fun (k, v) -> (k, configuredLessonCreator(v)))
+        |> Map.ofArray
+
+    let fileExclusions = 
+        [|
+            // from 'game'
+            "backercontent"; "backerepitaphnames"; "backerepitaphs"; "backertombstonenames"
+
+            // from 'conversations'
+            "adam_test"; "adams_test"
+            "dafdsdfa"; "debugging"; "dumb"; "follow-up_error_test"; "follow-up_test"; "letstry"; "loop_test"
+            "mytest"; "newrednode"; "newtest"; "outoftestfolder"; "paola_test"; "paola_test2"; "paolatest"; "paolatest140327"; "performtasktest"
+            "question_node_test"; "seconddebugging"; "thirddebugging"; "thomas_test"; "tidenodetest"; "tidetest"; "whathappenswithperforce"
+
+            // from 'quests'
+            "paola_questendnodetest"; "questendnodetest"; "test_kutallu_gate"; "test_quest"; "test_quest_02_crucial"
+            // from 'quests\test_quests'
+            "end_state_example"; "end_state_example_with_end_nodes"; "i_am_a_quest"; "jesse_test_quest"; "stupid_quest"
+        |]
+
+    // load zips in reverse order, so the call to distinct will preserve the most recent ones
+    let cardKeyAndLanguage(c: CardRecord) = c.LanguageTag + c.Key
+    [|
+        @"WIN\TidesOfNumenera_Data\StreamingAssets\data"
+    |]
+    |> Array.map(fun p -> Path.Combine(path, p))
+    |> Array.filter Directory.Exists
+    |> Array.collect(generateCardsForAssetPath(languageMap, lessonsMap, fileExclusions))
     |> Array.distinctBy cardKeyAndLanguage
     |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
     |> db.CreateOrUpdateCards
