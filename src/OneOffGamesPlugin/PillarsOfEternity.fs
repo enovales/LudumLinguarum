@@ -173,7 +173,6 @@ let ExtractTormentTidesOfNumenera(path: string, db: LLDatabase, g: GameRecord, a
             (@"localized\de", "de")
             (@"localized\it", "it")
             (@"localized\es", "es")
-            (@"localized\ko", "ko")
             (@"localized\pl", "pl")
             (@"localized\ru", "ru")
         |]
