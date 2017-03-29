@@ -5,6 +5,7 @@ open LLDatabase
 open System
 open System.IO
 open System.Text
+open System.Text.RegularExpressions
 open System.Xml.Linq
 
 type internal ExtractedData = 
@@ -14,16 +15,34 @@ type internal ExtractedData =
         FemaleText: string option
     }
 
+let formattingCodeRegexes = 
+    [|
+        new Regex(@"\[[^\]]+?\]")
+        new Regex(@"\{[^\d\}][^\}]*?\}")
+    |]
+
+let rec internal stripFormattingCodes(v: string): string = 
+    let firstMatch = formattingCodeRegexes |> Array.tryFind(fun r -> r.IsMatch(v))
+
+    match firstMatch with
+    | Some(fm) -> 
+        let m = fm.Match(v)
+        stripFormattingCodes(v.Remove(m.Index, m.Length))
+    | _ -> v
+
 /// <summary>
 /// Generates a tuple containing the entry ID, default/masculine text, and female text,
 /// which will later be transformed into a card.
 /// </summary>
 /// <param name="el">the XML element</param>
 let internal extractDataFromEntry(entryElement: XElement): ExtractedData = 
-    let nonWhitespaceFilter s = not(String.IsNullOrWhiteSpace(s))
+    let nonWhitespaceFilter(s: string) = 
+        let trimmed = s.Trim()
+        not(String.IsNullOrWhiteSpace(trimmed)) && (trimmed <> "\"\"")
+
     let id = Int32.Parse((entryElement.Descendants(XName.Get("ID")) |> Seq.head).Value)
-    let defaultText = entryElement.Descendants(XName.Get("DefaultText")) |> Seq.map (fun t -> t.Value) |> Seq.filter nonWhitespaceFilter |> Seq.tryHead
-    let femaleText = entryElement.Descendants(XName.Get("FemaleText")) |> Seq.map (fun t -> t.Value) |> Seq.filter nonWhitespaceFilter |> Seq.tryHead
+    let defaultText = entryElement.Descendants(XName.Get("DefaultText")) |> Seq.map (fun t -> t.Value |> stripFormattingCodes) |> Seq.filter nonWhitespaceFilter |> Seq.tryHead
+    let femaleText = entryElement.Descendants(XName.Get("FemaleText")) |> Seq.map (fun t -> t.Value |> stripFormattingCodes) |> Seq.filter nonWhitespaceFilter |> Seq.tryHead
 
     { Id = id; DefaultText = defaultText; FemaleText = femaleText }
 
