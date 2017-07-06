@@ -28,11 +28,12 @@ a format that Anki can recognize, and then importing it into Anki and using the 
 6. Type `LudumLinguarum import --game="<game name>" --game-dir="<root directory of game>"` to import the game text. (Some games 
 that only support a single language with their installed data may require you to specify the language with `--language-tag=<language tag>`.)
 7. Type `LudumLinguarum export-anki --game="<game name>" --recognition-language="<first language>" 
---production-language="<second language>" --export-path="<path to export file>"`. The "recognition language" is the
+--production-language="<second language>" --export-path="<path to export file>" --production-word-limit=5`. The "recognition language" is the
 [two-letter language code](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes) for the language you are more familiar with, 
 and the "production language" is the language code for the one you're trying to learn. Examples are "en" for English, 
 "fr" for French, "de" for German, "ja" for Japanese, and so on. (Flash cards will be generated for translating in both directions.) 
-`export-path` is the output text file, which will be imported into Anki in the next step.
+`export-path` is the output text file, which will be imported into Anki in the next step, and 'production-word-limit' restricts the length of
+text to 5 whitespace-separated words in the target language, which can be useful for limiting the flash cards to shorter phrases or vocabulary.
 8. Open up the Anki desktop client. Click the **Create Deck** button at the bottom, and enter a name for the flashcard deck.
 9. Click the **Import File** button at the bottom. Select the file you exported in step 7.
 10. In the **Import** dialog, change *Type* to "Basic (optional reversed card)". *Deck* should be set to the deck you created 

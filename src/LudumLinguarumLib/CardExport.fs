@@ -1,6 +1,5 @@
 ﻿module CardExport
 
-open Argu
 open LLDatabase
 open LudumLinguarumPlugins
 open System
@@ -15,16 +14,35 @@ type AnkiExporterConfiguration =
         ExportPath: string
         RecognitionLanguage: string
         ProductionLanguage: string
+        RecognitionLengthLimit: int option
+        ProductionLengthLimit: int option
+        RecognitionWordLimit: int option
+        ProductionWordLimit: int option
     }
+
+let internal mkLengthFilter(lo: int option) = 
+    match lo with
+    | Some(l) -> (fun (c: CardRecord) -> c.Text.Length <= l)
+    | _ -> (fun (_: CardRecord) -> true)
+
+let internal mkWordCountFilter(lo: int option) = 
+    match lo with
+    | Some(l) -> (fun (c: CardRecord) -> (c.Text.ToCharArray() |> Array.sumBy(fun c -> if Char.IsWhiteSpace(c) then 1 else 0)) <= (l - 1))
+    | _ -> (fun (_: CardRecord) -> true)
 
 type AnkiExporter(iPluginManager: IPluginManager, outputTextWriter: TextWriter, 
                   llDatabase: LLDatabase, config: AnkiExporterConfiguration) = 
 
+    let recognitionLengthFilter = mkLengthFilter(config.RecognitionLengthLimit)
+    let productionLengthFilter = mkLengthFilter(config.ProductionLengthLimit)
+    let recognitionWordCountFilter = mkWordCountFilter(config.RecognitionWordLimit)
+    let productionWordCountFilter = mkWordCountFilter(config.ProductionWordLimit)
+
     member private this.GenerateRecognitionAndProductionCardSets
         (lesson: LessonRecord, recognitionLanguage: string, productionLanguage: string) = 
         // get the recognition and production cards for this lesson
-        let recognitionCards = llDatabase.CardsFromLessonAndLanguageTag(lesson, config.RecognitionLanguage)
-        let productionCards = llDatabase.CardsFromLessonAndLanguageTag(lesson, config.ProductionLanguage)
+        let recognitionCards = llDatabase.CardsFromLessonAndLanguageTag(lesson, recognitionLanguage)
+        let productionCards = llDatabase.CardsFromLessonAndLanguageTag(lesson, productionLanguage)
 
         // Check if one of the card sets has populated genders, and the other has none. If this
         // is the case, then replicate the non-gendered cards using the populated gender set. This
@@ -44,8 +62,7 @@ type AnkiExporter(iPluginManager: IPluginManager, outputTextWriter: TextWriter,
         | (a, b) when a < b -> 
             (duplicateIntoGenders(recognitionCards, productionGenders), productionCards)
         | (a, b) when a = b -> (recognitionCards, productionCards)
-        | _ -> raise(exn("can't disambiguate m-to-n language pairs"))
-
+        | _ -> failwith "can't disambiguate m-to-n language pairs"
 
     member private this.RunLessonExport(game: GameRecord, sw: StreamWriter)(lesson: LessonRecord) = 
         let writeCard(r: CardRecord, p: CardRecord) = 
@@ -61,9 +78,17 @@ type AnkiExporter(iPluginManager: IPluginManager, outputTextWriter: TextWriter,
         let (recognitionCards, productionCards) = 
             this.GenerateRecognitionAndProductionCardSets(lesson, config.RecognitionLanguage, config.ProductionLanguage)
 
-        // group cards by their key hash and gender, and then match them up with each other.
-        let recognitionByHashKeys = recognitionCards |> Array.groupBy(fun t -> (t.GenderlessKeyHash, t.Gender))
-        let productionByHashKeys = productionCards |> Array.groupBy(fun t -> (t.GenderlessKeyHash, t.Gender)) |> Map.ofArray
+        // filter and then group cards by their key hash and gender, and then match them up with each other.
+        let recognitionByHashKeys = 
+            recognitionCards 
+            |> Array.filter(recognitionLengthFilter)
+            |> Array.filter(recognitionWordCountFilter)
+            |> Array.groupBy(fun t -> (t.GenderlessKeyHash, t.Gender))
+        let productionByHashKeys = 
+            productionCards 
+            |> Array.filter(productionLengthFilter)
+            |> Array.filter(productionWordCountFilter)
+            |> Array.groupBy(fun t -> (t.GenderlessKeyHash, t.Gender)) |> Map.ofArray
 
         // Match up recognition cards with the same key and gender string with
         // production cards with the same key and gender string.
@@ -71,11 +96,13 @@ type AnkiExporter(iPluginManager: IPluginManager, outputTextWriter: TextWriter,
             recognitionByHashKeys |> 
             Array.map(fun (k, cards) -> 
                 (cards, productionByHashKeys |> Map.tryFind(k))) |> 
-            Array.filter(fun (cards, prod) -> prod.IsSome) |> 
+            Array.filter(fun (_, prod) -> prod.IsSome) |> 
             Array.map(fun (cards, prod) -> (cards, prod.Value))
-        pairsByHashKeys|> Array.iter(fun (rs, ps) -> 
-            let finalPairing = Array.zip rs ps
-            finalPairing |> Array.iter(fun (r, p) -> writeCard(r, p)))
+        
+        pairsByHashKeys
+        |> Array.iter(fun (rs, ps) -> 
+            Array.zip rs ps
+            |> Array.iter(fun (r, p) -> writeCard(r, p)))
         ()
 
     member private this.RunGameExport(game: string, lesson: string option, lessonRegex: string option) = 
