@@ -1,3 +1,6 @@
+#### 0.14.0 - July 5 2017
+* Added command line options for 'export-anki' to limit the length (in characters or whitespace-delimited words) of the text of a card: --recognition-length-limit, --production-length-limit, --recognition-word-limit, and --production-word-limit.
+
 #### 0.13.0 - November 29 2016
 * Added support for:
     * [Age of Empires III](http://store.steampowered.com/app/105450/) \[de, en, es, fr, it\]
