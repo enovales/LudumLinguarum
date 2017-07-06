@@ -109,12 +109,12 @@ let internal generateCardsForAssetPath(languageMap: Map<string, string>, lessons
             new MemoryStream(File.ReadAllBytes(f))
 
         // For each lesson directory, get all string table files, and zip them with a stream containing their contents.
-        // Then, generate cards, providing a key root of the lesson name, plus the relative path (from the game directory) to
+        // Then, generate cards, providing a key root of the lesson name, plus the relative path (from the lesson directory) to
         // the string table file.
         stringTableFiles
         |> Seq.zip(stringTableFiles |> Seq.map getStreamForFile)
         |> Seq.collect(fun (str, u) -> 
-            let result = generateCardsForXmlStream(lesson.ID, language, lesson.Name + u.Substring(assetPath.Length))(str)
+            let result = generateCardsForXmlStream(lesson.ID, language, lesson.Name + u.Substring(lessonDir.Length))(str)
             str.Dispose()
             result
             )
