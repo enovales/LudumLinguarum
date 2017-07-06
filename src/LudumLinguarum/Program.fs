@@ -140,7 +140,7 @@ and [<RequireSubcommandAttribute>] BaseArgs =
         interface IArgParserTemplate with
             member this.Usage =
                 match this with
-                | Database_Path _ -> "Path to the SQLite database file to use"
+                | Database_Path _ -> "Directory for SQLite databases"
                 | Command_File _ -> "File from which arguments should be read"
                 | Log_File _ -> "Optional log file to which output should be redirected"
                 | Import _ -> "Import localized content from a game"
@@ -152,6 +152,12 @@ and [<RequireSubcommandAttribute>] BaseArgs =
                 | Dump_Text _ -> "Dumps extracted strings for inspection."
                 | Export_Anki _ -> "Exports extracted text for use with the Anki spaced repetition program"
                 | Scan_For_Text _ -> "Used to scan arbitrary binary data for strings, to locate localized content"
+
+let private sanitizeGameNameForFile(n: string) = 
+    Path.GetInvalidFileNameChars() |> Array.fold (fun (s: string)(c: char) -> s.Replace(c, '_')) n
+
+let private makeDatabaseFilenameForGame(n: string) = 
+    sanitizeGameNameForFile(n) + ".db3"
 
 let private makeGameRegexFilter(reOpt: string option) = 
     match reOpt with
@@ -178,8 +184,9 @@ let private makeLessonNameFilter(nameOpt: string option) =
     | _ -> fun (_: LessonRecord) -> true
 
 let runImportAction(iPluginManager: IPluginManager, 
-                    _: TextWriter, llDatabase: LLDatabase)(vc: ParseResults<ImportArgs>) = 
-    let pluginOpt = iPluginManager.GetPluginForGame(vc.GetResult(<@ ImportArgs.Game @>))
+                    _: TextWriter, dbRoot: string)(vc: ParseResults<ImportArgs>) = 
+    let gameName = vc.GetResult(<@ ImportArgs.Game @>)
+    let pluginOpt = iPluginManager.GetPluginForGame(gameName)
     match pluginOpt with
     | Some(plugin) -> 
         // run the import action with the plugin
@@ -188,15 +195,17 @@ let runImportAction(iPluginManager: IPluginManager,
             | Some(args) -> args.Split([| '\r'; '\n'; ' '; '\t' |], StringSplitOptions.RemoveEmptyEntries)
             | _ -> [||]
 
+        let llDatabase = new LLDatabase(Path.Combine(dbRoot, makeDatabaseFilenameForGame(gameName)))
         plugin.ExtractAll(vc.GetResult(<@ ImportArgs.Game @>), vc.GetResult(<@ ImportArgs.Game_Dir @>), llDatabase, argv)
     | _ ->
         failwith("Could not find installed plugin for '" + vc.GetResult(<@ ImportArgs.Game @>) + "'")
 
 let runExportAnkiAction(iPluginManager: IPluginManager, 
-                        outputTextWriter: TextWriter, llDatabase: LLDatabase)(args: ParseResults<ExportAnkiArgs>) = 
+                        outputTextWriter: TextWriter, dbRoot: string)(args: ParseResults<ExportAnkiArgs>) = 
+    let gameName = args.GetResult(<@ ExportAnkiArgs.Game @>)
     let vc = 
         {
-            CardExport.AnkiExporterConfiguration.GameToExport = args.GetResult(<@ ExportAnkiArgs.Game @>)
+            CardExport.AnkiExporterConfiguration.GameToExport = gameName
             CardExport.AnkiExporterConfiguration.ExportPath = args.GetResult(<@ ExportAnkiArgs.Export_Path @>)
             CardExport.AnkiExporterConfiguration.LessonToExport = args.TryGetResult(<@ ExportAnkiArgs.Lesson @>)
             CardExport.AnkiExporterConfiguration.LessonRegexToExport = args.TryGetResult(<@ ExportAnkiArgs.Lesson_Regex @>)
@@ -208,6 +217,7 @@ let runExportAnkiAction(iPluginManager: IPluginManager,
             CardExport.AnkiExporterConfiguration.ProductionWordLimit = args.TryGetResult(<@ ExportAnkiArgs.Production_Word_Limit @>)
         }
 
+    let llDatabase = new LLDatabase(Path.Combine(dbRoot, makeDatabaseFilenameForGame(gameName)))
     let exporter = new CardExport.AnkiExporter(iPluginManager, outputTextWriter, llDatabase, vc)
     exporter.RunExportAction()
 
@@ -234,29 +244,35 @@ let runScanForTextAction(otw: TextWriter)(vc: ParseResults<ScanForTextArgs>) =
 /// Runs the 'list-games' action, using the optional filter regex.
 /// </summary>
 /// <param name="otw">output channel</param>
-/// <param name="db">database</param>
+/// <param name="dbRoot">root directory for databases</param>
 /// <param name="vc">configuration for this verb handler</param>
-let runListGamesAction(otw: TextWriter, db: LLDatabase)(vc: ParseResults<ListGamesArgs>) = 
-    let games = db.Games
-    let regexFilter = makeGameRegexFilter(vc.TryGetResult(<@ ListGamesArgs.Filter_Regex @>))
-    let languagesFilter(g: GameRecord, languages: string array) = 
-        match vc.TryGetResult(<@ ListGamesArgs.Languages @>) with
-        | Some(parameterLanguages) -> parameterLanguages |> Seq.forall(fun l -> languages |> Array.contains(l)) 
-        | _ -> true
+let runListGamesAction(otw: TextWriter, dbRoot: string)(vc: ParseResults<ListGamesArgs>) = 
+    let dbPaths = Directory.GetFiles(dbRoot, "*.db3", SearchOption.AllDirectories)
+    let listGamesForDb(dbPath: string) = 
+        let db = new LLDatabase(dbPath)
+        let games = db.Games
+        let regexFilter = makeGameRegexFilter(vc.TryGetResult(<@ ListGamesArgs.Filter_Regex @>))
+        let languagesFilter(g: GameRecord, languages: string array) = 
+            match vc.TryGetResult(<@ ListGamesArgs.Languages @>) with
+            | Some(parameterLanguages) -> parameterLanguages |> Seq.forall(fun l -> languages |> Array.contains(l)) 
+            | _ -> true
 
-    let languagesForGame(g: GameRecord) = 
-        db.Lessons 
-        |> Array.filter (fun l -> l.GameID = g.ID)
-        |> Array.collect(db.LanguagesForLesson >> Array.ofList >> Array.sort)
-        |> Array.distinct
+        let languagesForGame(g: GameRecord) = 
+            db.Lessons 
+            |> Array.filter (fun l -> l.GameID = g.ID)
+            |> Array.collect(db.LanguagesForLesson >> Array.ofList >> Array.sort)
+            |> Array.distinct
     
-    games 
-    |> Array.filter regexFilter
-    |> Array.sortBy (fun g -> g.Name)
-    |> Array.map(fun g -> (g, languagesForGame(g)))
-    |> Array.filter languagesFilter
-    |> Array.map(fun (g, languages) -> "[" + g.Name + "], [" + String.Join(", ", languages) + "]")
-    |> Array.iter otw.WriteLine
+        games 
+        |> Array.filter regexFilter
+        |> Array.sortBy (fun g -> g.Name)
+        |> Array.map(fun g -> (g, languagesForGame(g)))
+        |> Array.filter languagesFilter
+        |> Array.map(fun (g, languages) -> "[" + g.Name + "], [" + String.Join(", ", languages) + "]")
+        |> Array.iter otw.WriteLine
+
+    dbPaths
+    |> Array.iter listGamesForDb
 
 /// <summary>
 /// Runs the 'list-supported-games' action.
@@ -270,38 +286,47 @@ let runListSupportedGamesAction(iPluginManager: IPluginManager, otw: TextWriter)
     |> Array.sort
     |> Array.iter otw.WriteLine
 
-let runListLessonsAction(otw: TextWriter, db: LLDatabase)(vc: ParseResults<ListLessonsArgs>) = 
-    let allowedGameIds = 
-        db.Games
-        |> Array.filter(makeGameRegexFilter(vc.TryGetResult(<@ ListLessonsArgs.Game_Regex @>)))
-        |> Array.map(fun t -> t.ID)
+let runListLessonsAction(otw: TextWriter, dbRoot: string)(vc: ParseResults<ListLessonsArgs>) = 
+    let dbPaths = Directory.GetFiles(dbRoot, "*.db3", SearchOption.AllDirectories)
 
-    let checkGameFilterForLesson(l: LessonRecord) = 
-        allowedGameIds |> Array.contains(l.GameID)
+    let listLessonsForDb(dbPath: string) =
+        let db = new LLDatabase(dbPath)
+        let allowedGameIds = 
+            db.Games
+            |> Array.filter(makeGameRegexFilter(vc.TryGetResult(<@ ListLessonsArgs.Game_Regex @>)))
+            |> Array.map(fun t -> t.ID)
 
-    let lessonFilter = makeLessonRegexFilter(vc.TryGetResult(<@ ListLessonsArgs.Filter_Regex @>))
+        let checkGameFilterForLesson(l: LessonRecord) = 
+            allowedGameIds |> Array.contains(l.GameID)
 
-    db.Lessons
-    |> Array.filter checkGameFilterForLesson
-    |> Array.filter lessonFilter
-    |> Array.map (fun l -> l.Name)
-    |> Array.sort
-    |> Array.iter otw.WriteLine
+        let lessonFilter = makeLessonRegexFilter(vc.TryGetResult(<@ ListLessonsArgs.Filter_Regex @>))
 
-let runDeleteGameAction(otw: TextWriter, db: LLDatabase)(vc: ParseResults<DeleteGameArgs>) = 
-    let deleteGame(g: GameRecord) = 
-        db.DeleteGame(g)
-        otw.WriteLine("deleted game [" + g.Name + "]")
+        db.Lessons
+        |> Array.filter checkGameFilterForLesson
+        |> Array.filter lessonFilter
+        |> Array.map (fun l -> l.Name)
+        |> Array.sort
+        |> Array.iter otw.WriteLine
 
-    db.Games
-    |> Array.filter(makeGameNameFilter(Some(vc.GetResult(<@ DeleteGameArgs.Game @>))))
-    |> Array.tryHead
-    |> Option.iter deleteGame
+    dbPaths
+    |> Array.iter listLessonsForDb
 
-let runDeleteLessonsAction(otw: TextWriter, db: LLDatabase)(vc: ParseResults<DeleteLessonsArgs>) = 
+let runDeleteGameAction(otw: TextWriter, dbRoot: string)(vc: ParseResults<DeleteGameArgs>) = 
+    let gameName = vc.GetResult(<@ DeleteGameArgs.Game @>)
+    let dbPath = Path.Combine(dbRoot, makeDatabaseFilenameForGame(gameName))
+    try
+        File.Delete(dbPath)
+    with
+        | _ -> failwith("Couldn't delete database file [" + dbPath + "] for game [" + gameName + "]")
+            
+let runDeleteLessonsAction(otw: TextWriter, dbRoot: string)(vc: ParseResults<DeleteLessonsArgs>) = 
+    let gameName = vc.GetResult(<@ DeleteLessonsArgs.Game @>)
+    let dbPath = Path.Combine(dbRoot, makeDatabaseFilenameForGame(gameName))
+    let db = new LLDatabase(dbPath)
+
     let gameOpt = 
         db.Games
-        |> Array.filter(makeGameNameFilter(Some(vc.GetResult(<@ DeleteLessonsArgs.Game @>))))
+        |> Array.filter(makeGameNameFilter(Some(gameName)))
         |> Array.tryHead
 
     let lessonsForGameFilter(id: int)(l: LessonRecord) = 
@@ -324,12 +349,15 @@ let runDeleteLessonsAction(otw: TextWriter, db: LLDatabase)(vc: ParseResults<Del
 /// Runs the 'dump-text' action.
 /// </summary>
 /// <param name="otw">output destination</param>
-/// <param name="db">content database</param>
+/// <param name="dbRoot">root path for databases</param>
 /// <param name="vc">configuration for the action</param>
-let runDumpTextAction(otw: TextWriter, db: LLDatabase)(vc: ParseResults<DumpTextArgs>) = 
+let runDumpTextAction(otw: TextWriter, dbRoot: string)(vc: ParseResults<DumpTextArgs>) = 
+    let gameName = vc.GetResult(<@ DumpTextArgs.Game @>)
+    let db = new LLDatabase(Path.Combine(dbRoot, makeDatabaseFilenameForGame(gameName)))
+
     let gameOpt = 
         db.Games
-        |> Array.filter(makeGameNameFilter(Some(vc.GetResult(<@ DumpTextArgs.Game @>))))
+        |> Array.filter(makeGameNameFilter(Some(gameName)))
         |> Array.tryHead
 
     let lessonsForGameFilter(id: int)(l: LessonRecord) = 
@@ -459,25 +487,25 @@ let main argv =
 
     let fldbPath = 
         match results.TryGetResult(<@ Database_Path @>) with
-        | Some(dbPath) -> dbPath
-        | _ -> Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), @"LudumLinguarum\LudumLinguarum.db3")
-
-    if (not(Directory.Exists(Path.GetDirectoryName(fldbPath)))) then
-        Directory.CreateDirectory(Path.GetDirectoryName(fldbPath)) |> ignore
-
-    let lldb = new LLDatabase(fldbPath)
+        | Some(dbPath) when Directory.Exists(dbPath) -> dbPath
+        | Some(dbPath) -> failwith("Database path [" + dbPath + "] doesn't exist")
+        | _ -> 
+            let defaultPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), @"LudumLinguarum")
+            if not(Directory.Exists(defaultPath)) then
+                Directory.CreateDirectory(defaultPath) |> ignore
+            defaultPath
 
     loadAllPlugins(iPluginManager, otw)
 
     match results.TryGetSubCommand() with
-    | Some(Import ia) -> runImportAction(iPluginManager, otw, lldb)(ia)
+    | Some(Import ia) -> runImportAction(iPluginManager, otw, fldbPath)(ia)
     | Some(List_Supported_Games _) -> runListSupportedGamesAction(iPluginManager, otw)
-    | Some(List_Games lga) -> runListGamesAction(otw, lldb)(lga)
-    | Some(List_Lessons lla) -> runListLessonsAction(otw, lldb)(lla)
-    | Some(Delete_Game dga) -> runDeleteGameAction(otw, lldb)(dga)
-    | Some(Delete_Lessons dla) -> runDeleteLessonsAction(otw, lldb)(dla)
-    | Some(Dump_Text dta) -> runDumpTextAction(otw, lldb)(dta)
-    | Some(Export_Anki eaa) -> runExportAnkiAction(iPluginManager, otw, lldb)(eaa)
+    | Some(List_Games lga) -> runListGamesAction(otw, fldbPath)(lga)
+    | Some(List_Lessons lla) -> runListLessonsAction(otw, fldbPath)(lla)
+    | Some(Delete_Game dga) -> runDeleteGameAction(otw, fldbPath)(dga)
+    | Some(Delete_Lessons dla) -> runDeleteLessonsAction(otw, fldbPath)(dla)
+    | Some(Dump_Text dta) -> runDumpTextAction(otw, fldbPath)(dta)
+    | Some(Export_Anki eaa) -> runExportAnkiAction(iPluginManager, otw, fldbPath)(eaa)
     | Some(Scan_For_Text sfta) -> runScanForTextAction(otw)(sfta)
     | None -> ()
     | _ -> failwith "unrecognized subcommand"
