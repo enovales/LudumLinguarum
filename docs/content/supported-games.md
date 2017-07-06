@@ -43,5 +43,6 @@ Games supported, and languages supported (for games that are a single download f
 * [The King of Fighters 2002 Unlimited Match](http://store.steampowered.com/app/222440/) \[en, ja\]
 * [Torment: Tides of Numenera](http://store.steampowered.com/app/272270/Torment_Tides_of_Numenera/) \[de, en, es, fr, it, pl, ru\]
 * [Transistor](http://store.steampowered.com/app/237930/) \[de, en, es, fr, it, ja, pl, pt, ru, zh]
+* [Tyranny](http://store.steampowered.com/app/362960/Tyranny/) \[de, en, es, fr, pl, ru\]
 * [Victoria 2](http://store.steampowered.com/app/42960/) \[de, en, fr\]
 * [Worms Armageddon](http://store.steampowered.com/app/217200/) \[de, en, es, fr, it, nl, pt, ru, sv\]

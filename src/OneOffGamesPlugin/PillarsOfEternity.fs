@@ -237,3 +237,51 @@ let ExtractTormentTidesOfNumenera(path: string, db: LLDatabase, g: GameRecord, a
     |> db.CreateOrUpdateCards
 
     ()
+
+let ExtractTyranny(path: string, db: LLDatabase, g: GameRecord, args: string array) = 
+    let configuredLessonCreator = createLesson(g.ID, db)
+    let languageMap = 
+        [|
+            (@"localized\en", "en")
+            (@"localized\fr", "fr")
+            (@"localized\de", "de")
+            (@"localized\es", "es")
+            (@"localized\pl", "pl")
+            (@"localized\ru", "ru")
+        |]
+        |> Map.ofArray
+
+    // create lessons for each of the subdirectories in the asset zips
+    let lessonsMap = 
+        [|
+            (@"text\game", "Game Text")
+            (@"text\conversations", "Conversations")
+            (@"text\quests", "Quests")
+        |]
+        |> Array.map(fun (k, v) -> (k, configuredLessonCreator(v)))
+        |> Map.ofArray
+
+    let fileExclusions = 
+        [|
+            // from 'conversations\test'
+            "test_conversation_anims_female_base"
+            "test_conversation_anims_male_disfavored_salute"
+            "test_conversation_anims_male_generic_greeter"
+            "test_conversation_anims_scarlet_chorus_salute"
+            "test_conversation_anims_tied_up"
+            "test_skill_trainer"
+        |]
+
+    // load zips in reverse order, so the call to distinct will preserve the most recent ones
+    let cardKeyAndLanguage(c: CardRecord) = c.LanguageTag + c.Key
+    [|
+        @"Data\data\exported"
+    |]
+    |> Array.map(fun p -> Path.Combine(path, p))
+    |> Array.filter Directory.Exists
+    |> Array.collect(generateCardsForAssetPath(languageMap, lessonsMap, fileExclusions))
+    |> Array.distinctBy cardKeyAndLanguage
+    |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
+    |> db.CreateOrUpdateCards
+
+    ()
