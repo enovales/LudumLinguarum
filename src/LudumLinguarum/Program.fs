@@ -92,6 +92,10 @@ and ExportAnkiArgs =
     | [<Mandatory; EqualsAssignment>] Export_Path of string
     | [<Mandatory; EqualsAssignment>] Recognition_Language of string
     | [<Mandatory; EqualsAssignment>] Production_Language of string
+    | [<EqualsAssignment>] Recognition_Length_Limit of int
+    | [<EqualsAssignment>] Production_Length_Limit of int
+    | [<EqualsAssignment>] Recognition_Word_Limit of int
+    | [<EqualsAssignment>] Production_Word_Limit of int
     with
         interface IArgParserTemplate with
             member this.Usage = 
@@ -102,6 +106,10 @@ and ExportAnkiArgs =
                 | Export_Path _ -> "The path to which the text file containing importable Anki cards should be written"
                 | Recognition_Language _ -> "The 'source' language for the flash card"
                 | Production_Language _ -> "The 'target' language for the flash card -- what you want to practice recalling"
+                | Recognition_Length_Limit _ -> "The character limit of cards to include, based on the string in the recognition language"
+                | Production_Length_Limit _ -> "The character limit for cards to include, based on the string in the production language"
+                | Recognition_Word_Limit _ -> "The limit of whitespace-delimited words for cards to include, based on the string in the recognition language"
+                | Production_Word_Limit _ -> "The limit of whitespace-delimited words for cards to include, based on the string in the production language"
 and ScanForTextArgs = 
     | [<Mandatory; EqualsAssignment>] Path of string
     | [<EqualsAssignment>] Minimum_Length of int
@@ -194,6 +202,10 @@ let runExportAnkiAction(iPluginManager: IPluginManager,
             CardExport.AnkiExporterConfiguration.LessonRegexToExport = args.TryGetResult(<@ ExportAnkiArgs.Lesson_Regex @>)
             CardExport.AnkiExporterConfiguration.RecognitionLanguage = args.GetResult(<@ ExportAnkiArgs.Recognition_Language @>)
             CardExport.AnkiExporterConfiguration.ProductionLanguage = args.GetResult(<@ ExportAnkiArgs.Production_Language @>)
+            CardExport.AnkiExporterConfiguration.RecognitionLengthLimit = args.TryGetResult(<@ ExportAnkiArgs.Recognition_Length_Limit @>)
+            CardExport.AnkiExporterConfiguration.ProductionLengthLimit = args.TryGetResult(<@ ExportAnkiArgs.Production_Length_Limit @>)
+            CardExport.AnkiExporterConfiguration.RecognitionWordLimit = args.TryGetResult(<@ ExportAnkiArgs.Recognition_Word_Limit @>)
+            CardExport.AnkiExporterConfiguration.ProductionWordLimit = args.TryGetResult(<@ ExportAnkiArgs.Production_Word_Limit @>)
         }
 
     let exporter = new CardExport.AnkiExporter(iPluginManager, outputTextWriter, llDatabase, vc)
