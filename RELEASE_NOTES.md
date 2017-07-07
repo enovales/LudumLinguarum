@@ -1,4 +1,4 @@
-#### 0.14.0 - July 5 2017
+#### 0.14.0 - July 7 2017
 * Added command line options for 'export-anki' to limit the length (in characters or whitespace-delimited words) of the text of a card: --recognition-length-limit, --production-length-limit, --recognition-word-limit, and --production-word-limit.
 * Changed to use database files per-game, instead of a global one.
 * Added support for:
