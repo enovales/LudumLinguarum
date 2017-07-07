@@ -87,18 +87,17 @@ let internal generateCardsForSSVs(lid: int, ssvDir: string) =
     |> Seq.collect(generateCardsForFile(lid))
     |> Array.ofSeq
 
-let internal createLesson(gameID: int, db: LLDatabase)(title: string): LessonRecord = 
+let internal createLesson(db: LLDatabase)(title: string): LessonRecord = 
     let lessonEntry = {
-        LessonRecord.GameID = gameID;
-        ID = 0;
+        LessonRecord.ID = 0;
         Name = title
     }
     { lessonEntry with ID = db.CreateOrUpdateLesson(lessonEntry) }
 
 /////////////////////////////////////////////////////////////////////////////
 // Europa Universalis III
-let ExtractEU3(path: string, db: LLDatabase, g: GameRecord, args: string array) = 
-    let lesson = createLesson(g.ID, db)("Game Text")
+let ExtractEU3(path: string, db: LLDatabase, args: string array) = 
+    let lesson = createLesson(db)("Game Text")
 
     generateCardsForSSVs(lesson.ID, Path.Combine(path, "localisation"))
     |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
@@ -106,10 +105,10 @@ let ExtractEU3(path: string, db: LLDatabase, g: GameRecord, args: string array) 
 
 /////////////////////////////////////////////////////////////////////////////
 // Hearts of Iron III
-let ExtractHOI3(path: string, db: LLDatabase, g: GameRecord, args: string array) = 
+let ExtractHOI3(path: string, db: LLDatabase, args: string array) = 
     // Hearts of Iron 3 has better grouping in its localization files, so we'll
     // go ahead and create a lesson for each one.
-    let lessonGenerator = createLesson(g.ID, db)
+    let lessonGenerator = createLesson(db)
     Directory.GetFiles(Path.Combine(path, "localisation"), "*.csv")
     |> Array.collect(fun p -> generateCardsForFile(lessonGenerator(Path.GetFileNameWithoutExtension(p)).ID)(p))
     |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
@@ -117,8 +116,8 @@ let ExtractHOI3(path: string, db: LLDatabase, g: GameRecord, args: string array)
 
 /////////////////////////////////////////////////////////////////////////////
 // Victoria II
-let ExtractVictoria2(path: string, db: LLDatabase, g: GameRecord, args: string array) = 
-    let lesson = createLesson(g.ID, db)("Game Text")
+let ExtractVictoria2(path: string, db: LLDatabase, args: string array) = 
+    let lesson = createLesson(db)("Game Text")
 
     generateCardsForSSVs(lesson.ID, Path.Combine(path, "localisation"))
     |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
@@ -146,10 +145,10 @@ let internal eu4EscapeQuotedValues(s: string) =
         s.Remove(a + 1, len).Insert(a + 1, quoted.Replace('"', '\'').Trim())
     | _ -> s
 
-let ExtractEU4(path: string, db: LLDatabase, g: GameRecord, args: string array) = 
+let ExtractEU4(path: string, db: LLDatabase, args: string array) = 
     // The localization .yml files are named xyz_l_language_optional_suffix.yml. Extract the
     // lesson names, and then group the files by lesson for extraction.
-    let lessonGenerator = createLesson(g.ID, db)
+    let lessonGenerator = createLesson(db)
     let supportedLanguages = [| "english"; "french"; "german"; "spanish" |]
     let extractLessonName(p: string) = 
         supportedLanguages |> Array.fold (fun (s: string)(l: string) -> s.Replace("_l_" + l, "")) p
@@ -216,7 +215,7 @@ let ExtractEU4(path: string, db: LLDatabase, g: GameRecord, args: string array) 
 /////////////////////////////////////////////////////////////////////////////
 // Crusader Kings II
 
-let ExtractCrusaderKings2(path: string, db: LLDatabase, g: GameRecord, args: string array) = 
+let ExtractCrusaderKings2(path: string, db: LLDatabase, args: string array) = 
     // Crusader Kings II has better grouping in its localization files, so we'll
     // go ahead and create a lesson for each one that is not blacklisted.
     let fileBlacklist = 
@@ -228,7 +227,7 @@ let ExtractCrusaderKings2(path: string, db: LLDatabase, g: GameRecord, args: str
         |]
     let isFileBlacklisted s = fileBlacklist |> Array.contains(Path.GetFileNameWithoutExtension(s))
 
-    let lessonGenerator = createLesson(g.ID, db)
+    let lessonGenerator = createLesson(db)
     Directory.GetFiles(Path.Combine(path, "localisation"), "*.csv")
     |> Array.filter(isFileBlacklisted >> not)
     |> Array.collect(fun p -> generateCardsForFile(lessonGenerator(Path.GetFileNameWithoutExtension(p)).ID)(p))

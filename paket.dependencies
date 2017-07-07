@@ -2,7 +2,7 @@ framework net461
 
 source https://nuget.org/api/v2
 
-nuget FSharp.Core redirects: force
+nuget FSharp.Core ~> 4.0.0.1 redirects: force
 
 github praeclarum/sqlite-net
 nuget CsvHelper
@@ -15,7 +15,8 @@ nuget Argu
 nuget PInvoke.Win32
 nuget LANGIDMappings
 nuget FsGettextUtils
-github icsharpcode/SharpZipLib
+//github icsharpcode/SharpZipLib
+nuget ICSharpCode.SharpZipLib-dogfood
 //git https://github.com/gsscoder/commandline.git master build: "build.cmd", OS: windows
 nuget CommandLineParser 2.0.275-beta
 github enovales/SegaAFSTools src/SegaAFSTools/AFS.fs

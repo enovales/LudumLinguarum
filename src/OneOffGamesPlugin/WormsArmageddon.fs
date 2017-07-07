@@ -87,10 +87,9 @@ let extractStringsFromLines(lessonID: int)(lines: string array, language: string
     |> Map.ofArray
     |> AssemblyResourceTools.createCardRecordForStrings(lessonID, "gametext", language, "masculine")
 
-let ExtractWormsArmageddon(path: string, db: LLDatabase, g: GameRecord, args: string array) = 
+let ExtractWormsArmageddon(path: string, db: LLDatabase, args: string array) = 
     let lessonGameTextEntry = {
-        LessonRecord.GameID = g.ID;
-        ID = 0;
+        LessonRecord.ID = 0;
         Name = "Game Text"
     }
     let lessonGameTextEntryWithId = { lessonGameTextEntry with ID = db.CreateOrUpdateLesson(lessonGameTextEntry) }

@@ -69,7 +69,7 @@ let internal generateCardsForXml(lessonID: int, language: string)(xmlContent: st
     let xel = XElement.Load(stringReader)
     generateCardsForWorkbook(language, "")(lessonID, xel)
 
-let internal generateCardsForLanguage(db: LLDatabase, gameID: int)(languagePath: string) = 
+let internal generateCardsForLanguage(db: LLDatabase)(languagePath: string) = 
     let languageMap =
         [|
             ("deu", "de")
@@ -95,8 +95,7 @@ let internal generateCardsForLanguage(db: LLDatabase, gameID: int)(languagePath:
 
         let lessonRecord = 
             {
-                LessonRecord.GameID = gameID
-                ID = 0
+                LessonRecord.ID = 0
                 Name = lessonName
             }
         let createdLessonRecord = { lessonRecord with ID = db.CreateOrUpdateLesson(lessonRecord) }
@@ -115,11 +114,11 @@ let internal generateCardsForLanguage(db: LLDatabase, gameID: int)(languagePath:
     |> Array.map makeLessonForFile
     |> Array.collect(wrappedGenerateCardsForXmlStream(language))
 
-let ExtractMagicka(path: string, db: LLDatabase, g: GameRecord, args: string array) = 
+let ExtractMagicka(path: string, db: LLDatabase, args: string array) = 
     let threeCharLanguages = Directory.GetDirectories(Path.Combine(path, @"Content\Languages"))
 
     threeCharLanguages
-    |> Array.collect(generateCardsForLanguage(db, g.ID))
+    |> Array.collect(generateCardsForLanguage(db))
     |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
     |> db.CreateOrUpdateCards
 

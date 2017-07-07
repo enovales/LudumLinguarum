@@ -45,10 +45,9 @@ let private categories =
         new Category(CatID = 6, Name = "errors")
     |]
 
-let private createLessonForCategory(db: LLDatabase, gameID: int)(cat: Category) = 
+let private createLessonForCategory(db: LLDatabase)(cat: Category) = 
     let lessonEntry = {
-        LessonRecord.GameID = gameID;
-        ID = 0;
+        LessonRecord.ID = 0;
         Name = cat.Name
     }
     { lessonEntry with ID = db.CreateOrUpdateLesson(lessonEntry) }
@@ -80,7 +79,7 @@ let private createCardsForDatabase(dbPath: string, language: string, lessons: Le
     keys
     |> Array.map makeCardForKey
 
-let ExtractMadballsBaboInvasion(path: string, db: LLDatabase, g: GameRecord, args: string array) = 
+let ExtractMadballsBaboInvasion(path: string, db: LLDatabase, args: string array) = 
     // each language file corresponds to a .db in path\main\db
     let languages = 
         [|
@@ -99,7 +98,7 @@ let ExtractMadballsBaboInvasion(path: string, db: LLDatabase, g: GameRecord, arg
     // create a lesson for each category
     let lessons = 
         categories
-        |> Array.map(createLessonForCategory(db, g.ID))
+        |> Array.map(createLessonForCategory(db))
 
     let generateCardsForLanguage(l: string) = 
         let dbPath = Path.Combine(path, @"main\db\" + l + ".db")

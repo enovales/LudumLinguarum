@@ -8,7 +8,6 @@ open System.Text.RegularExpressions
 
 type AnkiExporterConfiguration =
     {
-        GameToExport: string
         LessonToExport: string option
         LessonRegexToExport: string option
         ExportPath: string
@@ -64,7 +63,7 @@ type AnkiExporter(iPluginManager: IPluginManager, outputTextWriter: TextWriter,
         | (a, b) when a = b -> (recognitionCards, productionCards)
         | _ -> failwith "can't disambiguate m-to-n language pairs"
 
-    member private this.RunLessonExport(game: GameRecord, sw: StreamWriter)(lesson: LessonRecord) = 
+    member private this.RunLessonExport(sw: StreamWriter)(lesson: LessonRecord) = 
         let writeCard(r: CardRecord, p: CardRecord) = 
             let recogText = r.Text.Replace("\t", "    ").Replace("\r", "").Replace("\n", "")
             let prodText = p.Text.Replace("\t", "    ").Replace("\r", "").Replace("\n", "")
@@ -105,39 +104,33 @@ type AnkiExporter(iPluginManager: IPluginManager, outputTextWriter: TextWriter,
             |> Array.iter(fun (r, p) -> writeCard(r, p)))
         ()
 
-    member private this.RunGameExport(game: string, lesson: string option, lessonRegex: string option) = 
-        let filterGame(gid: int)(l: LessonRecord) = 
-            (l.GameID = gid)
-        let filterLessonsNoWildcard(gid: int, name: string)(l: LessonRecord) = 
-            filterGame(gid)(l) && (l.Name = name)
-        let filterLessonsWildcard(gid: int, name: string)(l: LessonRecord) = 
+    member private this.RunGameExport(lesson: string option, lessonRegex: string option) = 
+        let filterLessonsNoWildcard(name: string)(l: LessonRecord) = 
+            (l.Name = name)
+        let filterLessonsWildcard(name: string)(l: LessonRecord) = 
             let rootName = name.Substring(0, name.IndexOf('*'))
-            filterGame(gid)(l) && (l.Name.StartsWith(rootName, StringComparison.CurrentCultureIgnoreCase))
-        let filterLessonsRegex(gid: int, regex: Regex)(l: LessonRecord) = 
-            filterGame(gid)(l) && (regex.IsMatch(l.Name))
+            (l.Name.StartsWith(rootName, StringComparison.CurrentCultureIgnoreCase))
+        let filterLessonsRegex(regex: Regex)(l: LessonRecord) = 
+            (regex.IsMatch(l.Name))
 
-        match (llDatabase.Games |> Array.tryFind(fun t -> t.Name = game)) with
-        | Some(g) -> 
-            // Prefer the regex over using the name. If no name is specified, then 
-            // export all lessons for the game.
-            let lessonFilter = 
-                match (lesson, lessonRegex) with
-                | (_, Some(regex)) -> filterLessonsRegex(g.ID, new Regex(regex))
-                | (Some(l), _) when not(l.Contains("*")) -> filterLessonsNoWildcard(g.ID, l)
-                | (Some(l), _) -> filterLessonsWildcard(g.ID, l)
-                | _ -> filterGame(g.ID)
+        // Prefer the regex over using the name. If no name is specified, then 
+        // export all lessons for the game.
+        let lessonFilter = 
+            match (lesson, lessonRegex) with
+            | (_, Some(regex)) -> filterLessonsRegex(new Regex(regex))
+            | (Some(l), _) when not(l.Contains("*")) -> filterLessonsNoWildcard(l)
+            | (Some(l), _) -> filterLessonsWildcard(l)
+            | _ -> (fun _ -> true)
 
-            let lessonsToExport = llDatabase.Lessons |> Array.filter lessonFilter
-            let reportLessonExport(l: LessonRecord) =
-                outputTextWriter.WriteLine("Exporting lesson [" + l.Name + "]")
-                l
+        let lessonsToExport = llDatabase.Lessons |> Array.filter lessonFilter
+        let reportLessonExport(l: LessonRecord) =
+            outputTextWriter.WriteLine("Exporting lesson [" + l.Name + "]")
+            l
 
-            use outStream = new StreamWriter(config.ExportPath)
-            lessonsToExport |> Array.iter(reportLessonExport >> this.RunLessonExport(g, outStream))
-        | _ -> 
-            outputTextWriter.WriteLine("Couldn't find entry for game '" + game + "'")
+        use outStream = new StreamWriter(config.ExportPath)
+        lessonsToExport |> Array.iter(reportLessonExport >> this.RunLessonExport(outStream))
         ()
 
     member this.RunExportAction() = 
-        this.RunGameExport(config.GameToExport, config.LessonToExport, config.LessonRegexToExport)
+        this.RunGameExport(config.LessonToExport, config.LessonRegexToExport)
         ()

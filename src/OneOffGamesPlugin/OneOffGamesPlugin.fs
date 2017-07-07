@@ -64,15 +64,7 @@ type OneOffGamesPlugin() =
             this.LogWriteLine("Searching for game handler for '" + game + "'") |> ignore
 
             if (handlerMapping |> Map.containsKey(game)) then
-                // create game entry, and then run handler
-                let gameEntry = {
-                    GameRecord.Name = game;
-                    ID = 0
-                }
-                let gameEntryWithId = { gameEntry with ID = db.CreateOrUpdateGame(gameEntry) }
-                this.LogWriteLine("Game entry for " + game + " updated.") |> ignore
-
-                handlerMapping.[game](path, db, gameEntryWithId, args)
+                handlerMapping.[game](path, db, args)
             else
                 raise(UnknownGameException("unknown game " + game))
             ()                

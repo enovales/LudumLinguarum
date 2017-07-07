@@ -130,16 +130,15 @@ let internal generateCardsForAssetPath(languageMap: Map<string, string>, lessons
     |> Map.toArray
     |> Array.collect generateCardsForLanguage
 
-let internal createLesson(gameID: int, db: LLDatabase)(title: string): LessonRecord = 
+let internal createLesson(db: LLDatabase)(title: string): LessonRecord = 
     let lessonEntry = {
-        LessonRecord.GameID = gameID;
-        ID = 0;
+        LessonRecord.ID = 0;
         Name = title
     }
     { lessonEntry with ID = db.CreateOrUpdateLesson(lessonEntry) }
 
-let ExtractPillarsOfEternity(path: string, db: LLDatabase, g: GameRecord, args: string array) = 
-    let configuredLessonCreator = createLesson(g.ID, db)
+let ExtractPillarsOfEternity(path: string, db: LLDatabase, args: string array) = 
+    let configuredLessonCreator = createLesson(db)
     let languageMap = 
         [|
             (@"localized\en", "en")
@@ -183,8 +182,8 @@ let ExtractPillarsOfEternity(path: string, db: LLDatabase, g: GameRecord, args: 
 
     ()
 
-let ExtractTormentTidesOfNumenera(path: string, db: LLDatabase, g: GameRecord, args: string array) = 
-    let configuredLessonCreator = createLesson(g.ID, db)
+let ExtractTormentTidesOfNumenera(path: string, db: LLDatabase, args: string array) = 
+    let configuredLessonCreator = createLesson(db)
     let languageMap = 
         [|
             (@"localized\en", "en")
@@ -238,8 +237,8 @@ let ExtractTormentTidesOfNumenera(path: string, db: LLDatabase, g: GameRecord, a
 
     ()
 
-let ExtractTyranny(path: string, db: LLDatabase, g: GameRecord, args: string array) = 
-    let configuredLessonCreator = createLesson(g.ID, db)
+let ExtractTyranny(path: string, db: LLDatabase, args: string array) = 
+    let configuredLessonCreator = createLesson(db)
     let languageMap = 
         [|
             (@"localized\en", "en")

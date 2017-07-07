@@ -12,10 +12,9 @@ open System.Xml.Linq
 (***************************************************************************)
 (************************** Skulls of the Shogun ***************************)
 (***************************************************************************)
-let ExtractSkullsOfTheShogun(path: string, db: LLDatabase, g: GameRecord, args: string array) = 
+let ExtractSkullsOfTheShogun(path: string, db: LLDatabase, args: string array) = 
     let lessonEntry = {
-        LessonRecord.GameID = g.ID;
-        ID = 0;
+        LessonRecord.ID = 0;
         Name = "Game Text"
     }
     let lessonEntryWithId = { lessonEntry with ID = db.CreateOrUpdateLesson(lessonEntry) }
@@ -26,7 +25,7 @@ let ExtractSkullsOfTheShogun(path: string, db: LLDatabase, g: GameRecord, args: 
 (***************************************************************************)
 (******************************** Hell Yeah ********************************)
 (***************************************************************************)
-let ExtractHellYeah(path: string, db: LLDatabase, g: GameRecord, args: string array) = 
+let ExtractHellYeah(path: string, db: LLDatabase, args: string array) = 
     // table format: arguments to OneOffGamesUtils.ExtractStringsFromAssemblies, but with 
     // a lesson name instead of an id at the end.
     let mainExePath = Path.Combine(path, "HELLYEAH.exe")
@@ -58,8 +57,7 @@ let ExtractHellYeah(path: string, db: LLDatabase, g: GameRecord, args: string ar
 
     let createAndExtract(path: string, mainResPath: string, resDllName: string, resourceRoot: string, keyRoot: string, lessonName: string) = 
         let lessonEntry = {
-            LessonRecord.GameID = g.ID;
-            ID = 0;
+            LessonRecord.ID = 0;
             Name = lessonName
         }
         let lessonEntryWithId = { lessonEntry with ID = db.CreateOrUpdateLesson(lessonEntry) }
@@ -87,7 +85,7 @@ let internal generateMagicalDropVStringMap(cleanedXml: string): Map<string, stri
     |> Array.collect(fun t -> t.Descendants() |> Array.ofSeq) 
     |> Array.map (fun t -> (t.Name.LocalName, t.Value |> sanitizeMagicalDropVFormatStrings)) |> Map.ofArray
 
-let ExtractMagicalDropV(path: string, db: LLDatabase, g: GameRecord, args: string array) = 
+let ExtractMagicalDropV(path: string, db: LLDatabase, args: string array) = 
     let filePaths = 
         [|
             @"localization\localization_de-DE.xml"
@@ -103,8 +101,7 @@ let ExtractMagicalDropV(path: string, db: LLDatabase, g: GameRecord, args: strin
         [| "de"; "en"; "es"; "fr"; "it"; "ja" |] |> Array.zip(filePaths)
 
     let lessonStoryEntry = {
-        LessonRecord.GameID = g.ID;
-        ID = 0;
+        LessonRecord.ID = 0;
         Name = "Story Text"
     }
     let lessonUIEntry = { lessonStoryEntry with Name = "UI Text" }
@@ -130,10 +127,9 @@ let ExtractMagicalDropV(path: string, db: LLDatabase, g: GameRecord, args: strin
 (***************************************************************************)
 (******************************** Audiosurf ********************************)
 (***************************************************************************)
-let ExtractAudiosurf(path: string, db: LLDatabase, g: GameRecord, args: string array) = 
+let ExtractAudiosurf(path: string, db: LLDatabase, args: string array) = 
     let lessonEntry = {
-        LessonRecord.GameID = g.ID;
-        ID = 0;
+        LessonRecord.ID = 0;
         Name = "Game Text"
     }
     let lessonEntryWithId = { lessonEntry with ID = db.CreateOrUpdateLesson(lessonEntry) }
@@ -163,16 +159,14 @@ let ExtractAudiosurf(path: string, db: LLDatabase, g: GameRecord, args: string a
 (***************************************************************************)
 (************************** Bastion and Transistor *************************)
 (***************************************************************************)
-let private extractSupergiantGame(path: string, db: LLDatabase, g: GameRecord, args: string array) = 
+let private extractSupergiantGame(path: string, db: LLDatabase, args: string array) = 
     let lessonGameTextEntry = {
-        LessonRecord.GameID = g.ID;
-        ID = 0;
+        LessonRecord.ID = 0;
         Name = "Game Text"
     }
     let lessonGameTextEntryWithId = { lessonGameTextEntry with ID = db.CreateOrUpdateLesson(lessonGameTextEntry) }
     let lessonSubtitlesEntry = {
-        LessonRecord.GameID = g.ID;
-        ID = 0;
+        LessonRecord.ID = 0;
         Name = "Subtitles"
     }
     let lessonSubtitlesEntryWithId = { lessonSubtitlesEntry with ID = db.CreateOrUpdateLesson(lessonSubtitlesEntry) }
@@ -285,11 +279,11 @@ let private extractSupergiantGame(path: string, db: LLDatabase, g: GameRecord, a
     |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
     |> db.CreateOrUpdateCards
     
-let ExtractBastion(path: string, db: LLDatabase, g: GameRecord, args: string array) = 
-    extractSupergiantGame(path, db, g, args)
+let ExtractBastion(path: string, db: LLDatabase, args: string array) = 
+    extractSupergiantGame(path, db, args)
 
-let ExtractTransistor(path: string, db: LLDatabase, g: GameRecord, args: string array) = 
-    extractSupergiantGame(path, db, g, args)
+let ExtractTransistor(path: string, db: LLDatabase, args: string array) = 
+    extractSupergiantGame(path, db, args)
 
 let internal hbFormatTokenRegexes = 
     [|
@@ -352,10 +346,9 @@ let hbGenerateCardsForLines(lid: int)(lines: string array): CardRecord array =
 (***************************************************************************)
 (**************************** Hatoful Boyfriend ****************************)
 (***************************************************************************)
-let ExtractHatofulBoyfriend(path: string, db: LLDatabase, g: GameRecord, args: string array) = 
+let ExtractHatofulBoyfriend(path: string, db: LLDatabase, args: string array) = 
     let lessonEntry = {
-        LessonRecord.GameID = g.ID;
-        ID = 0;
+        LessonRecord.ID = 0;
         Name = "Game Text"
     }
     let lessonEntryWithId = { lessonEntry with ID = db.CreateOrUpdateLesson(lessonEntry) }
@@ -372,10 +365,9 @@ let ExtractHatofulBoyfriend(path: string, db: LLDatabase, g: GameRecord, args: s
 (***************************************************************************)
 (********************* Hatoful Boyfriend: Holiday Star *********************)
 (***************************************************************************)
-let ExtractHatofulBoyfriendHolidayStar(path: string, db: LLDatabase, g: GameRecord, args: string array) = 
+let ExtractHatofulBoyfriendHolidayStar(path: string, db: LLDatabase, args: string array) = 
     let lessonEntry = {
-        LessonRecord.GameID = g.ID;
-        ID = 0;
+        LessonRecord.ID = 0;
         Name = "Game Text"
     }
     let lessonEntryWithId = { lessonEntry with ID = db.CreateOrUpdateLesson(lessonEntry) }
@@ -395,10 +387,9 @@ let ExtractHatofulBoyfriendHolidayStar(path: string, db: LLDatabase, g: GameReco
 (***************************************************************************)
 (********************************** Braid **********************************)
 (***************************************************************************)
-let ExtractBraid(path: string, db: LLDatabase, g: GameRecord, args: string array) = 
+let ExtractBraid(path: string, db: LLDatabase, args: string array) = 
     let lessonEntry = {
-        LessonRecord.GameID = g.ID
-        ID = 0
+        LessonRecord.ID = 0
         Name = "Game Text"
     }
     let lessonEntryWithId = { lessonEntry with ID = db.CreateOrUpdateLesson(lessonEntry) }
@@ -470,12 +461,11 @@ let ExtractBraid(path: string, db: LLDatabase, g: GameRecord, args: string array
 (***************************************************************************)
 (************************** IHF Handball Challenge *************************)
 (***************************************************************************)
-let private extractIHFHandballChallenge(path: string, db: LLDatabase, g: GameRecord, args: string array) = 
+let private extractIHFHandballChallenge(path: string, db: LLDatabase, args: string array) = 
     let subtrees = [| "application"; "hud"; "gui" |]
     let makeLesson(n: string) = 
         let lessonEntry = {
-            LessonRecord.GameID = g.ID
-            ID = 0
+            LessonRecord.ID = 0
             Name = n
         }
         { lessonEntry with ID = db.CreateOrUpdateLesson(lessonEntry) }
@@ -524,7 +514,7 @@ let private extractIHFHandballChallenge(path: string, db: LLDatabase, g: GameRec
     |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
     |> db.CreateOrUpdateCards
 
-let ExtractIHFHandballChallenge12(path: string, db: LLDatabase, g: GameRecord, args: string array) = 
-    extractIHFHandballChallenge(path, db, g, args)
-let ExtractIHFHandballChallenge14(path: string, db: LLDatabase, g: GameRecord, args: string array) = 
-    extractIHFHandballChallenge(path, db, g, args)
+let ExtractIHFHandballChallenge12(path: string, db: LLDatabase, args: string array) = 
+    extractIHFHandballChallenge(path, db, args)
+let ExtractIHFHandballChallenge14(path: string, db: LLDatabase, args: string array) = 
+    extractIHFHandballChallenge(path, db, args)

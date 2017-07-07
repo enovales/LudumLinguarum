@@ -113,10 +113,9 @@ let internal generateCardsForAssetZip(languageMap: Map<string, string>, lesson: 
     |> Map.toArray
     |> Array.collect(fun (dir: string, language: string) -> generateCardsForLessons(language)(dir, lesson))
 
-let internal createLesson(gameID: int, db: LLDatabase)(title: string): LessonRecord = 
+let internal createLesson(db: LLDatabase)(title: string): LessonRecord = 
     let lessonEntry = {
-        LessonRecord.GameID = gameID;
-        ID = 0;
+        LessonRecord.ID = 0;
         Name = title
     }
     { lessonEntry with ID = db.CreateOrUpdateLesson(lessonEntry) }
@@ -145,8 +144,8 @@ let private languageMap =
     |]
     |> Map.ofArray
 
-let ExtractOrcsMustDie(path: string, db: LLDatabase, g: GameRecord, args: string array) = 
-    let configuredLessonCreator = createLesson(g.ID, db)
+let ExtractOrcsMustDie(path: string, db: LLDatabase, args: string array) = 
+    let configuredLessonCreator = createLesson(db)
     let lessonEntry = configuredLessonCreator("Game Text")
 
     // load zips in reverse order, so the call to distinct will preserve the most recent ones
@@ -159,8 +158,8 @@ let ExtractOrcsMustDie(path: string, db: LLDatabase, g: GameRecord, args: string
 
     extractOMDZips(assetZips, db, lessonEntry, languageMap)
 
-let ExtractOrcsMustDie2(path: string, db: LLDatabase, g: GameRecord, args: string array) = 
-    let configuredLessonCreator = createLesson(g.ID, db)
+let ExtractOrcsMustDie2(path: string, db: LLDatabase, args: string array) = 
+    let configuredLessonCreator = createLesson(db)
     let lessonEntry = configuredLessonCreator("Game Text")
 
     // load zips in reverse order, so the call to distinct will preserve the most recent ones

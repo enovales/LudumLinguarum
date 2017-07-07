@@ -73,16 +73,14 @@ let private stringIsParenOrBracketChar(s: string) =
     | _ when (s.Length = 3) && (s.Chars(0) = '[') && (s.Chars(2) = ']') -> true
     | _ -> false
 
-let private runExtractGBS(path: string, db: LLDatabase, g: GameRecord)(settings: ParseResults<GBSPluginArgs>) = 
+let private runExtractGBS(path: string, db: LLDatabase)(settings: ParseResults<GBSPluginArgs>) = 
     let mainLessonEntry = {
-        LessonRecord.GameID = g.ID
-        ID = 0
+        LessonRecord.ID = 0
         Name = "Main Game Text"
     }
     let mainLessonEntryWithId = { mainLessonEntry with ID = db.CreateOrUpdateLesson(mainLessonEntry) }
     let x1LessonEntry = {
-        LessonRecord.GameID = g.ID
-        ID = 0
+        LessonRecord.ID = 0
         Name = "Expansion 1 Text"
     }
     let x1LessonEntryWithId = { x1LessonEntry with ID = db.CreateOrUpdateLesson(x1LessonEntry) }
@@ -142,14 +140,14 @@ let private runExtractGBS(path: string, db: LLDatabase, g: GameRecord)(settings:
     |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
     |> db.CreateOrUpdateCards
 
-let ExtractGalacticBattlegroundsSaga(path: string, db: LLDatabase, g: GameRecord, args: string array) = 
+let ExtractGalacticBattlegroundsSaga(path: string, db: LLDatabase, args: string array) = 
     let parser = ArgumentParser.Create<GBSPluginArgs>(errorHandler = new ProcessExiter())
     let results = parser.Parse(args)
 
     if (results.IsUsageRequested) || (results.GetAllResults() |> List.isEmpty) then
         Console.WriteLine(parser.PrintUsage())
     else
-        runExtractGBS(path, db, g)(results)
+        runExtractGBS(path, db)(results)
 
 type StarWarsGBSPlugin() = 
     let mutable outStream: TextWriter option = None
@@ -168,14 +166,7 @@ type StarWarsGBSPlugin() =
             |]
 
         member this.ExtractAll(game: string, path: string, db: LLDatabase, [<ParamArray>] args: string[]) = 
-            // create game entry, and then run handler
-            let gameEntry = {
-                GameRecord.Name = game;
-                ID = 0
-            }
-            let gameEntryWithId = { gameEntry with ID = db.CreateOrUpdateGame(gameEntry) }
-            this.LogWriteLine("Game entry for " + game + " updated.") |> ignore
-            ExtractGalacticBattlegroundsSaga(path, db, gameEntryWithId, args) |> ignore
+            ExtractGalacticBattlegroundsSaga(path, db, args) |> ignore
             ()                
 
     member private this.LogWrite(s: string) = 
