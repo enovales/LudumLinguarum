@@ -195,7 +195,10 @@ type LLDatabaseTests() =
         let testData = setupTestData(db.Value)
 
         // set up additional test data
-        setupTestData(db.Value) |> ignore
+        let additionalData = setupTestData(db.Value)
+        Assert.AreNotEqual(testData.TestLesson.ID, additionalData.TestLesson.ID)
+        Assert.AreNotEqual(testData.TestCardEn.ID, additionalData.TestCardEn.ID)
+        Assert.AreNotEqual(testData.TestCardDe.ID, additionalData.TestCardDe.ID)
 
         db.Value.DeleteLesson(testData.TestLesson)
 

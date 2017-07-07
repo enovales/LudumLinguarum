@@ -23,9 +23,8 @@
     <OutputPath>bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <WarningLevel>3</WarningLevel>
-    <StartAction>Project</StartAction>
-    <StartProgram>
-    </StartProgram>
+    <StartAction>Program</StartAction>
+    <StartProgram>C:\projects\LudumLinguarum\packages\test\NUnit.Runners\tools\nunit.exe</StartProgram>
     <StartArguments>
     </StartArguments>
   </PropertyGroup>

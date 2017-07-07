@@ -4,7 +4,7 @@ open SQLite
 open System.Collections.Generic
 
 type LessonRecord = {
-        ID: int;
+        ID: int
         Name: string
     }
 
@@ -23,16 +23,16 @@ type LessonEntry() =
         dble
 
 type CardRecord = {
-        ID: int;
-        LessonID: int;
-        Text: string;
-        Gender: string;
-        Key: string;
-        GenderlessKey: string;
-        KeyHash: int;
-        GenderlessKeyHash: int;
-        SoundResource: string;
-        LanguageTag: string;
+        ID: int
+        LessonID: int
+        Text: string
+        Gender: string
+        Key: string
+        GenderlessKey: string
+        KeyHash: int
+        GenderlessKeyHash: int
+        SoundResource: string
+        LanguageTag: string
         Reversible: bool
     }
     with
@@ -114,16 +114,16 @@ type CardEntry() =
 
     member this.ToCardRecord() = 
         {
-            CardRecord.ID = this.ID; 
-            LessonID = this.LessonID;
-            Text = this.Text;
-            Gender = this.Gender;
-            Key = this.Key;
-            GenderlessKey = this.GenderlessKey;
-            KeyHash = this.KeyHash;
-            GenderlessKeyHash = this.GenderlessKeyHash;
-            SoundResource = this.SoundResource;
-            LanguageTag = this.LanguageTag;
+            CardRecord.ID = this.ID
+            LessonID = this.LessonID
+            Text = this.Text
+            Gender = this.Gender
+            Key = this.Key
+            GenderlessKey = this.GenderlessKey
+            KeyHash = this.KeyHash
+            GenderlessKeyHash = this.GenderlessKeyHash
+            SoundResource = this.SoundResource
+            LanguageTag = this.LanguageTag
             Reversible = this.Reversible
         }
 
@@ -162,8 +162,9 @@ type LLDatabase(dbPath: string) =
         db.Execute("VACUUM;") |> ignore
 
     member this.AddLesson(l: LessonRecord) = 
-        db.Insert(LessonEntry.FromLessonRecord(l)) |> ignore
-        (this.Lessons |> Array.find(fun t -> (t.Name = l.Name))).ID
+        let lastInsertRowId = db.Insert(LessonEntry.FromLessonRecord(l))
+        //let lastInsertRowId = db.Query<int>("select last_insert_rowid();").Item(0)
+        lastInsertRowId
 
     member this.DeleteLesson(l: LessonRecord) = 
         db.BeginTransaction()
@@ -190,12 +191,9 @@ type LLDatabase(dbPath: string) =
     member private this.AddCardInternal(c: CardRecord) = 
         let cardRecordWithHash = this.UpdateCardWithHash(c)
         let cardWithHash = CardEntry.FromCardRecord(cardRecordWithHash)
-        db.Insert(cardWithHash) |> ignore
-
-        // find the ID of the just-inserted record
-        let newRecordId = (db.Query<CardEntry>("select * from CardEntry where KeyHash = ? and LessonID = ? and LanguageTag = ?", cardWithHash.KeyHash, cardWithHash.LessonID, cardWithHash.LanguageTag) |> 
-                            Array.ofSeq |> Array.head).ID
-        { cardRecordWithHash with ID = newRecordId }
+        let lastInsertRowId = db.Insert(cardWithHash)
+        //let lastInsertRowId = db.Query<int>("select last_insert_rowid();").Item(0)
+        { cardRecordWithHash with ID = lastInsertRowId }
 
     member this.AddCard(c: CardRecord) = 
         this.AddCardInternal(c).ID
