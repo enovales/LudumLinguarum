@@ -246,8 +246,8 @@ let runListGamesAction(iPluginManager: IPluginManager, otw: TextWriter, dbRoot: 
         |> Array.filter gameFilterFunc
 
     let databaseNamesToGameNames = 
-        (filteredGames |> Array.map makeDatabaseFilenameForGame)
-        |> Array.zip filteredGames
+        filteredGames
+        |> Array.zip (filteredGames |> Array.map makeDatabaseFilenameForGame)
         |> Map.ofArray
 
     let languagesToSearch = vc.TryGetResult(<@ ListGamesArgs.Languages @>) |> Option.map Set.ofList    
@@ -297,8 +297,8 @@ let runListLessonsAction(iPluginManager: IPluginManager, otw: TextWriter, dbRoot
         |> Array.filter gameFilterFunc
 
     let databaseNamesToGameNames = 
-        (filteredGames |> Array.map makeDatabaseFilenameForGame)
-        |> Array.zip filteredGames
+        filteredGames
+        |> Array.zip (filteredGames |> Array.map makeDatabaseFilenameForGame)
         |> Map.ofArray
 
     let lessonFilter = makeLessonRegexFilter(vc.TryGetResult(<@ ListLessonsArgs.Filter_Regex @>))
