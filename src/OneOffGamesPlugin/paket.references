@@ -4,5 +4,6 @@ YamlDotNet
 PInvoke.Win32
 LANGIDMappings
 FsGettextUtils
+ICSharpCode.SharpZipLib-dogfood
 
 File: AFS.fs

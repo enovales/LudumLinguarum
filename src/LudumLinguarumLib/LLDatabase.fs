@@ -162,9 +162,8 @@ type LLDatabase(dbPath: string) =
         db.Execute("VACUUM;") |> ignore
 
     member this.AddLesson(l: LessonRecord) = 
-        let lastInsertRowId = db.Insert(LessonEntry.FromLessonRecord(l))
-        //let lastInsertRowId = db.Query<int>("select last_insert_rowid();").Item(0)
-        lastInsertRowId
+        db.Insert(LessonEntry.FromLessonRecord(l)) |> ignore
+        (this.Lessons |> Seq.find(fun t -> t.Name = l.Name)).ID
 
     member this.DeleteLesson(l: LessonRecord) = 
         db.BeginTransaction()
@@ -191,9 +190,9 @@ type LLDatabase(dbPath: string) =
     member private this.AddCardInternal(c: CardRecord) = 
         let cardRecordWithHash = this.UpdateCardWithHash(c)
         let cardWithHash = CardEntry.FromCardRecord(cardRecordWithHash)
-        let lastInsertRowId = db.Insert(cardWithHash)
-        //let lastInsertRowId = db.Query<int>("select last_insert_rowid();").Item(0)
-        { cardRecordWithHash with ID = lastInsertRowId }
+        db.Insert(cardWithHash) |> ignore
+        let newRecordId = (db.Query<CardEntry>("select * from CardEntry where KeyHash = ? and LessonID = ? and LanguageTag = ?", cardWithHash.KeyHash, cardWithHash.LessonID, cardWithHash.LanguageTag) |> Array.ofSeq |> Array.head).ID
+        { cardRecordWithHash with ID = newRecordId }
 
     member this.AddCard(c: CardRecord) = 
         this.AddCardInternal(c).ID

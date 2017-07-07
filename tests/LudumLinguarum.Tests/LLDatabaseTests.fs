@@ -14,9 +14,9 @@ type LLDatabaseTestData =
 type LLDatabaseTests() = 
     let mutable db: LLDatabase option = None
 
-    let setupTestData(db: LLDatabase): LLDatabaseTestData = 
+    let setupTestData(db: LLDatabase, count: int): LLDatabaseTestData = 
         let lesson = {
-            LessonRecord.Name = "Test lesson"
+            LessonRecord.Name = "Test lesson " + count.ToString()
             ID = 0
         }
         let lessonWithId = { lesson with ID = db.AddLesson(lesson) }
@@ -26,7 +26,7 @@ type LLDatabaseTests() =
             Gender = ""
             GenderlessKey = ""
             GenderlessKeyHash = 0
-            Key = ""
+            Key = count.ToString()
             KeyHash = 0
             Reversible = true
             SoundResource = ""
@@ -41,7 +41,7 @@ type LLDatabaseTests() =
             Gender = ""
             GenderlessKey = ""
             GenderlessKeyHash = 0
-            Key = ""
+            Key = count.ToString()
             KeyHash = 0
             Reversible = true
             SoundResource = ""
@@ -96,7 +96,7 @@ type LLDatabaseTests() =
 
     [<Test>]
     member this.``Getting cards by lesson``() = 
-        let testData = setupTestData(db.Value)
+        let testData = setupTestData(db.Value, 1)
         let cardsForLesson = db.Value.CardsFromLesson(testData.TestLesson.ID)
         Assert.IsNotEmpty(cardsForLesson)
         Assert.AreEqual(testData.TestCardEn.ID, cardsForLesson.[0].ID)
@@ -105,7 +105,7 @@ type LLDatabaseTests() =
 
     [<Test>]
     member this.``Getting available languages for a lesson``() = 
-        let testData = setupTestData(db.Value)
+        let testData = setupTestData(db.Value, 1)
         let languagesForLesson = db.Value.LanguagesForLesson(testData.TestLesson.ID)
         let expectedLanguages = ["en"; "de"]
         expectedLanguages |> List.iter (fun t -> Assert.IsTrue(languagesForLesson |> List.contains(t)))
@@ -113,7 +113,7 @@ type LLDatabaseTests() =
 
     [<Test>]
     member this.``Getting cards by lesson and language``() = 
-        let testData = setupTestData(db.Value)
+        let testData = setupTestData(db.Value, 1)
         let results = db.Value.CardsFromLessonAndLanguageTag(testData.TestLesson, "en")
         Assert.IsNotEmpty(results)
         Assert.AreEqual(testData.TestCardEn.ID, results.[0].ID)
@@ -192,13 +192,19 @@ type LLDatabaseTests() =
 
     [<Test>]
     member this.``Deleting a lesson deletes all cards associated with it``() = 
-        let testData = setupTestData(db.Value)
+        let testData = setupTestData(db.Value, 1)
 
         // set up additional test data
-        let additionalData = setupTestData(db.Value)
+        let additionalData = setupTestData(db.Value, 2)
         Assert.AreNotEqual(testData.TestLesson.ID, additionalData.TestLesson.ID)
-        Assert.AreNotEqual(testData.TestCardEn.ID, additionalData.TestCardEn.ID)
+        Assert.AreEqual(testData.TestLesson.ID, testData.TestCardDe.LessonID, "lesson ID mismatch in testData.TestCardDe")
+        Assert.AreEqual(testData.TestLesson.ID, testData.TestCardEn.LessonID, "lesson ID mismatch in testData.TestCardEn")
+
+        Assert.AreEqual(additionalData.TestLesson.ID, additionalData.TestCardDe.LessonID, "lesson ID mismatch in additionalData.TestCardDe")
+        Assert.AreEqual(additionalData.TestLesson.ID, additionalData.TestCardEn.LessonID, "lesson ID mismatch in additionalData.TestCardEn")
+
         Assert.AreNotEqual(testData.TestCardDe.ID, additionalData.TestCardDe.ID)
+        Assert.AreNotEqual(testData.TestCardEn.ID, additionalData.TestCardEn.ID)
 
         db.Value.DeleteLesson(testData.TestLesson)
 
