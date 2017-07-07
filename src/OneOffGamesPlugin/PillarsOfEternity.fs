@@ -109,12 +109,12 @@ let internal generateCardsForAssetPath(languageMap: Map<string, string>, lessons
             new MemoryStream(File.ReadAllBytes(f))
 
         // For each lesson directory, get all string table files, and zip them with a stream containing their contents.
-        // Then, generate cards, providing a key root of the lesson name, plus the relative path (from the game directory) to
+        // Then, generate cards, providing a key root of the lesson name, plus the relative path (from the lesson directory) to
         // the string table file.
         stringTableFiles
         |> Seq.zip(stringTableFiles |> Seq.map getStreamForFile)
         |> Seq.collect(fun (str, u) -> 
-            let result = generateCardsForXmlStream(lesson.ID, language, lesson.Name + u.Substring(assetPath.Length))(str)
+            let result = generateCardsForXmlStream(lesson.ID, language, lesson.Name + u.Substring(lessonDir.Length))(str)
             str.Dispose()
             result
             )
@@ -227,6 +227,54 @@ let ExtractTormentTidesOfNumenera(path: string, db: LLDatabase, args: string arr
     let cardKeyAndLanguage(c: CardRecord) = c.LanguageTag + c.Key
     [|
         @"WIN\TidesOfNumenera_Data\StreamingAssets\data"
+    |]
+    |> Array.map(fun p -> Path.Combine(path, p))
+    |> Array.filter Directory.Exists
+    |> Array.collect(generateCardsForAssetPath(languageMap, lessonsMap, fileExclusions))
+    |> Array.distinctBy cardKeyAndLanguage
+    |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
+    |> db.CreateOrUpdateCards
+
+    ()
+
+let ExtractTyranny(path: string, db: LLDatabase, g: GameRecord, args: string array) = 
+    let configuredLessonCreator = createLesson(g.ID, db)
+    let languageMap = 
+        [|
+            (@"localized\en", "en")
+            (@"localized\fr", "fr")
+            (@"localized\de", "de")
+            (@"localized\es", "es")
+            (@"localized\pl", "pl")
+            (@"localized\ru", "ru")
+        |]
+        |> Map.ofArray
+
+    // create lessons for each of the subdirectories in the asset zips
+    let lessonsMap = 
+        [|
+            (@"text\game", "Game Text")
+            (@"text\conversations", "Conversations")
+            (@"text\quests", "Quests")
+        |]
+        |> Array.map(fun (k, v) -> (k, configuredLessonCreator(v)))
+        |> Map.ofArray
+
+    let fileExclusions = 
+        [|
+            // from 'conversations\test'
+            "test_conversation_anims_female_base"
+            "test_conversation_anims_male_disfavored_salute"
+            "test_conversation_anims_male_generic_greeter"
+            "test_conversation_anims_scarlet_chorus_salute"
+            "test_conversation_anims_tied_up"
+            "test_skill_trainer"
+        |]
+
+    // load zips in reverse order, so the call to distinct will preserve the most recent ones
+    let cardKeyAndLanguage(c: CardRecord) = c.LanguageTag + c.Key
+    [|
+        @"Data\data\exported"
     |]
     |> Array.map(fun p -> Path.Combine(path, p))
     |> Array.filter Directory.Exists
