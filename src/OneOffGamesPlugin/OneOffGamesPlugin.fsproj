@@ -215,7 +215,6 @@
       <ItemGroup>
         <Reference Include="PInvoke.DbgHelp">
           <HintPath>..\..\packages\PInvoke.DbgHelp\lib\net45\PInvoke.DbgHelp.dll</HintPath>
-          <HintPath>..\..\packages\PInvoke.DbgHelp\lib\portable-net40+win+wpa81+MonoAndroid10+xamarinios10+MonoTouch10\PInvoke.DbgHelp.dll</HintPath>
           <Private>True</Private>
           <Paket>True</Paket>
         </Reference>
@@ -414,7 +413,6 @@
       <ItemGroup>
         <Reference Include="PInvoke.Windows.Core">
           <HintPath>..\..\packages\PInvoke.Windows.Core\lib\net35\PInvoke.Windows.Core.dll</HintPath>
-          <HintPath>..\..\packages\PInvoke.Windows.Core\lib\portable-net40+win+wpa81+MonoAndroid10+xamarinios10+MonoTouch10\PInvoke.Windows.Core.dll</HintPath>
           <Private>True</Private>
           <Paket>True</Paket>
         </Reference>

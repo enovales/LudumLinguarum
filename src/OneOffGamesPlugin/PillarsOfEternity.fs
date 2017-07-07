@@ -237,8 +237,8 @@ let ExtractTormentTidesOfNumenera(path: string, db: LLDatabase, args: string arr
 
     ()
 
-let ExtractTyranny(path: string, db: LLDatabase, g: GameRecord, args: string array) = 
-    let configuredLessonCreator = createLesson(g.ID, db)
+let ExtractTyranny(path: string, db: LLDatabase, args: string array) = 
+    let configuredLessonCreator = createLesson(db)
     let languageMap = 
         [|
             (@"localized\en", "en")
