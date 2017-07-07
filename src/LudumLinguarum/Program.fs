@@ -80,7 +80,7 @@ and DumpTextArgs =
                 | Game _ -> "The name of the game for which text should be dumped."
                 | Lesson_Filter_Regex _ -> "An optional regular expression filter for the name of lessons to dump."
                 | Content_Filter_Regex _ -> "An optional regular expression filter for the contents of the strings being dumped."
-                | Languages _ -> "The comma-separated list of languages which should be dumped."
+                | Languages _ -> "The set of languages which should be dumped."
                 | Include_Key _ -> "Optionally includes the internal key used to distinguish the string in a tabbed column."
                 | Include_Language _ -> "Optionally includes the language tag for each string in a tabbed column."
                 | Include_Lesson _ -> "Optionally includes the lesson name for each string in a tabbed column."
