@@ -1,5 +1,5 @@
 ﻿<NUnitProject>
-  <Settings activeconfig="Debug" processModel="Multiple" />
+  <Settings activeconfig="Release" processModel="Multiple" />
   <Config name="Debug" binpathtype="Auto" runtimeFramework="net-4.0">
     <assembly path="LudumLinguarum.Tests\bin\Debug\LudumLinguarumLib.Tests.dll" />
     <assembly path="InfinityAuroraEnginePlugins.Tests\bin\Debug\InfinityAuroraEnginePlugins.Tests.dll" />
