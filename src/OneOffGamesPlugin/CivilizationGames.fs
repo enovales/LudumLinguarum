@@ -81,10 +81,9 @@ let internal generateCardsForXml(lessonID: int, keyRoot: string)(xmlContent: str
     let xel = XElement.Load(stringReader)
     generateCardsForXElement(lessonID, keyRoot)(xel)
 
-let internal createLesson(gameID: int, db: LLDatabase)(title: string): LessonRecord = 
+let internal createLesson(db: LLDatabase)(title: string): LessonRecord = 
     let lessonEntry = {
-        LessonRecord.GameID = gameID;
-        ID = 0;
+        LessonRecord.ID = 0;
         Name = title
     }
     { lessonEntry with ID = db.CreateOrUpdateLesson(lessonEntry) }
@@ -149,8 +148,8 @@ let internal civ4ColonizationContent =
         (@"Assets\XML\Text\CIV4GameTextInfos_Original.xml", "Infos Original")
     |]
 
-let ExtractCiv4(path: string, db: LLDatabase, g: GameRecord, args: string array) = 
-    let configuredLessonCreator = createLesson(g.ID, db)
+let ExtractCiv4(path: string, db: LLDatabase, args: string array) = 
+    let configuredLessonCreator = createLesson(db)
 
     // create lessons for each of the localization files
     let contentPathsToLessons = 
@@ -167,8 +166,8 @@ let ExtractCiv4(path: string, db: LLDatabase, g: GameRecord, args: string array)
     |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
     |> db.CreateOrUpdateCards
 
-let ExtractCiv4Warlords(path: string, db: LLDatabase, g: GameRecord, args: string array) = 
-    let configuredLessonCreator = createLesson(g.ID, db)
+let ExtractCiv4Warlords(path: string, db: LLDatabase, args: string array) = 
+    let configuredLessonCreator = createLesson(db)
 
     // create lessons for each of the localization files
     let contentPathsToLessons = 
@@ -185,8 +184,8 @@ let ExtractCiv4Warlords(path: string, db: LLDatabase, g: GameRecord, args: strin
     |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
     |> db.CreateOrUpdateCards
 
-let ExtractCiv4BeyondTheSword(path: string, db: LLDatabase, g: GameRecord, args: string array) = 
-    let configuredLessonCreator = createLesson(g.ID, db)
+let ExtractCiv4BeyondTheSword(path: string, db: LLDatabase, args: string array) = 
+    let configuredLessonCreator = createLesson(db)
 
     // create lessons for each of the localization files
     let contentPathsToLessons = 
@@ -203,8 +202,8 @@ let ExtractCiv4BeyondTheSword(path: string, db: LLDatabase, g: GameRecord, args:
     |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
     |> db.CreateOrUpdateCards
 
-let ExtractCiv4Colonization(path: string, db: LLDatabase, g: GameRecord, args: string array) = 
-    let configuredLessonCreator = createLesson(g.ID, db)
+let ExtractCiv4Colonization(path: string, db: LLDatabase, args: string array) = 
+    let configuredLessonCreator = createLesson(db)
 
     // create lessons for each of the localization files
     let contentPathsToLessons = 

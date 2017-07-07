@@ -5,9 +5,8 @@ open NUnit.Framework
 
 type LLDatabaseTestData = 
     {
-        TestGame: GameRecord;
-        TestLesson: LessonRecord;
-        TestCardEn: CardRecord;
+        TestLesson: LessonRecord
+        TestCardEn: CardRecord
         TestCardDe: CardRecord
     }
 
@@ -15,54 +14,46 @@ type LLDatabaseTestData =
 type LLDatabaseTests() = 
     let mutable db: LLDatabase option = None
 
-    let setupTestData(db: LLDatabase, gameName: string): LLDatabaseTestData = 
-        let game = {
-            GameRecord.Name = gameName;
-            ID = 0
-        }
-        let gameWithId = { game with ID = db.AddGame(game) }
-
+    let setupTestData(db: LLDatabase): LLDatabaseTestData = 
         let lesson = {
-            LessonRecord.Name = "Test lesson";
-            GameID = gameWithId.ID;
+            LessonRecord.Name = "Test lesson"
             ID = 0
         }
         let lessonWithId = { lesson with ID = db.AddLesson(lesson) }
 
         let cardEn = {
-            CardRecord.LessonID = lessonWithId.ID;
-            Gender = "";
-            GenderlessKey = "";
-            GenderlessKeyHash = 0;
-            Key = "";
-            KeyHash = 0;
-            Reversible = true;
-            SoundResource = "";
-            Text = "Test card";
-            LanguageTag = "en";
+            CardRecord.LessonID = lessonWithId.ID
+            Gender = ""
+            GenderlessKey = ""
+            GenderlessKeyHash = 0
+            Key = ""
+            KeyHash = 0
+            Reversible = true
+            SoundResource = ""
+            Text = "Test card"
+            LanguageTag = "en"
             ID = 0
         }
         let cardEnWithId = { cardEn with ID = db.AddCard(cardEn) }
 
         let cardDe = {
-            CardRecord.LessonID = lessonWithId.ID;
-            Gender = "";
-            GenderlessKey = "";
-            GenderlessKeyHash = 0;
-            Key = "";
-            KeyHash = 0;
-            Reversible = true;
-            SoundResource = "";
-            Text = "Test card";
-            LanguageTag = "de";
+            CardRecord.LessonID = lessonWithId.ID
+            Gender = ""
+            GenderlessKey = ""
+            GenderlessKeyHash = 0
+            Key = ""
+            KeyHash = 0
+            Reversible = true
+            SoundResource = ""
+            Text = "Test card"
+            LanguageTag = "de"
             ID = 0
         }
         let cardDeWithId = { cardDe with ID = db.AddCard(cardDe) }
 
         {
-            LLDatabaseTestData.TestGame = gameWithId;
-            TestLesson = lessonWithId;
-            TestCardEn = cardEnWithId;
+            LLDatabaseTestData.TestLesson = lessonWithId
+            TestCardEn = cardEnWithId
             TestCardDe = cardDeWithId
         }
 
@@ -73,22 +64,9 @@ type LLDatabaseTests() =
         ()
 
     [<Test>]
-    member this.``Adding a game``() =
-        let testGameEntry = {
-            GameRecord.Name = "Test game";
-            ID = 0
-        }
-        let gid = db.Value.AddGame(testGameEntry)
-
-        Assert.IsNotEmpty(db.Value.Games)
-        Assert.AreEqual(gid, db.Value.Games.[0].ID)
-        ()
-
-    [<Test>]
     member this.``Adding a lesson``() = 
         let le = {
-            LessonRecord.Name = "Test entry";
-            GameID = 0;
+            LessonRecord.Name = "Test entry"
             ID = 0
         }
 
@@ -99,16 +77,16 @@ type LLDatabaseTests() =
     [<Test>]
     member this.``Adding a card``() = 
         let ce = {
-            CardRecord.LessonID = 0;
-            Gender = "";
-            GenderlessKey = "";
-            GenderlessKeyHash = 0;
-            Key = "";
-            KeyHash = 0;
-            LanguageTag = "en";
-            ID = 0;
-            Reversible = true;
-            Text = "Test card";
+            CardRecord.LessonID = 0
+            Gender = ""
+            GenderlessKey = ""
+            GenderlessKeyHash = 0
+            Key = ""
+            KeyHash = 0
+            LanguageTag = "en"
+            ID = 0
+            Reversible = true
+            Text = "Test card"
             SoundResource = ""
         }
 
@@ -118,7 +96,7 @@ type LLDatabaseTests() =
 
     [<Test>]
     member this.``Getting cards by lesson``() = 
-        let testData = setupTestData(db.Value, "test game")
+        let testData = setupTestData(db.Value)
         let cardsForLesson = db.Value.CardsFromLesson(testData.TestLesson.ID)
         Assert.IsNotEmpty(cardsForLesson)
         Assert.AreEqual(testData.TestCardEn.ID, cardsForLesson.[0].ID)
@@ -127,7 +105,7 @@ type LLDatabaseTests() =
 
     [<Test>]
     member this.``Getting available languages for a lesson``() = 
-        let testData = setupTestData(db.Value, "test game")
+        let testData = setupTestData(db.Value)
         let languagesForLesson = db.Value.LanguagesForLesson(testData.TestLesson.ID)
         let expectedLanguages = ["en"; "de"]
         expectedLanguages |> List.iter (fun t -> Assert.IsTrue(languagesForLesson |> List.contains(t)))
@@ -135,7 +113,7 @@ type LLDatabaseTests() =
 
     [<Test>]
     member this.``Getting cards by lesson and language``() = 
-        let testData = setupTestData(db.Value, "test game")
+        let testData = setupTestData(db.Value)
         let results = db.Value.CardsFromLessonAndLanguageTag(testData.TestLesson, "en")
         Assert.IsNotEmpty(results)
         Assert.AreEqual(testData.TestCardEn.ID, results.[0].ID)
@@ -143,26 +121,11 @@ type LLDatabaseTests() =
         ()
 
     [<Test>]
-    member this.``CreateOrUpdateGame``() = 
-        Assert.IsEmpty(db.Value.Games)
-
-        let testGameEntry = {
-            GameRecord.Name = "Test game";
-            ID = 0
-        }
-        let gid = db.Value.CreateOrUpdateGame(testGameEntry)
-
-        Assert.IsNotEmpty(db.Value.Games)
-        Assert.AreEqual(gid, db.Value.Games.[0].ID)
-        ()
-
-    [<Test>]
     member this.``CreateOrUpdateLesson``() = 
         Assert.IsEmpty(db.Value.Lessons)
         let le = {
-            LessonRecord.Name = "Test entry";
-            GameID = 0;
-            ID = 0;
+            LessonRecord.Name = "Test entry"
+            ID = 0
         }
 
         let lid = db.Value.CreateOrUpdateLesson(le)
@@ -174,14 +137,14 @@ type LLDatabaseTests() =
         Assert.IsEmpty(db.Value.Cards)
         let ce = {
             CardRecord.LessonID = 0
-            ID = 0;
-            Gender = "";
-            GenderlessKey = "";
-            GenderlessKeyHash = 0;
-            Key = "";
-            KeyHash = 0;
-            LanguageTag = "en";
-            Reversible = true;
+            ID = 0
+            Gender = ""
+            GenderlessKey = ""
+            GenderlessKeyHash = 0
+            Key = ""
+            KeyHash = 0
+            LanguageTag = "en"
+            Reversible = true
             Text = "Test card"
             SoundResource = ""
         }
@@ -191,27 +154,9 @@ type LLDatabaseTests() =
         Assert.AreEqual(cid, db.Value.Cards.[0].ID)
 
     [<Test>]
-    member this.``Deleting a game``() = 
-        Assert.IsEmpty(db.Value.Games)
-
-        let testGameEntry = {
-            GameRecord.Name = "Test game";
-            ID = 0
-        }
-        let gid = db.Value.CreateOrUpdateGame(testGameEntry)
-
-        Assert.IsNotEmpty(db.Value.Games)
-        Assert.AreEqual(gid, db.Value.Games.[0].ID)
-
-        db.Value.DeleteGame({ testGameEntry with ID = gid })
-        Assert.IsEmpty(db.Value.Games)
-        ()
-
-    [<Test>]
     member this.``Deleting a lesson``() = 
         let le = {
-            LessonRecord.Name = "Test entry";
-            GameID = 0;
+            LessonRecord.Name = "Test entry"
             ID = 0
         }
 
@@ -225,16 +170,16 @@ type LLDatabaseTests() =
     [<Test>]
     member this.``Deleting a card``() = 
         let ce = {
-            CardRecord.LessonID = 0;
-            Gender = "";
-            GenderlessKey = "";
-            GenderlessKeyHash = 0;
-            Key = "";
-            KeyHash = 0;
-            LanguageTag = "en";
-            ID = 0;
-            Reversible = true;
-            Text = "Test card";
+            CardRecord.LessonID = 0
+            Gender = ""
+            GenderlessKey = ""
+            GenderlessKeyHash = 0
+            Key = ""
+            KeyHash = 0
+            LanguageTag = "en"
+            ID = 0
+            Reversible = true
+            Text = "Test card"
             SoundResource = ""
         }
 
@@ -247,34 +192,15 @@ type LLDatabaseTests() =
 
     [<Test>]
     member this.``Deleting a lesson deletes all cards associated with it``() = 
-        let testData = setupTestData(db.Value, "test game")
+        let testData = setupTestData(db.Value)
 
         // set up additional test data
-        setupTestData(db.Value, "test game 2") |> ignore
+        setupTestData(db.Value) |> ignore
 
         db.Value.DeleteLesson(testData.TestLesson)
 
-        Assert.AreEqual(Some(testData.TestGame), db.Value.Games |> Array.tryFind(fun t -> t = testData.TestGame))
         Assert.AreEqual(None, db.Value.Lessons |> Array.tryFind(fun t -> t = testData.TestLesson))
         Assert.AreEqual(None, db.Value.Cards |> Array.tryFind(fun t -> t = testData.TestCardEn))
         Assert.AreEqual(None, db.Value.Cards |> Array.tryFind(fun t -> t = testData.TestCardDe))
-        Assert.IsNotEmpty(db.Value.Games)
-        Assert.IsNotEmpty(db.Value.Lessons)
-        Assert.IsNotEmpty(db.Value.Cards)
-
-    [<Test>]
-    member this.``Deleting a game deletes all lessons and cards associated with it``() = 
-        let testData = setupTestData(db.Value, "test game")
-
-        // set up additional test data
-        setupTestData(db.Value, "test game 2") |> ignore
-
-        db.Value.DeleteGame(testData.TestGame)
-
-        Assert.AreEqual(None, db.Value.Games |> Array.tryFind(fun t -> t = testData.TestGame))
-        Assert.AreEqual(None, db.Value.Lessons |> Array.tryFind(fun t -> t = testData.TestLesson))
-        Assert.AreEqual(None, db.Value.Cards |> Array.tryFind(fun t -> t = testData.TestCardEn))
-        Assert.AreEqual(None, db.Value.Cards |> Array.tryFind(fun t -> t = testData.TestCardDe))
-        Assert.IsNotEmpty(db.Value.Games)
         Assert.IsNotEmpty(db.Value.Lessons)
         Assert.IsNotEmpty(db.Value.Cards)

@@ -3,44 +3,22 @@
 open SQLite
 open System.Collections.Generic
 
-type GameRecord = {
-        ID: int;
-        Name: string
-    }    
-
-type GameEntry() = 
-    [<PrimaryKey; AutoIncrement>]
-    member val ID = 0 with get, set
-    member val Name = "" with get, set
-
-    member this.ToGameRecord() = 
-        { GameRecord.ID = this.ID; Name = this.Name }
-
-    static member FromGameRecord(ge: GameRecord) = 
-        let dbge = new GameEntry()
-        dbge.ID <- ge.ID
-        dbge.Name <- ge.Name
-        dbge
-
 type LessonRecord = {
         ID: int;
-        GameID: int;
         Name: string
     }
 
 type LessonEntry() = 
     [<PrimaryKey; AutoIncrement>]
     member val ID = 0 with get, set
-    member val GameID = 0 with get, set
     member val Name = "" with get, set
 
     member this.ToLessonRecord() = 
-        { LessonRecord.ID = this.ID; GameID = this.GameID; Name = this.Name }
+        { LessonRecord.ID = this.ID; Name = this.Name }
 
     static member FromLessonRecord(le: LessonRecord) = 
         let dble = new LessonEntry()
         dble.ID <- le.ID
-        dble.GameID <- le.GameID
         dble.Name <- le.Name
         dble
 
@@ -169,14 +147,10 @@ type LanguageQueryResult() =
 
 type LLDatabase(dbPath: string) = 
     let db = new SQLiteConnection(dbPath)
-    let gameTableID = db.CreateTable(typeof<GameEntry>)
     let lessonTableID = db.CreateTable(typeof<LessonEntry>)
     let cardTableID = db.CreateTable(typeof<CardEntry>)
 
     let calculateKeyHash(key: string) = key.GetHashCode()
-
-    member this.Games = 
-        db.Query<GameEntry>("select * from GameEntry") |> Seq.map(fun t -> t.ToGameRecord()) |> Array.ofSeq
 
     member this.Lessons = 
         db.Query<LessonEntry>("select * from LessonEntry") |> Seq.map(fun t -> t.ToLessonRecord()) |> Array.ofSeq
@@ -187,23 +161,9 @@ type LLDatabase(dbPath: string) =
     member private this.Compact() = 
         db.Execute("VACUUM;") |> ignore
 
-    member this.AddGame(g: GameRecord) = 
-        db.Insert(GameEntry.FromGameRecord(g)) |> ignore
-        (this.Games |> Array.find(fun t -> t.Name = g.Name)).ID
-
-    member this.DeleteGame(g: GameRecord) = 
-        db.BeginTransaction()
-        this.DeleteGameInternal(g)
-        db.Commit()
-        this.Compact()
-
-    member private this.DeleteGameInternal(g: GameRecord) =
-        db.Delete(GameEntry.FromGameRecord(g)) |> ignore
-        this.Lessons |> Array.filter(fun l -> l.GameID = g.ID) |> this.DeleteLessonsInternal
-
     member this.AddLesson(l: LessonRecord) = 
         db.Insert(LessonEntry.FromLessonRecord(l)) |> ignore
-        (this.Lessons |> Array.find(fun t -> (t.Name = l.Name) && (t.GameID = l.GameID))).ID
+        (this.Lessons |> Array.find(fun t -> (t.Name = l.Name))).ID
 
     member this.DeleteLesson(l: LessonRecord) = 
         db.BeginTransaction()
@@ -261,21 +221,9 @@ type LLDatabase(dbPath: string) =
     member private this.DeleteCardsInternal(cards: CardRecord seq) = 
         cards |> Seq.iter this.DeleteCardInternal
 
-    member this.CreateOrUpdateGame(ge: GameRecord) = 
-        let existingEntry = 
-            db.Query<GameEntry>("select * from GameEntry where Name = ?", ge.Name)
-            |> Seq.tryHead
-
-        match existingEntry with
-        | Some(ee) -> 
-            let updatedEntry = { ge with ID = ee.ID }
-            db.Update(GameEntry.FromGameRecord(updatedEntry)) |> ignore
-            ee.ID
-        | _ -> this.AddGame(ge)
-
     member this.CreateOrUpdateLesson(le: LessonRecord) = 
         let existingEntry = 
-            db.Query<LessonEntry>("select * from LessonEntry where Name = ? and GameID = ?", le.Name, le.GameID)
+            db.Query<LessonEntry>("select * from LessonEntry where Name = ?", le.Name)
             |> Seq.tryHead
 
         match existingEntry with

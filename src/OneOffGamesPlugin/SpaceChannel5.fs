@@ -83,10 +83,9 @@ let internal cardsForDocText(d: string, language: string, keyRoot: string, lesso
     |> Map.ofArray
     |> AssemblyResourceTools.createCardRecordForStrings(lessonID, keyRoot + "_", language, "masculine")
 
-let ExtractSpaceChannel5Part2(path: string, db: LLDatabase, g: GameRecord, args: string array) = 
+let ExtractSpaceChannel5Part2(path: string, db: LLDatabase, args: string array) = 
     let lessonEntry = {
-        LessonRecord.GameID = g.ID;
-        ID = 0;
+        LessonRecord.ID = 0;
         Name = "Game Text"
     }
     let lessonEntryWithId = { lessonEntry with ID = db.CreateOrUpdateLesson(lessonEntry) }

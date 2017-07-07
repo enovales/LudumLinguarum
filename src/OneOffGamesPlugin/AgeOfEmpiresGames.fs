@@ -26,10 +26,9 @@ let private sanitizePipeline =
 
 let private aoe2HDLanguages = [| "br"; "de"; "en"; "es"; "fr"; "it"; "jp"; "ko"; "nl"; "ru"; "zh" |]
 
-let internal createLesson(gameID: int, db: LLDatabase)(title: string): LessonRecord = 
+let internal createLesson(db: LLDatabase)(title: string): LessonRecord = 
     let lessonEntry = {
-        LessonRecord.GameID = gameID;
-        ID = 0;
+        LessonRecord.ID = 0;
         Name = title
     }
     { lessonEntry with ID = db.CreateOrUpdateLesson(lessonEntry) }
@@ -47,17 +46,17 @@ let private extractAOE2HDHistoryFile(fn: string, lid: int, lang: string) =
 let private getHistoryLessonName(fn: string) = 
     Path.GetFileNameWithoutExtension(fn).Replace("-utf8", "")
 
-let private extractAOE2HDHistoryFiles(path: string, db: LLDatabase, g: GameRecord) = 
+let private extractAOE2HDHistoryFiles(path: string, db: LLDatabase) = 
     aoe2HDLanguages
     |> Array.collect (fun l -> Directory.GetFiles(Path.Combine(path, @"resources\" + l + @"\strings\history")) |> Array.map (fun p -> (l, p)))
     |> Array.groupBy (fun (_, p) -> getHistoryLessonName(p))
-    |> Array.map (fun (lessonName, lp) -> (createLesson(g.ID, db)(lessonName), lp))
+    |> Array.map (fun (lessonName, lp) -> (createLesson(db)(lessonName), lp))
     |> Array.collect (fun (lesson, lps) -> lps |> Array.map(fun (lang, path) -> extractAOE2HDHistoryFile(path, lesson.ID, lang)))
     |> Array.collect id
 
 let private aoe2HDCampaignStringRegex = new Regex(@"^(\S+)\s+(.+)$")
-let private extractAOE2HDCampaignStrings(path: string, db: LLDatabase, g: GameRecord) = 
-    let lesson = createLesson(g.ID, db)("Game Text")
+let private extractAOE2HDCampaignStrings(path: string, db: LLDatabase) = 
+    let lesson = createLesson(db)("Game Text")
     let trimLineComments(s: string) = 
         match s.IndexOf("//") with
         | i when i >= 0 -> s.Substring(0, i).Trim()
@@ -88,8 +87,8 @@ let private extractAOE2HDCampaignStrings(path: string, db: LLDatabase, g: GameRe
     |> Array.collect cardsForLanguage
 
 let private aoe2HDLauncherStringRegex = new Regex(@"^([^=]+)=(.+)$")
-let private extractAOE2HDLauncherStrings(path: string, db: LLDatabase, g: GameRecord) = 
-    let lesson = createLesson(g.ID, db)("Launcher Text")
+let private extractAOE2HDLauncherStrings(path: string, db: LLDatabase) = 
+    let lesson = createLesson(db)("Launcher Text")
     let cardsForLocaleIni(lang: string) = 
         let p = Path.Combine(path, @"launcher_res\" + lang + @"\locale.ini")
         let lines =
@@ -111,12 +110,12 @@ let private extractAOE2HDLauncherStrings(path: string, db: LLDatabase, g: GameRe
     aoe2HDLanguages
     |> Array.collect cardsForLocaleIni
 
-let ExtractAOE2HD(path: string, db: LLDatabase, g: GameRecord, args: string array) = 
+let ExtractAOE2HD(path: string, db: LLDatabase, args: string array) = 
     // Extract strings from the "history" files, each of which is just a single long passage.
     [|
-        extractAOE2HDHistoryFiles(path, db, g)
-        extractAOE2HDCampaignStrings(path, db, g)
-        extractAOE2HDLauncherStrings(path, db, g)
+        extractAOE2HDHistoryFiles(path, db)
+        extractAOE2HDCampaignStrings(path, db)
+        extractAOE2HDLauncherStrings(path, db)
     |]
     |> Array.collect id
     |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
@@ -127,7 +126,7 @@ let ExtractAOE2HD(path: string, db: LLDatabase, g: GameRecord, args: string arra
 /////////////////////////////////////////////////////////////////////////////
 // Age of Empires III
 
-let ExtractAOE3(path: string, db: LLDatabase, g: GameRecord, args: string array) = 
+let ExtractAOE3(path: string, db: LLDatabase, args: string array) = 
     let stringSources = 
         [|
             (@"bin\data\stringtable.xml", "Base Game")
@@ -148,7 +147,7 @@ let ExtractAOE3(path: string, db: LLDatabase, g: GameRecord, args: string array)
 
     let xmlCards = 
         stringSources
-        |> Array.map (fun (p, lessonName) -> (Path.Combine(path, p), createLesson(g.ID, db)(lessonName)))
+        |> Array.map (fun (p, lessonName) -> (Path.Combine(path, p), createLesson(db)(lessonName)))
         |> Array.collect generateCardsForXml
         |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
         |> Array.distinctBy(fun c -> c.Text)

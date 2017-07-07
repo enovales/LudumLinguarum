@@ -106,16 +106,15 @@ let internal generateCardsForAssetZip(languageMap: Map<string, string>, lessonsM
     |> Map.toArray
     |> Array.collect generateCardsForLanguage
 
-let internal createLesson(gameID: int, db: LLDatabase)(title: string): LessonRecord = 
+let internal createLesson(db: LLDatabase)(title: string): LessonRecord = 
     let lessonEntry = {
-        LessonRecord.GameID = gameID;
-        ID = 0;
+        LessonRecord.ID = 0;
         Name = title
     }
     { lessonEntry with ID = db.CreateOrUpdateLesson(lessonEntry) }
 
-let ExtractPuzzleQuest2(path: string, db: LLDatabase, g: GameRecord, args: string array) = 
-    let configuredLessonCreator = createLesson(g.ID, db)
+let ExtractPuzzleQuest2(path: string, db: LLDatabase, args: string array) = 
+    let configuredLessonCreator = createLesson(db)
     let languageMap = 
         [|
             ("English", "en")
@@ -152,8 +151,8 @@ let ExtractPuzzleQuest2(path: string, db: LLDatabase, g: GameRecord, args: strin
 
     ()
 
-let ExtractPuzzleChronicles(path: string, db: LLDatabase, g: GameRecord, args: string array) = 
-    let configuredLessonCreator = createLesson(g.ID, db)
+let ExtractPuzzleChronicles(path: string, db: LLDatabase, args: string array) = 
+    let configuredLessonCreator = createLesson(db)
     let languageMap = 
         [|
             ("English_eu", "en-gb")
@@ -190,8 +189,8 @@ let ExtractPuzzleChronicles(path: string, db: LLDatabase, g: GameRecord, args: s
 
     ()
 
-let ExtractPuzzleKingdoms(path: string, db: LLDatabase, g: GameRecord, args: string array) = 
-    let configuredLessonCreator = createLesson(g.ID, db)
+let ExtractPuzzleKingdoms(path: string, db: LLDatabase, args: string array) = 
+    let configuredLessonCreator = createLesson(db)
     let languageMap = 
         [|
             ("English", "en")

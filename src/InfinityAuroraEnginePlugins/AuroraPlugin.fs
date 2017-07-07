@@ -36,7 +36,6 @@ type private ExtractionContext<'TalkTableString when 'TalkTableString :> ITalkTa
     db: LLDatabase;
     masculineOrNeuterTalkTable: ITalkTable<'TalkTableString>;
     feminineTalkTable: ITalkTable<'TalkTableString>;
-    gameEntry: GameRecord
 }
 
 /// <summary>
@@ -99,7 +98,6 @@ type AuroraPlugin() =
             let lessonEntry = 
                 { 
                     LessonRecord.Name = "Dialogue: " + t.Name.Value;
-                    GameID = xc.gameEntry.ID;
                     ID = 0
                 }
 
@@ -214,7 +212,6 @@ type AuroraPlugin() =
                 let twoDAFile = TwoDAFile.FromStream(tdr.GetStream)
                 let lessonEntry = {
                     LessonRecord.Name = "2DA: " + lessonName;
-                    GameID = xc.gameEntry.ID;
                     ID = 0
                 }
 
@@ -360,20 +357,12 @@ type AuroraPlugin() =
             else
                 masculineOrNeuterTalkTable
 
-        let gameEntry = {
-            GameRecord.Name = "Neverwinter Nights";
-            ID = 0
-        }
-        let gameEntryWithId = { gameEntry with ID = db.CreateOrUpdateGame(gameEntry) }
-        this.LogWriteLine("Game entry updated.") |> ignore
-
         let extractionContext = {
             ExtractionContext.gameResources = context.Resources;
             pluginSettings = args;
             db = db;
             masculineOrNeuterTalkTable = masculineOrNeuterTalkTable;
             feminineTalkTable = feminineTalkTable;
-            gameEntry = gameEntryWithId
         }
         
         let extractedDialogueCards = 
@@ -482,20 +471,12 @@ type AuroraPlugin() =
             else
                 masculineOrNeuterTalkTable
 
-        let gameEntry = {
-            GameRecord.Name = "Jade Empire";
-            ID = 0
-        }
-        let gameEntryWithId = { gameEntry with ID = db.CreateOrUpdateGame(gameEntry) }
-        this.LogWriteLine("Game entry updated.") |> ignore
-
         let extractionContext = {
             ExtractionContext.gameResources = context.Resources;
             pluginSettings = args;
             db = db;
             masculineOrNeuterTalkTable = masculineOrNeuterTalkTable;
             feminineTalkTable = feminineTalkTable;
-            gameEntry = gameEntryWithId
         }
         
         let extractedDialogueCards = 
@@ -601,20 +582,12 @@ type AuroraPlugin() =
 
         // find the talk tables
         let masculineOrNeuterTalkTable = TalkTableV3.FromFilePath(Path.Combine(path, "dialog.tlk"))
-        let gameEntry = {
-            GameRecord.Name = "Star Wars: Knights of the Old Republic";
-            ID = 0
-        }
-        let gameEntryWithId = { gameEntry with ID = db.CreateOrUpdateGame(gameEntry) }
-        this.LogWriteLine("Game entry updated.") |> ignore
-
         let extractionContext = {
             ExtractionContext.gameResources = context.Resources;
             pluginSettings = args
             db = db;
             masculineOrNeuterTalkTable = masculineOrNeuterTalkTable;
             feminineTalkTable = masculineOrNeuterTalkTable;
-            gameEntry = gameEntryWithId
         }
         
         let extractedDialogueCards = 
@@ -724,20 +697,12 @@ type AuroraPlugin() =
 
         // find the talk tables
         let masculineOrNeuterTalkTable = TalkTableV3.FromFilePath(Path.Combine(path, "dialog.tlk"))
-        let gameEntry = {
-            GameRecord.Name = "Star Wars: Knights of the Old Republic II";
-            ID = 0
-        }
-        let gameEntryWithId = { gameEntry with ID = db.CreateOrUpdateGame(gameEntry) }
-        this.LogWriteLine("Game entry updated.") |> ignore
-
         let extractionContext = {
             ExtractionContext.gameResources = context.Resources;
             pluginSettings = args;
             db = db;
             masculineOrNeuterTalkTable = masculineOrNeuterTalkTable;
             feminineTalkTable = masculineOrNeuterTalkTable;
-            gameEntry = gameEntryWithId
         }
 
         let findImplementationCommentsRegex = new Regex("\{.*\}")
