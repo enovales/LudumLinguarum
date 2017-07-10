@@ -148,7 +148,7 @@ let internal civ4ColonizationContent =
         (@"Assets\XML\Text\CIV4GameTextInfos_Original.xml", "Infos Original")
     |]
 
-let ExtractCiv4(path: string, db: LLDatabase, args: string array) = 
+let ExtractCiv4(path: string, db: LLDatabase) = 
     let configuredLessonCreator = createLesson(db)
 
     // create lessons for each of the localization files
@@ -166,7 +166,7 @@ let ExtractCiv4(path: string, db: LLDatabase, args: string array) =
     |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
     |> db.CreateOrUpdateCards
 
-let ExtractCiv4Warlords(path: string, db: LLDatabase, args: string array) = 
+let ExtractCiv4Warlords(path: string, db: LLDatabase) = 
     let configuredLessonCreator = createLesson(db)
 
     // create lessons for each of the localization files
@@ -184,7 +184,7 @@ let ExtractCiv4Warlords(path: string, db: LLDatabase, args: string array) =
     |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
     |> db.CreateOrUpdateCards
 
-let ExtractCiv4BeyondTheSword(path: string, db: LLDatabase, args: string array) = 
+let ExtractCiv4BeyondTheSword(path: string, db: LLDatabase) = 
     let configuredLessonCreator = createLesson(db)
 
     // create lessons for each of the localization files
@@ -202,7 +202,7 @@ let ExtractCiv4BeyondTheSword(path: string, db: LLDatabase, args: string array) 
     |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
     |> db.CreateOrUpdateCards
 
-let ExtractCiv4Colonization(path: string, db: LLDatabase, args: string array) = 
+let ExtractCiv4Colonization(path: string, db: LLDatabase) = 
     let configuredLessonCreator = createLesson(db)
 
     // create lessons for each of the localization files

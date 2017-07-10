@@ -114,7 +114,7 @@ let internal generateCardsForLanguage(db: LLDatabase)(languagePath: string) =
     |> Array.map makeLessonForFile
     |> Array.collect(wrappedGenerateCardsForXmlStream(language))
 
-let ExtractMagicka(path: string, db: LLDatabase, args: string array) = 
+let ExtractMagicka(path: string, db: LLDatabase) = 
     let threeCharLanguages = Directory.GetDirectories(Path.Combine(path, @"Content\Languages"))
 
     threeCharLanguages

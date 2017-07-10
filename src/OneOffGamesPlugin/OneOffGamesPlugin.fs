@@ -4,7 +4,6 @@ open LLDatabase
 open LudumLinguarumPlugins
 open System
 open System.IO
-open System.Reflection
 
 type OneOffGamesPlugin() = 
     let mutable outStream: TextWriter option = None
@@ -64,7 +63,7 @@ type OneOffGamesPlugin() =
             this.LogWriteLine("Searching for game handler for '" + game + "'") |> ignore
 
             if (handlerMapping |> Map.containsKey(game)) then
-                handlerMapping.[game](path, db, args)
+                handlerMapping.[game](path, db)
             else
                 raise(UnknownGameException("unknown game " + game))
             ()                

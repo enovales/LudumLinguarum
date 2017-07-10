@@ -113,7 +113,7 @@ let internal createLesson(db: LLDatabase)(title: string): LessonRecord =
     }
     { lessonEntry with ID = db.CreateOrUpdateLesson(lessonEntry) }
 
-let ExtractPuzzleQuest2(path: string, db: LLDatabase, args: string array) = 
+let ExtractPuzzleQuest2(path: string, db: LLDatabase) = 
     let configuredLessonCreator = createLesson(db)
     let languageMap = 
         [|
@@ -151,7 +151,7 @@ let ExtractPuzzleQuest2(path: string, db: LLDatabase, args: string array) =
 
     ()
 
-let ExtractPuzzleChronicles(path: string, db: LLDatabase, args: string array) = 
+let ExtractPuzzleChronicles(path: string, db: LLDatabase) = 
     let configuredLessonCreator = createLesson(db)
     let languageMap = 
         [|
@@ -189,7 +189,7 @@ let ExtractPuzzleChronicles(path: string, db: LLDatabase, args: string array) =
 
     ()
 
-let ExtractPuzzleKingdoms(path: string, db: LLDatabase, args: string array) = 
+let ExtractPuzzleKingdoms(path: string, db: LLDatabase) = 
     let configuredLessonCreator = createLesson(db)
     let languageMap = 
         [|

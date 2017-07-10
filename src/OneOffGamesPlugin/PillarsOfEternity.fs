@@ -1,10 +1,8 @@
 ﻿module PillarsOfEternity
 
-open ICSharpCode.SharpZipLib.Zip
 open LLDatabase
 open System
 open System.IO
-open System.Text
 open System.Text.RegularExpressions
 open System.Xml.Linq
 
@@ -137,7 +135,7 @@ let internal createLesson(db: LLDatabase)(title: string): LessonRecord =
     }
     { lessonEntry with ID = db.CreateOrUpdateLesson(lessonEntry) }
 
-let ExtractPillarsOfEternity(path: string, db: LLDatabase, args: string array) = 
+let ExtractPillarsOfEternity(path: string, db: LLDatabase) = 
     let configuredLessonCreator = createLesson(db)
     let languageMap = 
         [|
@@ -182,7 +180,7 @@ let ExtractPillarsOfEternity(path: string, db: LLDatabase, args: string array) =
 
     ()
 
-let ExtractTormentTidesOfNumenera(path: string, db: LLDatabase, args: string array) = 
+let ExtractTormentTidesOfNumenera(path: string, db: LLDatabase) = 
     let configuredLessonCreator = createLesson(db)
     let languageMap = 
         [|
@@ -237,7 +235,7 @@ let ExtractTormentTidesOfNumenera(path: string, db: LLDatabase, args: string arr
 
     ()
 
-let ExtractTyranny(path: string, db: LLDatabase, args: string array) = 
+let ExtractTyranny(path: string, db: LLDatabase) = 
     let configuredLessonCreator = createLesson(db)
     let languageMap = 
         [|

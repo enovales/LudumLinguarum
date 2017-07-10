@@ -144,7 +144,7 @@ let private languageMap =
     |]
     |> Map.ofArray
 
-let ExtractOrcsMustDie(path: string, db: LLDatabase, args: string array) = 
+let ExtractOrcsMustDie(path: string, db: LLDatabase) = 
     let configuredLessonCreator = createLesson(db)
     let lessonEntry = configuredLessonCreator("Game Text")
 
@@ -158,7 +158,7 @@ let ExtractOrcsMustDie(path: string, db: LLDatabase, args: string array) =
 
     extractOMDZips(assetZips, db, lessonEntry, languageMap)
 
-let ExtractOrcsMustDie2(path: string, db: LLDatabase, args: string array) = 
+let ExtractOrcsMustDie2(path: string, db: LLDatabase) = 
     let configuredLessonCreator = createLesson(db)
     let lessonEntry = configuredLessonCreator("Game Text")
 

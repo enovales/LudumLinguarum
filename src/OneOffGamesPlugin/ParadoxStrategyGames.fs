@@ -96,7 +96,7 @@ let internal createLesson(db: LLDatabase)(title: string): LessonRecord =
 
 /////////////////////////////////////////////////////////////////////////////
 // Europa Universalis III
-let ExtractEU3(path: string, db: LLDatabase, args: string array) = 
+let ExtractEU3(path: string, db: LLDatabase) = 
     let lesson = createLesson(db)("Game Text")
 
     generateCardsForSSVs(lesson.ID, Path.Combine(path, "localisation"))
@@ -105,7 +105,7 @@ let ExtractEU3(path: string, db: LLDatabase, args: string array) =
 
 /////////////////////////////////////////////////////////////////////////////
 // Hearts of Iron III
-let ExtractHOI3(path: string, db: LLDatabase, args: string array) = 
+let ExtractHOI3(path: string, db: LLDatabase) = 
     // Hearts of Iron 3 has better grouping in its localization files, so we'll
     // go ahead and create a lesson for each one.
     let lessonGenerator = createLesson(db)
@@ -116,7 +116,7 @@ let ExtractHOI3(path: string, db: LLDatabase, args: string array) =
 
 /////////////////////////////////////////////////////////////////////////////
 // Victoria II
-let ExtractVictoria2(path: string, db: LLDatabase, args: string array) = 
+let ExtractVictoria2(path: string, db: LLDatabase) = 
     let lesson = createLesson(db)("Game Text")
 
     generateCardsForSSVs(lesson.ID, Path.Combine(path, "localisation"))
@@ -145,7 +145,7 @@ let internal eu4EscapeQuotedValues(s: string) =
         s.Remove(a + 1, len).Insert(a + 1, quoted.Replace('"', '\'').Trim())
     | _ -> s
 
-let ExtractEU4(path: string, db: LLDatabase, args: string array) = 
+let ExtractEU4(path: string, db: LLDatabase) = 
     // The localization .yml files are named xyz_l_language_optional_suffix.yml. Extract the
     // lesson names, and then group the files by lesson for extraction.
     let lessonGenerator = createLesson(db)
@@ -215,7 +215,7 @@ let ExtractEU4(path: string, db: LLDatabase, args: string array) =
 /////////////////////////////////////////////////////////////////////////////
 // Crusader Kings II
 
-let ExtractCrusaderKings2(path: string, db: LLDatabase, args: string array) = 
+let ExtractCrusaderKings2(path: string, db: LLDatabase) = 
     // Crusader Kings II has better grouping in its localization files, so we'll
     // go ahead and create a lesson for each one that is not blacklisted.
     let fileBlacklist = 

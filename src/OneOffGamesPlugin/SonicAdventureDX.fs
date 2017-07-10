@@ -85,7 +85,7 @@ let private extractCardsForSimpleBin(lid: int, encoding: Encoding, language: str
     |> Map.ofArray
     |> AssemblyResourceTools.createCardRecordForStrings(lid, "", language, "masculine")
 
-let ExtractSonicAdventureDX(path: string, db: LLDatabase, args: string array) = 
+let ExtractSonicAdventureDX(path: string, db: LLDatabase) = 
     // make a lesson for each file that we need to extract.
     let filesToExtract: (string * ExtractionFunction) array = 
         [|

@@ -62,7 +62,7 @@ let internal extractXUITabDelimited(stringLines: string array, lessonId: int): C
     |> Array.mapi(generateCardsForRow(lessonId, languageTags))
     |> Array.collect id
 
-let ExtractKOF2002(path: string, db: LLDatabase, args: string[]) = 
+let ExtractKOF2002(path: string, db: LLDatabase) = 
     let lessonEntry = {
         LessonRecord.ID = 0;
         Name = "Game Text"
@@ -79,7 +79,7 @@ let ExtractKOF2002(path: string, db: LLDatabase, args: string[]) =
     db.CreateOrUpdateCards(allCards)
     ()
 
-let ExtractKOF98(path: string, db: LLDatabase, args: string[]) = 
+let ExtractKOF98(path: string, db: LLDatabase) = 
     let lessonEntry = {
         LessonRecord.ID = 0;
         Name = "Game Text"

@@ -12,7 +12,7 @@ open System.Xml.Linq
 (***************************************************************************)
 (************************** Skulls of the Shogun ***************************)
 (***************************************************************************)
-let ExtractSkullsOfTheShogun(path: string, db: LLDatabase, args: string array) = 
+let ExtractSkullsOfTheShogun(path: string, db: LLDatabase) = 
     let lessonEntry = {
         LessonRecord.ID = 0;
         Name = "Game Text"
@@ -25,7 +25,7 @@ let ExtractSkullsOfTheShogun(path: string, db: LLDatabase, args: string array) =
 (***************************************************************************)
 (******************************** Hell Yeah ********************************)
 (***************************************************************************)
-let ExtractHellYeah(path: string, db: LLDatabase, args: string array) = 
+let ExtractHellYeah(path: string, db: LLDatabase) = 
     // table format: arguments to OneOffGamesUtils.ExtractStringsFromAssemblies, but with 
     // a lesson name instead of an id at the end.
     let mainExePath = Path.Combine(path, "HELLYEAH.exe")
@@ -85,7 +85,7 @@ let internal generateMagicalDropVStringMap(cleanedXml: string): Map<string, stri
     |> Array.collect(fun t -> t.Descendants() |> Array.ofSeq) 
     |> Array.map (fun t -> (t.Name.LocalName, t.Value |> sanitizeMagicalDropVFormatStrings)) |> Map.ofArray
 
-let ExtractMagicalDropV(path: string, db: LLDatabase, args: string array) = 
+let ExtractMagicalDropV(path: string, db: LLDatabase) = 
     let filePaths = 
         [|
             @"localization\localization_de-DE.xml"
@@ -127,7 +127,7 @@ let ExtractMagicalDropV(path: string, db: LLDatabase, args: string array) =
 (***************************************************************************)
 (******************************** Audiosurf ********************************)
 (***************************************************************************)
-let ExtractAudiosurf(path: string, db: LLDatabase, args: string array) = 
+let ExtractAudiosurf(path: string, db: LLDatabase) = 
     let lessonEntry = {
         LessonRecord.ID = 0;
         Name = "Game Text"
@@ -159,7 +159,7 @@ let ExtractAudiosurf(path: string, db: LLDatabase, args: string array) =
 (***************************************************************************)
 (************************** Bastion and Transistor *************************)
 (***************************************************************************)
-let private extractSupergiantGame(path: string, db: LLDatabase, args: string array) = 
+let private extractSupergiantGame(path: string, db: LLDatabase) = 
     let lessonGameTextEntry = {
         LessonRecord.ID = 0;
         Name = "Game Text"
@@ -279,11 +279,11 @@ let private extractSupergiantGame(path: string, db: LLDatabase, args: string arr
     |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
     |> db.CreateOrUpdateCards
     
-let ExtractBastion(path: string, db: LLDatabase, args: string array) = 
-    extractSupergiantGame(path, db, args)
+let ExtractBastion(path: string, db: LLDatabase) = 
+    extractSupergiantGame(path, db)
 
-let ExtractTransistor(path: string, db: LLDatabase, args: string array) = 
-    extractSupergiantGame(path, db, args)
+let ExtractTransistor(path: string, db: LLDatabase) = 
+    extractSupergiantGame(path, db)
 
 let internal hbFormatTokenRegexes = 
     [|
@@ -346,7 +346,7 @@ let hbGenerateCardsForLines(lid: int)(lines: string array): CardRecord array =
 (***************************************************************************)
 (**************************** Hatoful Boyfriend ****************************)
 (***************************************************************************)
-let ExtractHatofulBoyfriend(path: string, db: LLDatabase, args: string array) = 
+let ExtractHatofulBoyfriend(path: string, db: LLDatabase) = 
     let lessonEntry = {
         LessonRecord.ID = 0;
         Name = "Game Text"
@@ -365,7 +365,7 @@ let ExtractHatofulBoyfriend(path: string, db: LLDatabase, args: string array) =
 (***************************************************************************)
 (********************* Hatoful Boyfriend: Holiday Star *********************)
 (***************************************************************************)
-let ExtractHatofulBoyfriendHolidayStar(path: string, db: LLDatabase, args: string array) = 
+let ExtractHatofulBoyfriendHolidayStar(path: string, db: LLDatabase) = 
     let lessonEntry = {
         LessonRecord.ID = 0;
         Name = "Game Text"
@@ -387,7 +387,7 @@ let ExtractHatofulBoyfriendHolidayStar(path: string, db: LLDatabase, args: strin
 (***************************************************************************)
 (********************************** Braid **********************************)
 (***************************************************************************)
-let ExtractBraid(path: string, db: LLDatabase, args: string array) = 
+let ExtractBraid(path: string, db: LLDatabase) = 
     let lessonEntry = {
         LessonRecord.ID = 0
         Name = "Game Text"
@@ -461,7 +461,7 @@ let ExtractBraid(path: string, db: LLDatabase, args: string array) =
 (***************************************************************************)
 (************************** IHF Handball Challenge *************************)
 (***************************************************************************)
-let private extractIHFHandballChallenge(path: string, db: LLDatabase, args: string array) = 
+let private extractIHFHandballChallenge(path: string, db: LLDatabase) = 
     let subtrees = [| "application"; "hud"; "gui" |]
     let makeLesson(n: string) = 
         let lessonEntry = {
@@ -514,7 +514,7 @@ let private extractIHFHandballChallenge(path: string, db: LLDatabase, args: stri
     |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
     |> db.CreateOrUpdateCards
 
-let ExtractIHFHandballChallenge12(path: string, db: LLDatabase, args: string array) = 
-    extractIHFHandballChallenge(path, db, args)
-let ExtractIHFHandballChallenge14(path: string, db: LLDatabase, args: string array) = 
-    extractIHFHandballChallenge(path, db, args)
+let ExtractIHFHandballChallenge12(path: string, db: LLDatabase) = 
+    extractIHFHandballChallenge(path, db)
+let ExtractIHFHandballChallenge14(path: string, db: LLDatabase) = 
+    extractIHFHandballChallenge(path, db)

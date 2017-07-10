@@ -514,7 +514,7 @@ type JetSetRadio =
 
         pathsAndLanguages |> Array.collect generateCardsForLanguage
 
-    static member ExtractJetSetRadio(path: string, db: LLDatabase, args: string[]) = 
+    static member ExtractJetSetRadio(path: string, db: LLDatabase) = 
         let lessonEntry = {
             LessonRecord.ID = 0;
             Name = "Game Text"

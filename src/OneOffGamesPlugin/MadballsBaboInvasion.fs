@@ -79,7 +79,7 @@ let private createCardsForDatabase(dbPath: string, language: string, lessons: Le
     keys
     |> Array.map makeCardForKey
 
-let ExtractMadballsBaboInvasion(path: string, db: LLDatabase, args: string array) = 
+let ExtractMadballsBaboInvasion(path: string, db: LLDatabase) = 
     // each language file corresponds to a .db in path\main\db
     let languages = 
         [|

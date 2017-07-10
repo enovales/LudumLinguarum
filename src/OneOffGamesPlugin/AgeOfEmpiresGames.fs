@@ -110,7 +110,7 @@ let private extractAOE2HDLauncherStrings(path: string, db: LLDatabase) =
     aoe2HDLanguages
     |> Array.collect cardsForLocaleIni
 
-let ExtractAOE2HD(path: string, db: LLDatabase, args: string array) = 
+let ExtractAOE2HD(path: string, db: LLDatabase) = 
     // Extract strings from the "history" files, each of which is just a single long passage.
     [|
         extractAOE2HDHistoryFiles(path, db)
@@ -126,7 +126,7 @@ let ExtractAOE2HD(path: string, db: LLDatabase, args: string array) =
 /////////////////////////////////////////////////////////////////////////////
 // Age of Empires III
 
-let ExtractAOE3(path: string, db: LLDatabase, args: string array) = 
+let ExtractAOE3(path: string, db: LLDatabase) = 
     let stringSources = 
         [|
             (@"bin\data\stringtable.xml", "Base Game")
