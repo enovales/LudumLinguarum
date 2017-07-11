@@ -62,36 +62,33 @@ let internal extractXUITabDelimited(stringLines: string array, lessonId: int): C
     |> Array.mapi(generateCardsForRow(lessonId, languageTags))
     |> Array.collect id
 
-let ExtractKOF2002(path: string, db: LLDatabase) = 
+let ExtractKOF2002(path: string) = 
     let lessonEntry = {
         LessonRecord.ID = 0;
         Name = "Game Text"
     }
-    let lessonEntryWithId = { lessonEntry with ID = db.CreateOrUpdateLesson(lessonEntry) }
 
     let stringFilePath = Path.Combine(path, @"data\strings.txt")
     let extractedCards = 
-        extractXUITabDelimited(File.ReadAllLines(stringFilePath, Text.Encoding.UTF8), lessonEntryWithId.ID)
+        extractXUITabDelimited(File.ReadAllLines(stringFilePath, Text.Encoding.UTF8), lessonEntry.ID)
 
-    // filter out empty cards.
-    let allCards = extractedCards |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
+    {
+        LudumLinguarumPlugins.ExtractedContent.lessons = [| lessonEntry |]
+        LudumLinguarumPlugins.ExtractedContent.cards = extractedCards |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
+    }
 
-    db.CreateOrUpdateCards(allCards)
-    ()
-
-let ExtractKOF98(path: string, db: LLDatabase) = 
+let ExtractKOF98(path: string) = 
     let lessonEntry = {
         LessonRecord.ID = 0;
         Name = "Game Text"
     }
-    let lessonEntryWithId = { lessonEntry with ID = db.CreateOrUpdateLesson(lessonEntry) }
 
     let stringFilePath = Path.Combine(path, @"data\strings.txt")
     let extractedCards = 
-        extractXUITabDelimited(File.ReadAllLines(stringFilePath, Text.Encoding.UTF8), lessonEntryWithId.ID)
+        extractXUITabDelimited(File.ReadAllLines(stringFilePath, Text.Encoding.UTF8), lessonEntry.ID)
 
     // filter out empty cards.
-    let allCards = extractedCards |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
-
-    db.CreateOrUpdateCards(allCards)
-    ()
+    {
+        LudumLinguarumPlugins.ExtractedContent.lessons = [| lessonEntry |]
+        LudumLinguarumPlugins.ExtractedContent.cards = extractedCards |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
+    }

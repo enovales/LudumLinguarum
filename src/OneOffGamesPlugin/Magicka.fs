@@ -69,22 +69,22 @@ let internal generateCardsForXml(lessonID: int, language: string)(xmlContent: st
     let xel = XElement.Load(stringReader)
     generateCardsForWorkbook(language, "")(lessonID, xel)
 
-let internal generateCardsForLanguage(db: LLDatabase)(languagePath: string) = 
-    let languageMap =
-        [|
-            ("deu", "de")
-            ("eng", "en")
-            ("fra", "fr")
-            ("hun", "hu")
-            ("ita", "it")
-            ("pol", "pl")
-            ("rus", "ru")
-            ("spa", "es")
-        |]
-        |> Map.ofArray
+let internal languageMap =
+    [|
+        ("deu", "de")
+        ("eng", "en")
+        ("fra", "fr")
+        ("hun", "hu")
+        ("ita", "it")
+        ("pol", "pl")
+        ("rus", "ru")
+        ("spa", "es")
+    |]
+    |> Map.ofArray
 
+let internal generateLessonsForLanguage(acc: LessonRecord array)(languagePath: string) = 
     let language = languageMap.Item(Path.GetFileName(languagePath))
-    let makeLessonForFile(fp: string): (LessonRecord * string * Stream) = 
+    let makeLessonForFile(i: int)(fp: string): LessonRecord = 
         let rootName = Path.GetFileNameWithoutExtension(fp)
         let prefixToRemove = "Magicka_"
         let lessonName = 
@@ -95,31 +95,60 @@ let internal generateCardsForLanguage(db: LLDatabase)(languagePath: string) =
 
         let lessonRecord = 
             {
-                LessonRecord.ID = 0
+                LessonRecord.ID = i
                 Name = lessonName
             }
-        let createdLessonRecord = { lessonRecord with ID = db.CreateOrUpdateLesson(lessonRecord) }
-        (createdLessonRecord, fp.Substring(languagePath.Length), new MemoryStream(File.ReadAllBytes(fp)) :> Stream)
+        lessonRecord
+
+    let newLessons = 
+        Directory.GetFiles(languagePath, "*.loctable.xml")
+        |> Array.mapi makeLessonForFile
+
+    // Append the newly-created lessons, remove duplicates by name, and then reindex.
+    newLessons
+    |> Array.append(acc)
+    |> Array.distinctBy(fun l -> l.Name)
+    |> Array.mapi(fun i l -> { l with ID = i })
+
+let internal generateCardsAndLessonsForLanguage(lessons: LessonRecord array)(languagePath: string) = 
+    let language = languageMap.Item(Path.GetFileName(languagePath))
+    let getLessonForFile(fp: string): (LessonRecord * string * Stream) = 
+        let rootName = Path.GetFileNameWithoutExtension(fp)
+        let prefixToRemove = "Magicka_"
+        let lessonName = 
+            if rootName.StartsWith(prefixToRemove, StringComparison.InvariantCultureIgnoreCase) then
+                rootName.Substring(prefixToRemove.Length)
+            else
+                rootName
+
+        let lessonRecord = lessons |> Array.find(fun l -> l.Name = lessonName)
+        (lessonRecord, fp.Substring(languagePath.Length), new MemoryStream(File.ReadAllBytes(fp)) :> Stream)
 
     let wrappedGenerateCardsForXmlStream(language: string)(lesson: LessonRecord, keyRoot: string, stream: Stream) = 
         try
             try
                 generateCardsForXmlStream(lesson, language, keyRoot, stream)
             with
-            | ex -> [||]
+            | _ -> [||]
         finally
             stream.Dispose()
 
     Directory.GetFiles(languagePath, "*.loctable.xml")
-    |> Array.map makeLessonForFile
+    |> Array.map getLessonForFile
     |> Array.collect(wrappedGenerateCardsForXmlStream(language))
 
-let ExtractMagicka(path: string, db: LLDatabase) = 
+let ExtractMagicka(path: string) = 
     let threeCharLanguages = Directory.GetDirectories(Path.Combine(path, @"Content\Languages"))
 
-    threeCharLanguages
-    |> Array.collect(generateCardsForLanguage(db))
-    |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
-    |> db.CreateOrUpdateCards
+    let lessons = 
+        threeCharLanguages
+        |> Array.fold generateLessonsForLanguage [||]
 
-    ()
+    let cards = 
+        threeCharLanguages
+        |> Array.collect(generateCardsAndLessonsForLanguage(lessons))
+
+    {
+        LudumLinguarumPlugins.ExtractedContent.lessons = lessons
+        LudumLinguarumPlugins.ExtractedContent.cards = cards
+    }

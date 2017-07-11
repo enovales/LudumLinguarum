@@ -7,7 +7,7 @@ open System.IO
 
 type OneOffGamesPlugin() = 
     let mutable outStream: TextWriter option = None
-    let handlerMapping = 
+    let handlerMapping: (string * ExtractAllFunc) array = 
         [|
             ("The King of Fighters 2002 Unlimited Match", XUIGames.ExtractKOF2002)
             ("The King of Fighters '98 Ultimate Match", XUIGames.ExtractKOF98)
@@ -56,17 +56,15 @@ type OneOffGamesPlugin() =
         member this.Parameters = [||]
     interface IGameExtractorPlugin with
         member this.SupportedGames: string array = 
-
             handlerMapping |> Map.toArray |> Array.map (fun (k, _) -> k)
 
-        member this.ExtractAll(game: string, path: string, db: LLDatabase, [<ParamArray>] args: string[]) = 
+        member this.ExtractAll(game: string, path: string, [<ParamArray>] args: string[]) = 
             this.LogWriteLine("Searching for game handler for '" + game + "'") |> ignore
 
             if (handlerMapping |> Map.containsKey(game)) then
-                handlerMapping.[game](path, db)
+                handlerMapping.[game](path)
             else
-                raise(UnknownGameException("unknown game " + game))
-            ()                
+                raise(UnknownGameException("unknown game " + game))                
 
     member private this.LogWrite(s: string) = 
         outStream |> Option.map(fun t -> t.Write(s))

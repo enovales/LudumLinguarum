@@ -514,25 +514,22 @@ type JetSetRadio =
 
         pathsAndLanguages |> Array.collect generateCardsForLanguage
 
-    static member ExtractJetSetRadio(path: string, db: LLDatabase) = 
+    static member ExtractJetSetRadio(path: string) = 
         let lessonEntry = {
             LessonRecord.ID = 0;
             Name = "Game Text"
         }
-        let lessonEntryWithId = { lessonEntry with ID = db.CreateOrUpdateLesson(lessonEntry) }
         let extractedCards = 
             Array.concat(
                 [|
-                    JetSetRadio.ExtractJSRStringsDotStr(path, lessonEntryWithId.ID)
-                    JetSetRadio.ExtractStringsFromCustomInstructions(path, lessonEntryWithId.ID)
-                    JetSetRadio.ExtractStringsFromSrt(path, lessonEntryWithId.ID)
-                    JetSetRadio.ExtractStringsFromBinaries(path, lessonEntryWithId.ID)
-                    OneOffGamesUtils.ExtractStringsFromAssemblies(path, Path.Combine(path, "jsrsetup.exe"), "jsrsetup.resources.dll", "jsrsetup.Localization.Strings", "jsrsetup", lessonEntryWithId.ID)
+                    JetSetRadio.ExtractJSRStringsDotStr(path, lessonEntry.ID)
+                    JetSetRadio.ExtractStringsFromCustomInstructions(path, lessonEntry.ID)
+                    JetSetRadio.ExtractStringsFromSrt(path, lessonEntry.ID)
+                    JetSetRadio.ExtractStringsFromBinaries(path, lessonEntry.ID)
+                    OneOffGamesUtils.ExtractStringsFromAssemblies(path, Path.Combine(path, "jsrsetup.exe"), "jsrsetup.resources.dll", "jsrsetup.Localization.Strings", "jsrsetup", lessonEntry.ID)
                 |])
 
-        // filter out empty cards.
-        let allCards = extractedCards |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
-
-        db.CreateOrUpdateCards(allCards)
-
-        ()
+        {
+            LudumLinguarumPlugins.ExtractedContent.lessons = [| lessonEntry |]
+            LudumLinguarumPlugins.ExtractedContent.cards = extractedCards |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
+        }
