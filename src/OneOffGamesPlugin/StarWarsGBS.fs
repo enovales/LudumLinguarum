@@ -73,22 +73,20 @@ let private stringIsParenOrBracketChar(s: string) =
     | _ when (s.Length = 3) && (s.Chars(0) = '[') && (s.Chars(2) = ']') -> true
     | _ -> false
 
-let private runExtractGBS(path: string, db: LLDatabase)(settings: ParseResults<GBSPluginArgs>) = 
+let private runExtractGBS(path: string)(settings: ParseResults<GBSPluginArgs>) = 
     let mainLessonEntry = {
         LessonRecord.ID = 0
         Name = "Main Game Text"
     }
-    let mainLessonEntryWithId = { mainLessonEntry with ID = db.CreateOrUpdateLesson(mainLessonEntry) }
     let x1LessonEntry = {
-        LessonRecord.ID = 0
+        LessonRecord.ID = 1
         Name = "Expansion 1 Text"
     }
-    let x1LessonEntryWithId = { x1LessonEntry with ID = db.CreateOrUpdateLesson(x1LessonEntry) }
 
     let modulesToExtract = 
         [|
-            (Path.Combine(path, @"game\language.dll"), mainLessonEntryWithId.ID)
-            (Path.Combine(path, @"game\language_x1.dll"), x1LessonEntryWithId.ID)
+            (Path.Combine(path, @"game\language.dll"), mainLessonEntry.ID)
+            (Path.Combine(path, @"game\language_x1.dll"), x1LessonEntry.ID)
         |]
 
     let extractCardsForModule(language: string)(modulePath: string, lid: int) = 
@@ -135,19 +133,24 @@ let private runExtractGBS(path: string, db: LLDatabase)(settings: ParseResults<G
                             )(Map([| (sid.ToString(), localizedString) |]))
                         )
 
-    modulesToExtract
-    |> Array.collect(extractCardsForModule(settings.GetResult(<@ Language_Tag @>)))
-    |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
-    |> db.CreateOrUpdateCards
+    let cards = 
+        modulesToExtract
+        |> Array.collect(extractCardsForModule(settings.GetResult(<@ Language_Tag @>)))
 
-let ExtractGalacticBattlegroundsSaga(path: string, db: LLDatabase, args: string array) = 
+    {
+        LudumLinguarumPlugins.ExtractedContent.lessons = [| mainLessonEntry; x1LessonEntry |]
+        LudumLinguarumPlugins.ExtractedContent.cards = cards
+    }
+
+let ExtractGalacticBattlegroundsSaga(path: string, args: string array) = 
     let parser = ArgumentParser.Create<GBSPluginArgs>(errorHandler = new ProcessExiter())
     let results = parser.Parse(args)
 
     if (results.IsUsageRequested) || (results.GetAllResults() |> List.isEmpty) then
         Console.WriteLine(parser.PrintUsage())
+        failwith "couldn't extract game"
     else
-        runExtractGBS(path, db)(results)
+        runExtractGBS(path)(results)
 
 type StarWarsGBSPlugin() = 
     let mutable outStream: TextWriter option = None
@@ -165,9 +168,8 @@ type StarWarsGBSPlugin() =
                 "Star Wars Galactic Battlegrounds Saga"
             |]
 
-        member this.ExtractAll(game: string, path: string, db: LLDatabase, [<ParamArray>] args: string[]) = 
-            ExtractGalacticBattlegroundsSaga(path, db, args) |> ignore
-            ()                
+        member this.ExtractAll(game: string, path: string, [<ParamArray>] args: string[]): ExtractedContent = 
+            ExtractGalacticBattlegroundsSaga(path, args)
 
     member private this.LogWrite(s: string) = 
         outStream |> Option.map(fun t -> t.Write(s))

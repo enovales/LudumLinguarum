@@ -87,41 +87,64 @@ let internal generateCardsForSSVs(lid: int, ssvDir: string) =
     |> Seq.collect(generateCardsForFile(lid))
     |> Array.ofSeq
 
-let internal createLesson(db: LLDatabase)(title: string): LessonRecord = 
-    let lessonEntry = {
-        LessonRecord.ID = 0;
-        Name = title
+let internal createLesson(i: int)(n: string) = 
+    {
+        LessonRecord.ID = i
+        Name = n
     }
-    { lessonEntry with ID = db.CreateOrUpdateLesson(lessonEntry) }
 
 /////////////////////////////////////////////////////////////////////////////
 // Europa Universalis III
-let ExtractEU3(path: string, db: LLDatabase) = 
-    let lesson = createLesson(db)("Game Text")
+let ExtractEU3(path: string) = 
+    let lesson = 
+        {
+            LessonRecord.ID = 0
+            Name = "Game Text"
+        }
 
-    generateCardsForSSVs(lesson.ID, Path.Combine(path, "localisation"))
-    |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
-    |> db.CreateOrUpdateCards
+    {
+        LudumLinguarumPlugins.ExtractedContent.lessons = [| lesson |]
+        LudumLinguarumPlugins.ExtractedContent.cards = generateCardsForSSVs(lesson.ID, Path.Combine(path, "localisation"))
+    }
 
 /////////////////////////////////////////////////////////////////////////////
 // Hearts of Iron III
 let ExtractHOI3(path: string, db: LLDatabase) = 
     // Hearts of Iron 3 has better grouping in its localization files, so we'll
     // go ahead and create a lesson for each one.
-    let lessonGenerator = createLesson(db)
-    Directory.GetFiles(Path.Combine(path, "localisation"), "*.csv")
-    |> Array.collect(fun p -> generateCardsForFile(lessonGenerator(Path.GetFileNameWithoutExtension(p)).ID)(p))
-    |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
-    |> db.CreateOrUpdateCards
+    let makeLessonAndCardsForFile(i: int)(p: string) = 
+        let lesson = 
+            {
+                LessonRecord.ID = i
+                Name = Path.GetFileNameWithoutExtension(p)
+            }
+
+        let cards = generateCardsForFile(lesson.ID)(p)
+        (lesson, cards)
+
+    let (lessons, cards) = 
+        Directory.GetFiles(Path.Combine(path, "localisation"), "*.csv")
+        |> Array.mapi makeLessonAndCardsForFile
+        |> Array.unzip
+
+    {
+        LudumLinguarumPlugins.ExtractedContent.lessons = lessons
+        LudumLinguarumPlugins.ExtractedContent.cards = cards |> Array.collect id
+    }
 
 /////////////////////////////////////////////////////////////////////////////
 // Victoria II
 let ExtractVictoria2(path: string, db: LLDatabase) = 
-    let lesson = createLesson(db)("Game Text")
+    let lesson = 
+        {
+            LessonRecord.ID = 0
+            Name = "Game Text"
+        }
 
-    generateCardsForSSVs(lesson.ID, Path.Combine(path, "localisation"))
-    |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
-    |> db.CreateOrUpdateCards
+    {
+        LudumLinguarumPlugins.ExtractedContent.lessons = [| lesson |]
+        LudumLinguarumPlugins.ExtractedContent.cards = generateCardsForSSVs(lesson.ID, Path.Combine(path, "localisation"))
+    }
 
 /////////////////////////////////////////////////////////////////////////////
 // Europa Universalis IV
@@ -145,16 +168,15 @@ let internal eu4EscapeQuotedValues(s: string) =
         s.Remove(a + 1, len).Insert(a + 1, quoted.Replace('"', '\'').Trim())
     | _ -> s
 
-let ExtractEU4(path: string, db: LLDatabase) = 
+let ExtractEU4(path: string) = 
     // The localization .yml files are named xyz_l_language_optional_suffix.yml. Extract the
     // lesson names, and then group the files by lesson for extraction.
-    let lessonGenerator = createLesson(db)
     let supportedLanguages = [| "english"; "french"; "german"; "spanish" |]
     let extractLessonName(p: string) = 
         supportedLanguages |> Array.fold (fun (s: string)(l: string) -> s.Replace("_l_" + l, "")) p
         
     let ymls = Directory.GetFiles(Path.Combine(path, "localisation"), "*.yml")
-    let ymlsByLesson = ymls |> Array.groupBy extractLessonName
+    let ymlsByLessonName = ymls |> Array.groupBy extractLessonName
 
     let cardsForYml(lid: int)(yd: YamlDocument) = 
         let languages = 
@@ -177,8 +199,7 @@ let ExtractEU4(path: string, db: LLDatabase) =
         |> Seq.collect cardsForLanguage
         |> Array.ofSeq
 
-    let cardsForLesson(lessonName: string, files: string array) = 
-        let lesson = lessonGenerator(lessonName)
+    let cardsForLesson(lesson: LessonRecord, files: string array) = 
         let cardsForFile(fn: string) = 
             // there are files that have duplicate keys, so we need to filter them out.
             let keyForLine l = 
@@ -204,13 +225,21 @@ let ExtractEU4(path: string, db: LLDatabase) =
         files
         |> Seq.collect cardsForFile
 
-    ymlsByLesson
-    |> Seq.collect cardsForLesson
-    |> Array.ofSeq
-    |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
-    |> db.CreateOrUpdateCards
+    let ymlsByLesson = 
+        ymlsByLessonName
+        |> Array.mapi(fun i (name: string, files: string array) -> (createLesson(i)(name), files))
 
-    ()
+    let cards = 
+        ymlsByLesson
+        |> Seq.map cardsForLesson
+        |> Seq.collect id
+        |> Array.ofSeq
+
+    let (lessons, _) = ymlsByLesson |> Array.unzip
+    {
+        LudumLinguarumPlugins.ExtractedContent.lessons = lessons
+        LudumLinguarumPlugins.ExtractedContent.cards = cards
+    }
 
 /////////////////////////////////////////////////////////////////////////////
 // Crusader Kings II
@@ -227,10 +256,22 @@ let ExtractCrusaderKings2(path: string, db: LLDatabase) =
         |]
     let isFileBlacklisted s = fileBlacklist |> Array.contains(Path.GetFileNameWithoutExtension(s))
 
-    let lessonGenerator = createLesson(db)
-    Directory.GetFiles(Path.Combine(path, "localisation"), "*.csv")
-    |> Array.filter(isFileBlacklisted >> not)
-    |> Array.collect(fun p -> generateCardsForFile(lessonGenerator(Path.GetFileNameWithoutExtension(p)).ID)(p))
-    |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
-    |> Array.distinctBy(fun c -> c.Text)
-    |> db.CreateOrUpdateCards
+    let filesToProcess = 
+        Directory.GetFiles(Path.Combine(path, "localisation"), "*.csv")
+        |> Array.filter(isFileBlacklisted >> not)
+
+    let lessons = 
+        filesToProcess
+        |> Array.map Path.GetFileNameWithoutExtension
+        |> Array.mapi createLesson
+
+    let cards = 
+        lessons
+        |> Array.zip filesToProcess
+        |> Array.map(fun (p: string, l: LessonRecord) -> generateCardsForFile(l.ID)(p))
+        |> Array.collect id
+
+    {
+        LudumLinguarumPlugins.ExtractedContent.lessons = lessons
+        LudumLinguarumPlugins.ExtractedContent.cards = cards
+    }

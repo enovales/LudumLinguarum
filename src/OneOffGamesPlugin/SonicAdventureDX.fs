@@ -85,7 +85,7 @@ let private extractCardsForSimpleBin(lid: int, encoding: Encoding, language: str
     |> Map.ofArray
     |> AssemblyResourceTools.createCardRecordForStrings(lid, "", language, "masculine")
 
-let ExtractSonicAdventureDX(path: string, db: LLDatabase) = 
+let ExtractSonicAdventureDX(path: string) = 
     // make a lesson for each file that we need to extract.
     let filesToExtract: (string * ExtractionFunction) array = 
         [|
@@ -106,14 +106,6 @@ let ExtractSonicAdventureDX(path: string, db: LLDatabase) =
             // SS_MES_*_*.BIN
         |]
 
-    let makeLesson(name: string) = 
-        let lessonEntry = {
-                LessonRecord.ID = 0;
-                Name = name
-            }
-
-        { lessonEntry with ID = db.CreateOrUpdateLesson(lessonEntry) }
-
     let getCardsForTuple(t: string * ExtractionFunction * LessonRecord) = 
         let (fileRelativePath, fn, lesson) = t
         let languages = 
@@ -128,11 +120,15 @@ let ExtractSonicAdventureDX(path: string, db: LLDatabase) =
         let getCardsForLanguage(suffix: string, language: string, encoding: Encoding) = 
             fn(lesson.ID, encoding, language, Path.Combine(path, String.Format(fileRelativePath, suffix)))
 
-        languages
-        |> Array.collect getCardsForLanguage
+        (lesson, languages |> Array.collect getCardsForLanguage)
 
-    filesToExtract
-    |> Array.map (fun (path, fn) -> (path, fn, makeLesson(path)))
-    |> Array.collect getCardsForTuple
-    |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
-    |> db.CreateOrUpdateCards
+    let (lessons, cardGroups) = 
+        filesToExtract
+        |> Array.mapi (fun i (path, fn) -> (path, fn, { LessonRecord.ID = i; Name = path }))
+        |> Array.map getCardsForTuple
+        |> Array.unzip
+
+    {
+        LudumLinguarumPlugins.ExtractedContent.lessons = lessons
+        LudumLinguarumPlugins.ExtractedContent.cards = cardGroups |> Array.collect id
+    }

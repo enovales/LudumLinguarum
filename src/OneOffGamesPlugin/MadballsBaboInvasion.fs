@@ -45,12 +45,11 @@ let private categories =
         new Category(CatID = 6, Name = "errors")
     |]
 
-let private createLessonForCategory(db: LLDatabase)(cat: Category) = 
-    let lessonEntry = {
-        LessonRecord.ID = 0;
+let private createLessonForCategory(i: int)(cat: Category) = 
+    {
+        LessonRecord.ID = i;
         Name = cat.Name
     }
-    { lessonEntry with ID = db.CreateOrUpdateLesson(lessonEntry) }
 
 let private createCardsForDatabase(dbPath: string, language: string, lessons: LessonRecord array) = 
     use db = new SQLiteConnection(dbPath)
@@ -79,7 +78,7 @@ let private createCardsForDatabase(dbPath: string, language: string, lessons: Le
     keys
     |> Array.map makeCardForKey
 
-let ExtractMadballsBaboInvasion(path: string, db: LLDatabase) = 
+let ExtractMadballsBaboInvasion(path: string) = 
     // each language file corresponds to a .db in path\main\db
     let languages = 
         [|
@@ -98,14 +97,15 @@ let ExtractMadballsBaboInvasion(path: string, db: LLDatabase) =
     // create a lesson for each category
     let lessons = 
         categories
-        |> Array.map(createLessonForCategory(db))
+        |> Array.mapi(createLessonForCategory)
 
     let generateCardsForLanguage(l: string) = 
         let dbPath = Path.Combine(path, @"main\db\" + l + ".db")
         createCardsForDatabase(dbPath, l, lessons)
 
-    // read in each database, and make cards for it
-    languages
-    |> Array.collect generateCardsForLanguage
-    |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
-    |> db.CreateOrUpdateCards
+    let cards = languages |> Array.collect generateCardsForLanguage
+
+    {
+        LudumLinguarumPlugins.ExtractedContent.lessons = lessons
+        LudumLinguarumPlugins.ExtractedContent.cards = cards
+    }
