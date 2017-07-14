@@ -159,7 +159,7 @@ let ExtractOrcsMustDie(path: string) =
 
     extractOMDGame(assetZips)
 
-let ExtractOrcsMustDie2(path: string, db: LLDatabase) = 
+let ExtractOrcsMustDie2(path: string) = 
     // load zips in reverse order, so the call to distinct will preserve the most recent ones
     let assetZips = 
         [|

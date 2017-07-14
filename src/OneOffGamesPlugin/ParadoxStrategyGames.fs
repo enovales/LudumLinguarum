@@ -109,7 +109,7 @@ let ExtractEU3(path: string) =
 
 /////////////////////////////////////////////////////////////////////////////
 // Hearts of Iron III
-let ExtractHOI3(path: string, db: LLDatabase) = 
+let ExtractHOI3(path: string) = 
     // Hearts of Iron 3 has better grouping in its localization files, so we'll
     // go ahead and create a lesson for each one.
     let makeLessonAndCardsForFile(i: int)(p: string) = 
@@ -134,7 +134,7 @@ let ExtractHOI3(path: string, db: LLDatabase) =
 
 /////////////////////////////////////////////////////////////////////////////
 // Victoria II
-let ExtractVictoria2(path: string, db: LLDatabase) = 
+let ExtractVictoria2(path: string) = 
     let lesson = 
         {
             LessonRecord.ID = 0
@@ -244,7 +244,7 @@ let ExtractEU4(path: string) =
 /////////////////////////////////////////////////////////////////////////////
 // Crusader Kings II
 
-let ExtractCrusaderKings2(path: string, db: LLDatabase) = 
+let ExtractCrusaderKings2(path: string) = 
     // Crusader Kings II has better grouping in its localization files, so we'll
     // go ahead and create a lesson for each one that is not blacklisted.
     let fileBlacklist = 

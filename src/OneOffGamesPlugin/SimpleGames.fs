@@ -12,20 +12,22 @@ open System.Xml.Linq
 (***************************************************************************)
 (************************** Skulls of the Shogun ***************************)
 (***************************************************************************)
-let ExtractSkullsOfTheShogun(path: string, db: LLDatabase) = 
+let ExtractSkullsOfTheShogun(path: string) = 
     let lessonEntry = {
         LessonRecord.ID = 0;
         Name = "Game Text"
     }
-    let lessonEntryWithId = { lessonEntry with ID = db.CreateOrUpdateLesson(lessonEntry) }
-    OneOffGamesUtils.ExtractStringsFromAssemblies(path, Path.Combine(path, "SkullsOfTheShogun.exe"), "SkullsOfTheShogun.resources.dll", "TBS.Properties.AllResources", "gametext", lessonEntryWithId.ID)
-    |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
-    |> db.CreateOrUpdateCards
+    let cards = OneOffGamesUtils.ExtractStringsFromAssemblies(path, Path.Combine(path, "SkullsOfTheShogun.exe"), "SkullsOfTheShogun.resources.dll", "TBS.Properties.AllResources", "gametext", lessonEntry.ID)
+
+    {
+        LudumLinguarumPlugins.ExtractedContent.lessons = [| lessonEntry |]
+        LudumLinguarumPlugins.ExtractedContent.cards = cards
+    }
 
 (***************************************************************************)
 (******************************** Hell Yeah ********************************)
 (***************************************************************************)
-let ExtractHellYeah(path: string, db: LLDatabase) = 
+let ExtractHellYeah(path: string) = 
     // table format: arguments to OneOffGamesUtils.ExtractStringsFromAssemblies, but with 
     // a lesson name instead of an id at the end.
     let mainExePath = Path.Combine(path, "HELLYEAH.exe")
@@ -55,18 +57,22 @@ let ExtractHellYeah(path: string, db: LLDatabase) =
             (path, easyStoragePath, easyStorageResourceDllName, "EasyStorage.Strings", "easystorage", "easystorage")
         |]
 
-    let createAndExtract(path: string, mainResPath: string, resDllName: string, resourceRoot: string, keyRoot: string, lessonName: string) = 
+    let createAndExtract(i: int)(path: string, mainResPath: string, resDllName: string, resourceRoot: string, keyRoot: string, lessonName: string) = 
         let lessonEntry = {
-            LessonRecord.ID = 0;
+            LessonRecord.ID = i;
             Name = lessonName
         }
-        let lessonEntryWithId = { lessonEntry with ID = db.CreateOrUpdateLesson(lessonEntry) }
-        OneOffGamesUtils.ExtractStringsFromAssemblies(path, mainResPath, resDllName, resourceRoot, keyRoot, lessonEntryWithId.ID)
+        (lessonEntry, OneOffGamesUtils.ExtractStringsFromAssemblies(path, mainResPath, resDllName, resourceRoot, keyRoot, lessonEntry.ID))
 
-    resTable
-    |> Array.collect createAndExtract
-    |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
-    |> db.CreateOrUpdateCards
+    let (lessons, cardGroups) = 
+        resTable
+        |> Array.mapi createAndExtract
+        |> Array.unzip
+
+    {
+        LudumLinguarumPlugins.ExtractedContent.lessons = lessons
+        LudumLinguarumPlugins.ExtractedContent.cards = cardGroups |> Array.collect id
+    }
 
 (***************************************************************************)
 (***************************** Magical Drop V ******************************)
@@ -85,7 +91,7 @@ let internal generateMagicalDropVStringMap(cleanedXml: string): Map<string, stri
     |> Array.collect(fun t -> t.Descendants() |> Array.ofSeq) 
     |> Array.map (fun t -> (t.Name.LocalName, t.Value |> sanitizeMagicalDropVFormatStrings)) |> Map.ofArray
 
-let ExtractMagicalDropV(path: string, db: LLDatabase) = 
+let ExtractMagicalDropV(path: string) = 
     let filePaths = 
         [|
             @"localization\localization_de-DE.xml"
@@ -101,12 +107,13 @@ let ExtractMagicalDropV(path: string, db: LLDatabase) =
         [| "de"; "en"; "es"; "fr"; "it"; "ja" |] |> Array.zip(filePaths)
 
     let lessonStoryEntry = {
-        LessonRecord.ID = 0;
+        LessonRecord.ID = 0
         Name = "Story Text"
     }
-    let lessonUIEntry = { lessonStoryEntry with Name = "UI Text" }
-    let lessonStoryEntryWithId = { lessonStoryEntry with ID = db.CreateOrUpdateLesson(lessonStoryEntry) }
-    let lessonUIEntryWithId = { lessonUIEntry with ID = db.CreateOrUpdateLesson(lessonUIEntry) }
+    let lessonUIEntry = { 
+        LessonRecord.ID = 1
+        Name = "UI Text"
+    }
 
     let generateCardsForLocalization(locPath: string, lang: string) = 
         let cleanedXml = File.ReadAllText(locPath) |> sanitizeMagicalDropVXml
@@ -115,24 +122,23 @@ let ExtractMagicalDropV(path: string, db: LLDatabase) =
             |> Map.partition(fun k t -> (k.StartsWith("story", StringComparison.InvariantCultureIgnoreCase) || k.StartsWith("ID_storyintro")))
 
         [|
-            storyStrings |> AssemblyResourceTools.createCardRecordForStrings(lessonStoryEntryWithId.ID, "storytext", lang, "masculine")
-            nonStoryStrings |> AssemblyResourceTools.createCardRecordForStrings(lessonUIEntryWithId.ID, "uitext", lang, "masculine")
+            storyStrings |> AssemblyResourceTools.createCardRecordForStrings(lessonStoryEntry.ID, "storytext", lang, "masculine")
+            nonStoryStrings |> AssemblyResourceTools.createCardRecordForStrings(lessonUIEntry.ID, "uitext", lang, "masculine")
         |] |> Array.concat
 
-    filePathsAndLanguages 
-    |> Array.collect generateCardsForLocalization
-    |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
-    |> db.CreateOrUpdateCards
+    {
+        LudumLinguarumPlugins.ExtractedContent.lessons = [| lessonStoryEntry; lessonUIEntry |]
+        LudumLinguarumPlugins.ExtractedContent.cards = filePathsAndLanguages |> Array.collect generateCardsForLocalization
+    }
 
 (***************************************************************************)
 (******************************** Audiosurf ********************************)
 (***************************************************************************)
-let ExtractAudiosurf(path: string, db: LLDatabase) = 
+let ExtractAudiosurf(path: string) = 
     let lessonEntry = {
         LessonRecord.ID = 0;
         Name = "Game Text"
     }
-    let lessonEntryWithId = { lessonEntry with ID = db.CreateOrUpdateLesson(lessonEntry) }
 
     let languageFiles = Directory.GetFiles(Path.Combine(path, @"engine\LanguagePacks"), "aslang_*.xml", SearchOption.AllDirectories)
     let languageRegex = new Regex("(aslang_)(..).+")
@@ -147,29 +153,25 @@ let ExtractAudiosurf(path: string, db: LLDatabase) =
         xel.Descendants(XName.Get("S")) 
         |> Seq.map (fun t -> (t.Attribute(XName.Get("EN")).Value, t.Value.Trim()))
         |> Map.ofSeq
-        |> AssemblyResourceTools.createCardRecordForStrings(lessonEntryWithId.ID, "gametext", lang, "masculine")
+        |> AssemblyResourceTools.createCardRecordForStrings(lessonEntry.ID, "gametext", lang, "masculine")
 
-    languageFilesAndLanguages
-    |> Array.collect generateCardsForLanguage
-    |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
-    |> db.CreateOrUpdateCards
-
-    ()
+    {
+        LudumLinguarumPlugins.ExtractedContent.lessons = [| lessonEntry |]
+        LudumLinguarumPlugins.ExtractedContent.cards = languageFilesAndLanguages |> Array.collect generateCardsForLanguage
+    }
 
 (***************************************************************************)
 (************************** Bastion and Transistor *************************)
 (***************************************************************************)
-let private extractSupergiantGame(path: string, db: LLDatabase) = 
+let private extractSupergiantGame(path: string) = 
     let lessonGameTextEntry = {
         LessonRecord.ID = 0;
         Name = "Game Text"
     }
-    let lessonGameTextEntryWithId = { lessonGameTextEntry with ID = db.CreateOrUpdateLesson(lessonGameTextEntry) }
     let lessonSubtitlesEntry = {
-        LessonRecord.ID = 0;
+        LessonRecord.ID = 1;
         Name = "Subtitles"
     }
-    let lessonSubtitlesEntryWithId = { lessonSubtitlesEntry with ID = db.CreateOrUpdateLesson(lessonSubtitlesEntry) }
 
     let stripLanguageRegion(l: string) = 
         if l.Contains("-") then
@@ -203,7 +205,7 @@ let private extractSupergiantGame(path: string, db: LLDatabase) =
             |> Map.ofArray
             |> Map.filter(fun k _ -> not(String.IsNullOrWhiteSpace(k)))
             |> AssemblyResourceTools.createCardRecordForStrings(
-                lessonSubtitlesEntryWithId.ID, 
+                lessonSubtitlesEntry.ID, 
                 "subtitle_" + Path.GetFileNameWithoutExtension(subtitlePath) + "_", language, "masculine")
 
         files
@@ -241,7 +243,7 @@ let private extractSupergiantGame(path: string, db: LLDatabase) =
         |> Array.ofSeq 
         |> Array.collect generateStringsForElement
         |> Map.ofArray
-        |> AssemblyResourceTools.createCardRecordForStrings(lessonGameTextEntryWithId.ID, "gametext", language, "masculine")
+        |> AssemblyResourceTools.createCardRecordForStrings(lessonGameTextEntry.ID, "gametext", language, "masculine")
 
     // LaunchText.xml handling
     let generateCardsForLaunchText = 
@@ -253,7 +255,7 @@ let private extractSupergiantGame(path: string, db: LLDatabase) =
             el.Descendants(XName.Get("Text"))
             |> Seq.map generateStringsForTextElement
             |> Map.ofSeq
-            |> AssemblyResourceTools.createCardRecordForStrings(lessonGameTextEntryWithId.ID, "launchtext", language, "masculine")
+            |> AssemblyResourceTools.createCardRecordForStrings(lessonGameTextEntry.ID, "launchtext", language, "masculine")
 
         let helpTextPath = Path.Combine(path, @"Content\Game\Text\LaunchText.xml")
         use reader = new StreamReader(helpTextPath)
@@ -270,20 +272,21 @@ let private extractSupergiantGame(path: string, db: LLDatabase) =
         gameTextFiles
         |> Array.collect generateCardsForGameText
 
-    [|
-        subtitleCards
-        helpTextCards
-        generateCardsForLaunchText
-    |]
-    |> Array.collect id
-    |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
-    |> db.CreateOrUpdateCards
-    
-let ExtractBastion(path: string, db: LLDatabase) = 
-    extractSupergiantGame(path, db)
+    let finalCards = 
+        [|
+            subtitleCards
+            helpTextCards
+            generateCardsForLaunchText
+        |]
+        |> Array.collect id
 
-let ExtractTransistor(path: string, db: LLDatabase) = 
-    extractSupergiantGame(path, db)
+    {
+        LudumLinguarumPlugins.ExtractedContent.lessons = [| lessonGameTextEntry; lessonSubtitlesEntry |]
+        LudumLinguarumPlugins.ExtractedContent.cards = finalCards
+    }
+    
+let ExtractBastion(path: string) = extractSupergiantGame(path)
+let ExtractTransistor(path: string) = extractSupergiantGame(path)
 
 let internal hbFormatTokenRegexes = 
     [|
@@ -346,31 +349,30 @@ let hbGenerateCardsForLines(lid: int)(lines: string array): CardRecord array =
 (***************************************************************************)
 (**************************** Hatoful Boyfriend ****************************)
 (***************************************************************************)
-let ExtractHatofulBoyfriend(path: string, db: LLDatabase) = 
+let ExtractHatofulBoyfriend(path: string) = 
     let lessonEntry = {
         LessonRecord.ID = 0;
         Name = "Game Text"
     }
-    let lessonEntryWithId = { lessonEntry with ID = db.CreateOrUpdateLesson(lessonEntry) }
     let filesToExtract = 
         [|
             Path.Combine(path, @"hatoful_Data\StreamingAssets\LocalisationUnicode.txt")
         |]
 
-    filesToExtract
-    |> Array.collect (File.ReadAllLines >> Array.filter(String.IsNullOrWhiteSpace >> not) >> hbGenerateCardsForLines(lessonEntryWithId.ID))
-    |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
-    |> db.CreateOrUpdateCards
+    {
+        LudumLinguarumPlugins.ExtractedContent.lessons = [| lessonEntry |]
+        LudumLinguarumPlugins.ExtractedContent.cards = 
+            filesToExtract |> Array.collect (File.ReadAllLines >> Array.filter(String.IsNullOrWhiteSpace >> not) >> hbGenerateCardsForLines(lessonEntry.ID))
+    }
 
 (***************************************************************************)
 (********************* Hatoful Boyfriend: Holiday Star *********************)
 (***************************************************************************)
-let ExtractHatofulBoyfriendHolidayStar(path: string, db: LLDatabase) = 
+let ExtractHatofulBoyfriendHolidayStar(path: string) = 
     let lessonEntry = {
         LessonRecord.ID = 0;
         Name = "Game Text"
     }
-    let lessonEntryWithId = { lessonEntry with ID = db.CreateOrUpdateLesson(lessonEntry) }
     let filesToExtract = 
         [|
             Path.Combine(path, @"HB2_Data\StreamingAssets\localisation\localisationunicode_EN.txt")
@@ -379,20 +381,20 @@ let ExtractHatofulBoyfriendHolidayStar(path: string, db: LLDatabase) =
             Path.Combine(path, @"HB2_Data\StreamingAssets\localisation\localisationunicode_JP.txt")
         |]
 
-    filesToExtract
-    |> Array.collect (File.ReadAllLines >> Array.filter(String.IsNullOrWhiteSpace >> not) >> hbGenerateCardsForLines(lessonEntryWithId.ID))
-    |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
-    |> db.CreateOrUpdateCards
+    {
+        LudumLinguarumPlugins.ExtractedContent.lessons = [| lessonEntry |]
+        LudumLinguarumPlugins.ExtractedContent.cards = 
+            filesToExtract |> Array.collect (File.ReadAllLines >> Array.filter(String.IsNullOrWhiteSpace >> not) >> hbGenerateCardsForLines(lessonEntry.ID))        
+    }
 
 (***************************************************************************)
 (********************************** Braid **********************************)
 (***************************************************************************)
-let ExtractBraid(path: string, db: LLDatabase) = 
+let ExtractBraid(path: string) = 
     let lessonEntry = {
         LessonRecord.ID = 0
         Name = "Game Text"
     }
-    let lessonEntryWithId = { lessonEntry with ID = db.CreateOrUpdateLesson(lessonEntry) }
     let fileNamesToLanguage = 
         [|
             ("english", "en"); ("french", "fr"); ("german", "de"); ("italian", "it"); ("japanese", "ja")
@@ -453,25 +455,18 @@ let ExtractBraid(path: string, db: LLDatabase) =
             // ***TODO: output a message indicating that the language wasn't found
             [||]
 
-    moFiles
-    |> Array.collect(createCardsForMoFile(lessonEntryWithId))
-    |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
-    |> db.CreateOrUpdateCards
+    {
+        LudumLinguarumPlugins.ExtractedContent.lessons = [| lessonEntry |]
+        LudumLinguarumPlugins.ExtractedContent.cards = moFiles |> Array.collect(createCardsForMoFile(lessonEntry))
+    }
 
 (***************************************************************************)
 (************************** IHF Handball Challenge *************************)
 (***************************************************************************)
-let private extractIHFHandballChallenge(path: string, db: LLDatabase) = 
+let private extractIHFHandballChallenge(path: string) = 
     let subtrees = [| "application"; "hud"; "gui" |]
-    let makeLesson(n: string) = 
-        let lessonEntry = {
-            LessonRecord.ID = 0
-            Name = n
-        }
-        { lessonEntry with ID = db.CreateOrUpdateLesson(lessonEntry) }
-
     let subtreesAndLessons = 
-        (subtrees |> Array.map makeLesson)
+        (subtrees |> Array.mapi (fun i n -> { LessonRecord.ID = i; Name = n }))
         |> Array.zip(subtrees)
 
     let getCardsForXml(lang: string, fn: string) = 
@@ -508,13 +503,17 @@ let private extractIHFHandballChallenge(path: string, db: LLDatabase) =
         subtreesAndLessons
         |> Array.collect getCardsForSubtree
 
-    Directory.GetDirectories(Path.Combine(path, @"language"))
-    |> Array.map (fun d -> (Path.GetFileName(d), Path.Combine(d, @"XMLData\i18n.xml")))
-    |> Array.collect getCardsForXml
-    |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
-    |> db.CreateOrUpdateCards
+    let allCards = 
+        Directory.GetDirectories(Path.Combine(path, @"language"))
+        |> Array.map (fun d -> (Path.GetFileName(d), Path.Combine(d, @"XMLData\i18n.xml")))
+        |> Array.collect getCardsForXml
 
-let ExtractIHFHandballChallenge12(path: string, db: LLDatabase) = 
-    extractIHFHandballChallenge(path, db)
-let ExtractIHFHandballChallenge14(path: string, db: LLDatabase) = 
-    extractIHFHandballChallenge(path, db)
+    {
+        LudumLinguarumPlugins.ExtractedContent.lessons = subtreesAndLessons |> Array.map snd
+        LudumLinguarumPlugins.ExtractedContent.cards = allCards
+    }
+
+let ExtractIHFHandballChallenge12(path: string) = 
+    extractIHFHandballChallenge(path)
+let ExtractIHFHandballChallenge14(path: string) = 
+    extractIHFHandballChallenge(path)

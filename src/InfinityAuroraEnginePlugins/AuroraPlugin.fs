@@ -33,7 +33,6 @@ type AuroraPluginArgs =
 type private ExtractionContext<'TalkTableString when 'TalkTableString :> ITalkTableString> = {
     gameResources: IGenericResource seq;
     pluginSettings: ParseResults<AuroraPluginArgs>;
-    db: LLDatabase;
     masculineOrNeuterTalkTable: ITalkTable<'TalkTableString>;
     feminineTalkTable: ITalkTable<'TalkTableString>;
 }
@@ -51,6 +50,13 @@ type TwoDAExtractionOrder<'TalkTableString when 'TalkTableString :> ITalkTableSt
 
 type AuroraPlugin() = 
     let mutable outStream: TextWriter option = None
+    let remapExtractedContents(ecs: ExtractedContent array) = 
+        
+        {
+            LudumLinguarumPlugins.ExtractedContent.lessons = [||]
+            LudumLinguarumPlugins.ExtractedContent.cards = [||]
+        }
+
     interface IPlugin with
         member this.Load(tw: TextWriter, [<ParamArray>] args: string[]) = 
             outStream <- Some(tw)
@@ -68,7 +74,7 @@ type AuroraPlugin() =
                 "Star Wars: Knights of the Old Republic";
                 "Star Wars: Knights of the Old Republic II"
             |]
-        member this.ExtractAll(game: string, path: string, db: LLDatabase, [<ParamArray>] args: string[]) = 
+        member this.ExtractAll(game: string, path: string, [<ParamArray>] args: string[]) = 
 
             let parser = ArgumentParser.Create<AuroraPluginArgs>(errorHandler = new ProcessExiter())
             let results = parser.Parse(args)
@@ -77,10 +83,10 @@ type AuroraPlugin() =
                 Console.WriteLine(parser.PrintUsage())
             else
                 match game with
-                | "Neverwinter Nights" -> this.ExtractNWN1(path, db, results)
-                | "Jade Empire" -> this.ExtractJadeEmpire(path, db, results)
-                | "Star Wars: Knights of the Old Republic" -> this.ExtractKOTOR1(path, db, results)
-                | "Star Wars: Knights of the Old Republic II" -> this.ExtractKOTOR2(path, db, results)
+                | "Neverwinter Nights" -> this.ExtractNWN1(path, results)
+                | "Jade Empire" -> this.ExtractJadeEmpire(path, results)
+                | "Star Wars: Knights of the Old Republic" -> this.ExtractKOTOR1(path, results)
+                | "Star Wars: Knights of the Old Republic II" -> this.ExtractKOTOR2(path, results)
                 | g -> raise(UnknownGameException("unknown game " + g))
 
     end
@@ -94,19 +100,18 @@ type AuroraPlugin() =
         this.LogWriteLine("Starting dialogue extraction.") |> ignore
         // extract dialogues, and create lessons for each one
         let dialogueResources = xc.gameResources |> Seq.filter(fun t -> t.ResourceType = ResType.Dlg) |> Array.ofSeq
-        let zipResourcesAndLessons(t: IGenericResource) = 
+        let zipResourcesAndLessons(i: int)(t: IGenericResource) = 
             let lessonEntry = 
                 { 
                     LessonRecord.Name = "Dialogue: " + t.Name.Value;
-                    ID = 0
+                    ID = i
                 }
 
-            let lessonEntryWithId = { lessonEntry with ID = xc.db.CreateOrUpdateLesson(lessonEntry) }
-            (LoadDialogue(t.Name, xc.gameResources), t, lessonEntryWithId)        
+            (LoadDialogue(t.Name, xc.gameResources), t, lessonEntry)
                                         
         let dialoguesAndResourcesAndLessons = 
             dialogueResources 
-            |> Array.map zipResourcesAndLessons
+            |> Array.mapi zipResourcesAndLessons
 
         let languageType = LanguageTypeFromIETFLanguageTag(xc.pluginSettings.GetResult(<@ AuroraPluginArgs.Language_Tag @>))
 
@@ -158,10 +163,13 @@ type AuroraPlugin() =
                 GenderlessKey = genderlessKey;
             }
             
-        let retVal = stringsAndKeys |> Array.map generateCardRecordForTuple
+        let allCards = stringsAndKeys |> Array.map generateCardRecordForTuple
+        let (_, _, allLessons) = dialoguesAndResourcesAndLessons |> Array.unzip3
 
-        this.LogWriteLine("Dialogue cards generated. Dialogue extraction complete.") |> ignore
-        retVal
+        {
+            LudumLinguarumPlugins.ExtractedContent.lessons = allLessons
+            LudumLinguarumPlugins.ExtractedContent.cards = allCards
+        }
 
     /// <summary>
     /// Function that takes a 2DA file, and extracts its contents into a lesson.
@@ -205,26 +213,31 @@ type AuroraPlugin() =
         this.LogWriteLine("Starting 2DA extraction.") |> ignore
 
         let languageType = LanguageTypeFromIETFLanguageTag(xc.pluginSettings.GetResult(<@ AuroraPluginArgs.Language_Tag @>))
-        let allGeneratedCards = orders |> Array.collect(fun (twoDAName, action, lessonName) -> 
+        let allGeneratedCards = orders |> Array.mapi(fun i (twoDAName, action, lessonName) -> 
             let twoDARes = xc.gameResources |> Seq.tryFind(fun t -> (t.ResourceType = ResType.Twoda) && (t.Name.Value.ToLower() = twoDAName.ToLower()))
+            let lessonEntry = {
+                LessonRecord.Name = "2DA: " + lessonName;
+                ID = i
+            }
             match twoDARes with
             | Some(tdr) ->
                 let twoDAFile = TwoDAFile.FromStream(tdr.GetStream)
-                let lessonEntry = {
-                    LessonRecord.Name = "2DA: " + lessonName;
-                    ID = 0
-                }
-
-                let lessonEntryWithId = {
-                    lessonEntry with ID = xc.db.CreateOrUpdateLesson(lessonEntry)
-                }
-                
-                let generatedCards = action(xc, twoDAFile, lessonEntryWithId, xc.pluginSettings.GetResult(<@ AuroraPluginArgs.Language_Tag @>))
-                generatedCards
-            | _ -> [||])
+                let generatedCards = action(xc, twoDAFile, lessonEntry, xc.pluginSettings.GetResult(<@ AuroraPluginArgs.Language_Tag @>))
+                (lessonEntry, generatedCards)
+            | _ -> (lessonEntry, [||]))
 
         this.LogWriteLine("2DAs loaded.") |> ignore
-        allGeneratedCards
+
+        let (finalLessons, finalCardGroups) = 
+            allGeneratedCards
+            |> Array.filter(fun (_, cs) -> not(cs |> Array.isEmpty))
+            |> Array.unzip
+
+        {
+            LudumLinguarumPlugins.ExtractedContent.lessons = finalLessons
+            LudumLinguarumPlugins.ExtractedContent.cards = finalCardGroups |> Array.collect id
+        }
+
         
     member private this.ExtractNWN12DAs(xc: ExtractionContext<TalkTableV3String>) = 
         let extractionList = [|
@@ -344,7 +357,7 @@ type AuroraPlugin() =
         |]
         this.Extract2DAs(xc, extractionList)
 
-    member private this.ExtractNWN1(path: string, db: LLDatabase, args: ParseResults<AuroraPluginArgs>) = 
+    member private this.ExtractNWN1(path: string, args: ParseResults<AuroraPluginArgs>) = 
         this.LogWriteLine("Creating NWN1 context from " + path) |> ignore
         let context = new NWN1Context(path)
 
@@ -360,7 +373,6 @@ type AuroraPlugin() =
         let extractionContext = {
             ExtractionContext.gameResources = context.Resources;
             pluginSettings = args;
-            db = db;
             masculineOrNeuterTalkTable = masculineOrNeuterTalkTable;
             feminineTalkTable = feminineTalkTable;
         }
@@ -377,14 +389,11 @@ type AuroraPlugin() =
             else
                 [||]
 
-        // filter out empty cards.
-        let allCards = Array.concat([| extractedDialogueCards; extracted2DACards |]) |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
-
-        this.LogWriteLine("Adding extracted cards to DB.") |> ignore
-        db.CreateOrUpdateCards(allCards)
-
-        this.LogWriteLine("NWN1 extraction complete.") |> ignore
-        ()
+        let allCards = Array.concat([| extractedDialogueCards; extracted2DACards |])
+        {
+            LudumLinguarumPlugins.ExtractedContent.lessons = [||] // ***FIXME
+            LudumLinguarumPlugins.ExtractedContent.cards = allCards
+        }
 
     member private this.ExtractJadeEmpire2DAs(xc: ExtractionContext<TalkTableV4String>) = 
         let makeCreatureEntries(creatureName: string) = 
@@ -458,7 +467,7 @@ type AuroraPlugin() =
         let extractionList = Array.concat([| creaturesExtraction; standaloneExtraction |])
         this.Extract2DAs(xc, extractionList)
 
-    member private this.ExtractJadeEmpire(path: string, db: LLDatabase, args: ParseResults<AuroraPluginArgs>) = 
+    member private this.ExtractJadeEmpire(path: string, args: ParseResults<AuroraPluginArgs>) = 
         this.LogWriteLine("Creating Jade Empire context from " + path) |> ignore
         let context = new JadeEmpireContext(path)
 
@@ -474,7 +483,6 @@ type AuroraPlugin() =
         let extractionContext = {
             ExtractionContext.gameResources = context.Resources;
             pluginSettings = args;
-            db = db;
             masculineOrNeuterTalkTable = masculineOrNeuterTalkTable;
             feminineTalkTable = feminineTalkTable;
         }
@@ -491,14 +499,12 @@ type AuroraPlugin() =
             else
                 [||]
 
-        // filter out empty cards.
-        let allCards = Array.concat([| extractedDialogueCards; extracted2DACards |]) |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
+        let allCards = Array.concat([| extractedDialogueCards; extracted2DACards |])
 
-        this.LogWriteLine("Adding extracted cards to DB.") |> ignore
-        db.CreateOrUpdateCards(allCards)
-
-        this.LogWriteLine("Jade Empire extraction complete.") |> ignore
-        ()
+        {
+            LudumLinguarumPlugins.ExtractedContent.lessons = [||] // ***FIXME
+            LudumLinguarumPlugins.ExtractedContent.cards = allCards
+        }
 
     member private this.ExtractKOTOR12DAs(xc: ExtractionContext<TalkTableV3String>) = 
         let standaloneExtraction = [|
@@ -576,7 +582,7 @@ type AuroraPlugin() =
 
         this.Extract2DAs(xc, standaloneExtraction)
 
-    member private this.ExtractKOTOR1(path: string, db: LLDatabase, args: ParseResults<AuroraPluginArgs>) = 
+    member private this.ExtractKOTOR1(path: string, args: ParseResults<AuroraPluginArgs>) = 
         this.LogWriteLine("Creating KOTOR1 context from " + path) |> ignore
         let context = new KOTOR1Context(path)
 
@@ -585,7 +591,6 @@ type AuroraPlugin() =
         let extractionContext = {
             ExtractionContext.gameResources = context.Resources;
             pluginSettings = args
-            db = db;
             masculineOrNeuterTalkTable = masculineOrNeuterTalkTable;
             feminineTalkTable = masculineOrNeuterTalkTable;
         }
@@ -603,13 +608,11 @@ type AuroraPlugin() =
                 [||]
 
         // filter out empty cards.
-        let allCards = Array.concat([| extractedDialogueCards; extracted2DACards |]) |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
-
-        this.LogWriteLine("Adding extracted cards to DB.") |> ignore
-        db.CreateOrUpdateCards(allCards)
-
-        this.LogWriteLine("KOTOR1 extraction complete.") |> ignore
-        ()
+        let allCards = Array.concat([| extractedDialogueCards; extracted2DACards |])
+        {
+            LudumLinguarumPlugins.ExtractedContent.lessons = [||] // ***FIXME
+            LudumLinguarumPlugins.ExtractedContent.cards = allCards
+        }
 
     member private this.ExtractKOTOR22DAs(xc: ExtractionContext<TalkTableV3String>) = 
         let standaloneExtraction = [|
@@ -691,7 +694,7 @@ type AuroraPlugin() =
 
         this.Extract2DAs(xc, standaloneExtraction)
 
-    member private this.ExtractKOTOR2(path: string, db: LLDatabase, args: ParseResults<AuroraPluginArgs>) = 
+    member private this.ExtractKOTOR2(path: string, args: ParseResults<AuroraPluginArgs>) = 
         this.LogWriteLine("Creating KOTOR2 context from " + path) |> ignore
         let context = new KOTOR2Context(path)
 
@@ -700,7 +703,6 @@ type AuroraPlugin() =
         let extractionContext = {
             ExtractionContext.gameResources = context.Resources;
             pluginSettings = args;
-            db = db;
             masculineOrNeuterTalkTable = masculineOrNeuterTalkTable;
             feminineTalkTable = masculineOrNeuterTalkTable;
         }
@@ -731,11 +733,8 @@ type AuroraPlugin() =
                 [||]
 
         // filter out empty cards.
-        let allCards = Array.concat([| extractedDialogueCards; extracted2DACards |]) |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
-
-        this.LogWriteLine("Adding extracted cards to DB.") |> ignore
-        db.CreateOrUpdateCards(allCards)
-
-        this.LogWriteLine("KOTOR2 extraction complete.") |> ignore
-
-        ()
+        let allCards = Array.concat([| extractedDialogueCards; extracted2DACards |])
+        {
+            LudumLinguarumPlugins.ExtractedContent.lessons = [||] // ***FIXME
+            LudumLinguarumPlugins.ExtractedContent.cards = allCards
+        }

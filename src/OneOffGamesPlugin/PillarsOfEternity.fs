@@ -181,7 +181,7 @@ let ExtractPillarsOfEternity(path: string) =
         LudumLinguarumPlugins.ExtractedContent.cards = cards
     }
 
-let ExtractTormentTidesOfNumenera(path: string, db: LLDatabase) = 
+let ExtractTormentTidesOfNumenera(path: string) = 
     let languageMap = 
         [|
             (@"localized\en", "en")
@@ -238,7 +238,7 @@ let ExtractTormentTidesOfNumenera(path: string, db: LLDatabase) =
         LudumLinguarumPlugins.ExtractedContent.cards = cards
     }
 
-let ExtractTyranny(path: string, db: LLDatabase) = 
+let ExtractTyranny(path: string) = 
     let languageMap = 
         [|
             (@"localized\en", "en")
