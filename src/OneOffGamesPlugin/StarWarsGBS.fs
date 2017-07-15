@@ -168,7 +168,7 @@ type StarWarsGBSPlugin() =
                 "Star Wars Galactic Battlegrounds Saga"
             |]
 
-        member this.ExtractAll(game: string, path: string, [<ParamArray>] args: string[]): ExtractedContent = 
+        member this.ExtractAll(game: string, path: string, args: string[]): ExtractedContent = 
             ExtractGalacticBattlegroundsSaga(path, args)
 
     member private this.LogWrite(s: string) = 

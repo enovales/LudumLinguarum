@@ -27,7 +27,7 @@ type ExtractedContent =
     }
 
 // Arguments are intended to be game name, path, and command line arguments
-type ExtractAllFunc = (string * string * string array) -> ExtractedContent
+type ExtractAllFunc = string -> string -> string array -> ExtractedContent
 
 [<Interface>]
 type IGameExtractorPlugin = 
@@ -39,7 +39,7 @@ type IGameExtractorPlugin =
     /// Generic call to extract all localized resources from the game and path specified
     /// into the provided database.
     /// </summary>
-    abstract member ExtractAll: ExtractAllFunc
+    abstract member ExtractAll: string * string * string array -> ExtractedContent
 
 [<Interface>]
 type IPluginManager = 

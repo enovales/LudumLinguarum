@@ -58,7 +58,7 @@ type OneOffGamesPlugin() =
         member this.SupportedGames: string array = 
             handlerMapping |> Map.toArray |> Array.map (fun (k, _) -> k)
 
-        member this.ExtractAll(game: string, path: string, [<ParamArray>] args: string[]): ExtractedContent = 
+        member this.ExtractAll(game: string, path: string, args: string[]): ExtractedContent = 
             this.LogWriteLine("Searching for game handler for '" + game + "'") |> ignore
 
             if (handlerMapping |> Map.containsKey(game)) then

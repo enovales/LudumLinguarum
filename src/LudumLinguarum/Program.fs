@@ -184,7 +184,7 @@ let runImportAction(iPluginManager: IPluginManager,
             | _ -> [||]
 
         let llDatabase = new LLDatabase(Path.Combine(dbRoot, makeDatabaseFilenameForGame(gameName)))
-        let extractedContent = plugin.ExtractAll(vc.GetResult(<@ ImportArgs.Game @>), vc.GetResult(<@ ImportArgs.Game_Dir @>), llDatabase, argv)
+        let extractedContent = plugin.ExtractAll(vc.GetResult(<@ ImportArgs.Game @>), vc.GetResult(<@ ImportArgs.Game_Dir @>), argv)
 
         // Now, add lessons to the database, and remap lesson IDs in the cards before adding them.
         let actualLessonIds = 
