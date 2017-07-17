@@ -98,7 +98,7 @@ let private aoe2HDLauncherStringRegex = new Regex(@"^([^=]+)=(.+)$")
 let private extractAOE2HDLauncherStrings(path: string) = 
     let lesson = { LessonRecord.ID = 0; Name = "Launcher Text" }
     let cardsForLocaleIni(lang: string) = 
-        let p = Path.Combine(path, @"launcher_res\" + lang + @"\locale.ini")
+        let p = Path.Combine(path, @"resources\_launcher\" + lang + @"\locale.ini")
         let lines =
             File.ReadAllLines(p)
             |> Array.map (fun l -> l.Trim())
