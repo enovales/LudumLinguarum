@@ -1,7 +1,6 @@
 ﻿module LudumLinguarumConsole
 
 open Argu
-open CommandLine
 open LLDatabase
 open LudumLinguarumPlugins
 open System

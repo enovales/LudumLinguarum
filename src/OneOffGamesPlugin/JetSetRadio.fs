@@ -1,16 +1,10 @@
 ﻿module JetSetRadio
 
-open AssemblyResourceTools
 open LLDatabase
-open OneOffGamesUtils
 open SrtTools
-open StringExtractors
 open System
-open System.Collections.Generic
-open System.Diagnostics
 open System.Globalization
 open System.IO
-open System.Reflection
 open System.Text
 open System.Text.RegularExpressions
 
