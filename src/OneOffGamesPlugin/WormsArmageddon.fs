@@ -87,12 +87,11 @@ let extractStringsFromLines(lessonID: int)(lines: string array, language: string
     |> Map.ofArray
     |> AssemblyResourceTools.createCardRecordForStrings(lessonID, "gametext", language, "masculine")
 
-let ExtractWormsArmageddon(path: string, db: LLDatabase, args: string array) = 
+let ExtractWormsArmageddon(path: string) = 
     let lessonGameTextEntry = {
         LessonRecord.ID = 0;
         Name = "Game Text"
     }
-    let lessonGameTextEntryWithId = { lessonGameTextEntry with ID = db.CreateOrUpdateLesson(lessonGameTextEntry) }
     let stringFilesAndLanguages = 
         [|
             ("Dutch.txt", "nl")
@@ -107,8 +106,11 @@ let ExtractWormsArmageddon(path: string, db: LLDatabase, args: string array) =
         |]
         |> Array.map (fun (p, language) -> (Path.Combine(Path.Combine(path, @"DATA\User\Languages\3.7.2.1"), p), language))
     
-    stringFilesAndLanguages
-    |> Array.map((fun (p, language) -> (File.ReadAllLines(p), language)) >> extractStringsFromLines(lessonGameTextEntryWithId.ID))
-    |> Array.collect id
-    |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
-    |> db.CreateOrUpdateCards
+    let cards = 
+        stringFilesAndLanguages
+        |> Array.collect((fun (p, language) -> (File.ReadAllLines(p), language)) >> extractStringsFromLines(lessonGameTextEntry.ID))
+
+    {
+        LudumLinguarumPlugins.ExtractedContent.lessons = [| lessonGameTextEntry |]
+        LudumLinguarumPlugins.ExtractedContent.cards = cards
+    }

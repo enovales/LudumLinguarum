@@ -65,7 +65,6 @@ type CardEntry() =
     /// <summary>
     /// The text of this card.
     /// </summary>
-    [<MaxLength(8192)>]
     member val Text = "" with get, set
 
     /// <summary>
@@ -78,10 +77,8 @@ type CardEntry() =
     /// A free-form description of where this card originated. Intended for debugging
     /// exported data.
     /// </summary>
-    [<MaxLength(8192)>]
     member val Key = "" with get, set
 
-    [<MaxLength(8192)>]
     member val GenderlessKey = "" with get, set
 
     /// <summary>
@@ -96,13 +93,11 @@ type CardEntry() =
     /// <summary>
     /// The path to an optional sound resource associated with this.
     /// </summary>
-    [<MaxLength(1024)>]
     member val SoundResource = "" with get, set
 
     /// <summary>
     /// An IETF language tag describing the text on this card.
     /// </summary>
-    [<MaxLength(12)>]
     member val LanguageTag = "" with get, set
 
     /// <summary>

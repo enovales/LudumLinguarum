@@ -4,7 +4,6 @@ open LLDatabase
 open LudumLinguarumPlugins
 open System
 open System.IO
-open System.Reflection
 
 type OneOffGamesPlugin() = 
     let mutable outStream: TextWriter option = None
@@ -57,17 +56,15 @@ type OneOffGamesPlugin() =
         member this.Parameters = [||]
     interface IGameExtractorPlugin with
         member this.SupportedGames: string array = 
-
             handlerMapping |> Map.toArray |> Array.map (fun (k, _) -> k)
 
-        member this.ExtractAll(game: string, path: string, db: LLDatabase, [<ParamArray>] args: string[]) = 
+        member this.ExtractAll(game: string, path: string, args: string[]): ExtractedContent = 
             this.LogWriteLine("Searching for game handler for '" + game + "'") |> ignore
 
             if (handlerMapping |> Map.containsKey(game)) then
-                handlerMapping.[game](path, db, args)
+                handlerMapping.[game](path)
             else
                 raise(UnknownGameException("unknown game " + game))
-            ()                
 
     member private this.LogWrite(s: string) = 
         outStream |> Option.map(fun t -> t.Write(s))

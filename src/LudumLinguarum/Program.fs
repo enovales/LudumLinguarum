@@ -1,7 +1,6 @@
 ﻿module LudumLinguarumConsole
 
 open Argu
-open CommandLine
 open LLDatabase
 open LudumLinguarumPlugins
 open System
@@ -153,6 +152,9 @@ and [<RequireSubcommandAttribute>] BaseArgs =
                 | Export_Anki _ -> "Exports extracted text for use with the Anki spaced repetition program"
                 | Scan_For_Text _ -> "Used to scan arbitrary binary data for strings, to locate localized content"
 
+
+let private multipleWhitespaceRegex = new Regex(@"\s\s+")
+
 let private sanitizeGameNameForFile(n: string) = 
     Path.GetInvalidFileNameChars() |> Array.fold (fun (s: string)(c: char) -> s.Replace(c, '_')) n
 
@@ -184,7 +186,25 @@ let runImportAction(iPluginManager: IPluginManager,
             | _ -> [||]
 
         let llDatabase = new LLDatabase(Path.Combine(dbRoot, makeDatabaseFilenameForGame(gameName)))
-        plugin.ExtractAll(vc.GetResult(<@ ImportArgs.Game @>), vc.GetResult(<@ ImportArgs.Game_Dir @>), llDatabase, argv)
+        let extractedContent = plugin.ExtractAll(vc.GetResult(<@ ImportArgs.Game @>), vc.GetResult(<@ ImportArgs.Game_Dir @>), argv)
+
+        // Now, add lessons to the database, and remap lesson IDs in the cards before adding them.
+        let actualLessonIds = 
+            extractedContent.lessons 
+            |> Array.map(fun l -> llDatabase.CreateOrUpdateLesson(l))
+        let lessonIdMapping = 
+            actualLessonIds
+            |> Array.zip(extractedContent.lessons |> Array.map(fun l -> l.ID))
+            |> Map.ofArray
+
+        let remappedCards =
+            extractedContent.cards
+            |> Array.map(fun c -> { c with LessonID = lessonIdMapping |> Map.find(c.LessonID) })
+            |> Array.filter(fun c -> not(String.IsNullOrWhiteSpace(c.Text)))
+            |> Array.map(fun c -> { c with Text = multipleWhitespaceRegex.Replace(c.Text, " ").Trim() })
+
+        llDatabase.CreateOrUpdateCards(remappedCards)
+
     | _ ->
         failwith("Could not find installed plugin for '" + vc.GetResult(<@ ImportArgs.Game @>) + "'")
 

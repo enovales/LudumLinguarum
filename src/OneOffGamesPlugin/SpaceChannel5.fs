@@ -83,12 +83,11 @@ let internal cardsForDocText(d: string, language: string, keyRoot: string, lesso
     |> Map.ofArray
     |> AssemblyResourceTools.createCardRecordForStrings(lessonID, keyRoot + "_", language, "masculine")
 
-let ExtractSpaceChannel5Part2(path: string, db: LLDatabase, args: string array) = 
+let ExtractSpaceChannel5Part2(path: string) = 
     let lessonEntry = {
         LessonRecord.ID = 0;
         Name = "Game Text"
     }
-    let lessonEntryWithId = { lessonEntry with ID = db.CreateOrUpdateLesson(lessonEntry) }
 
     // read text from ctl_text archives
     let cardsForCtlTextArchive(n: string * string * Encoding) = 
@@ -98,7 +97,7 @@ let ExtractSpaceChannel5Part2(path: string, db: LLDatabase, args: string array) 
         // read every file in the archive, and generate cards for them
         let cardsForArchiveFile(idx: int, afe: AFS.ArchiveFileEntry) = 
             use sr = new StreamReader(ctlTextArchive.GetStream(afe), encoding)
-            cardsForDocText(sr.ReadToEnd(), language, afe.Name + "_" + idx.ToString("0000"), lessonEntryWithId.ID)
+            cardsForDocText(sr.ReadToEnd(), language, afe.Name + "_" + idx.ToString("0000"), lessonEntry.ID)
 
         ctlTextArchive.FileEntries
         |> Array.mapi (fun i x -> (i, x))
@@ -111,8 +110,11 @@ let ExtractSpaceChannel5Part2(path: string, db: LLDatabase, args: string array) 
     // read text from DGCP files
     let dgcpCards = 
         dgcpFiles
-        |> Array.collect(cardsForDGCPBaseName(path, lessonEntryWithId.ID))
+        |> Array.collect(cardsForDGCPBaseName(path, lessonEntry.ID))
 
-    Array.concat [| ctlTextCards; dgcpCards |]
-    |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
-    |> db.CreateOrUpdateCards
+    {
+        LudumLinguarumPlugins.ExtractedContent.lessons = [| lessonEntry |]
+        LudumLinguarumPlugins.ExtractedContent.cards = 
+            Array.concat [| ctlTextCards; dgcpCards |]
+            |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
+    }

@@ -106,15 +106,13 @@ let internal generateCardsForAssetZip(languageMap: Map<string, string>, lessonsM
     |> Map.toArray
     |> Array.collect generateCardsForLanguage
 
-let internal createLesson(db: LLDatabase)(title: string): LessonRecord = 
-    let lessonEntry = {
-        LessonRecord.ID = 0;
+let internal createLesson(i: int)(title: string): LessonRecord = 
+    {
+        LessonRecord.ID = i;
         Name = title
     }
-    { lessonEntry with ID = db.CreateOrUpdateLesson(lessonEntry) }
 
-let ExtractPuzzleQuest2(path: string, db: LLDatabase, args: string array) = 
-    let configuredLessonCreator = createLesson(db)
+let ExtractPuzzleQuest2(path: string) = 
     let languageMap = 
         [|
             ("English", "en")
@@ -135,24 +133,27 @@ let ExtractPuzzleQuest2(path: string, db: LLDatabase, args: string array) =
             ("pc", "PC")
             ("Tutorials", "Tutorials")
         |]
-        |> Array.map(fun (k, v) -> (k, configuredLessonCreator(v)))
+        |> Array.mapi(fun i (k, v) -> (k, createLesson(i)(v)))
         |> Map.ofArray
 
     // load zips in reverse order, so the call to distinct will preserve the most recent ones
     let cardKeyAndLanguage(c: CardRecord) = c.LanguageTag + c.Key
-    [|
-        "Patch1.zip"
-        "Assets.zip"
-    |]
-    |> Array.collect((fun p -> Path.Combine(path, p)) >> generateCardsForAssetZip(languageMap, lessonsMap))
-    |> Array.distinctBy cardKeyAndLanguage
-    |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
-    |> db.CreateOrUpdateCards
 
-    ()
+    let cards = 
+        [|
+            "Patch1.zip"
+            "Assets.zip"
+        |]
+        |> Array.collect((fun p -> Path.Combine(path, p)) >> generateCardsForAssetZip(languageMap, lessonsMap))
+        |> Array.distinctBy cardKeyAndLanguage
 
-let ExtractPuzzleChronicles(path: string, db: LLDatabase, args: string array) = 
-    let configuredLessonCreator = createLesson(db)
+    let (_, lessons) = lessonsMap |> Map.toArray |> Array.unzip
+    {
+        LudumLinguarumPlugins.ExtractedContent.lessons = lessons
+        LudumLinguarumPlugins.ExtractedContent.cards = cards
+    }
+
+let ExtractPuzzleChronicles(path: string) = 
     let languageMap = 
         [|
             ("English_eu", "en-gb")
@@ -174,23 +175,25 @@ let ExtractPuzzleChronicles(path: string, db: LLDatabase, args: string array) =
             ("Quests", "Quests")
             ("Tutorials", "Tutorials")
         |]
-        |> Array.map(fun (k, v) -> (k, configuredLessonCreator(v)))
+        |> Array.mapi(fun i (k, v) -> (k, createLesson(i)(v)))
         |> Map.ofArray
 
     // load zips in reverse order, so the call to distinct will preserve the most recent ones
     let cardKeyAndLanguage(c: CardRecord) = c.LanguageTag + c.Key
-    [|
-        "Assets.zip"
-    |]
-    |> Array.collect((fun p -> Path.Combine(path, p)) >> generateCardsForAssetZip(languageMap, lessonsMap))
-    |> Array.distinctBy cardKeyAndLanguage
-    |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
-    |> db.CreateOrUpdateCards
+    let cards = 
+        [|
+            "Assets.zip"
+        |]
+        |> Array.collect((fun p -> Path.Combine(path, p)) >> generateCardsForAssetZip(languageMap, lessonsMap))
+        |> Array.distinctBy cardKeyAndLanguage
 
-    ()
+    let (_, lessons) = lessonsMap |> Map.toArray |> Array.unzip
+    {
+        LudumLinguarumPlugins.ExtractedContent.lessons = lessons
+        LudumLinguarumPlugins.ExtractedContent.cards = cards
+    }
 
-let ExtractPuzzleKingdoms(path: string, db: LLDatabase, args: string array) = 
-    let configuredLessonCreator = createLesson(db)
+let ExtractPuzzleKingdoms(path: string) = 
     let languageMap = 
         [|
             ("English", "en")
@@ -210,15 +213,21 @@ let ExtractPuzzleKingdoms(path: string, db: LLDatabase, args: string array) =
             ("pc", "pc")
             ("Tutorials", "Tutorials")
         |]
-        |> Array.map(fun (k, v) -> (k, configuredLessonCreator(v)))
+        |> Array.mapi(fun i (k, v) -> (k, createLesson(i)(v)))
         |> Map.ofArray
 
     // load zips in reverse order, so the call to distinct will preserve the most recent ones
     let cardKeyAndLanguage(c: CardRecord) = c.LanguageTag + c.Key
-    [|
-        "Assets.zip"
-    |]
-    |> Array.collect((fun p -> Path.Combine(path, p)) >> generateCardsForAssetZip(languageMap, lessonsMap))
-    |> Array.distinctBy cardKeyAndLanguage
-    |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
-    |> db.CreateOrUpdateCards
+
+    let cards = 
+        [|
+            "Assets.zip"
+        |]
+        |> Array.collect((fun p -> Path.Combine(path, p)) >> generateCardsForAssetZip(languageMap, lessonsMap))
+        |> Array.distinctBy cardKeyAndLanguage
+
+    let (_, lessons) = lessonsMap |> Map.toArray |> Array.unzip
+    {
+        LudumLinguarumPlugins.ExtractedContent.lessons = lessons
+        LudumLinguarumPlugins.ExtractedContent.cards = cards
+    }

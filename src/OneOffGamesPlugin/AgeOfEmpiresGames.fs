@@ -26,12 +26,11 @@ let private sanitizePipeline =
 
 let private aoe2HDLanguages = [| "br"; "de"; "en"; "es"; "fr"; "it"; "jp"; "ko"; "nl"; "ru"; "zh" |]
 
-let internal createLesson(db: LLDatabase)(title: string): LessonRecord = 
-    let lessonEntry = {
-        LessonRecord.ID = 0;
+let internal createLesson(i: int)(title: string): LessonRecord = 
+    {
+        LessonRecord.ID = i;
         Name = title
     }
-    { lessonEntry with ID = db.CreateOrUpdateLesson(lessonEntry) }
 
 let private aoe2MassageText(v: string) = 
     let removeStrings = [| "<b>"; "<B>"; "<i>"; "<I>"; "<GREY>"; "<BLUE>"; "<PURPLE>"; "<GREEN>"; "<AQUA>"; "<RED>"; "<YELLOW>"; "<ORANGE>" |]
@@ -46,17 +45,27 @@ let private extractAOE2HDHistoryFile(fn: string, lid: int, lang: string) =
 let private getHistoryLessonName(fn: string) = 
     Path.GetFileNameWithoutExtension(fn).Replace("-utf8", "")
 
-let private extractAOE2HDHistoryFiles(path: string, db: LLDatabase) = 
-    aoe2HDLanguages
-    |> Array.collect (fun l -> Directory.GetFiles(Path.Combine(path, @"resources\" + l + @"\strings\history")) |> Array.map (fun p -> (l, p)))
-    |> Array.groupBy (fun (_, p) -> getHistoryLessonName(p))
-    |> Array.map (fun (lessonName, lp) -> (createLesson(db)(lessonName), lp))
-    |> Array.collect (fun (lesson, lps) -> lps |> Array.map(fun (lang, path) -> extractAOE2HDHistoryFile(path, lesson.ID, lang)))
-    |> Array.collect id
+let private extractAOE2HDHistoryFiles(path: string) = 
+    let languagesAndPathsByLessonNames = 
+        aoe2HDLanguages
+        |> Array.collect (fun l -> Directory.GetFiles(Path.Combine(path, @"resources\" + l + @"\strings\history")) |> Array.map (fun p -> (l, p)))
+        |> Array.groupBy (fun (_, p) -> getHistoryLessonName(p))
+
+    let (lessonNames, languagesAndPaths) = languagesAndPathsByLessonNames |> Array.unzip
+    let lessons = 
+        lessonNames
+        |> Array.mapi(fun i n -> { LessonRecord.ID = i; Name = n })
+        
+    let languagesAndPathsByLessons = 
+        languagesAndPaths
+        |> Array.zip lessons
+
+    languagesAndPathsByLessons
+    |> Array.map (fun (lesson, lps) -> (lesson, lps |> Array.map(fun (lang, path) -> extractAOE2HDHistoryFile(path, lesson.ID, lang)) |> Array.collect id))
 
 let private aoe2HDCampaignStringRegex = new Regex(@"^(\S+)\s+(.+)$")
-let private extractAOE2HDCampaignStrings(path: string, db: LLDatabase) = 
-    let lesson = createLesson(db)("Game Text")
+let private extractAOE2HDCampaignStrings(path: string) = 
+    let lesson = { LessonRecord.ID = 0; Name = "Game Text" }
     let trimLineComments(s: string) = 
         match s.IndexOf("//") with
         | i when i >= 0 -> s.Substring(0, i).Trim()
@@ -83,14 +92,13 @@ let private extractAOE2HDCampaignStrings(path: string, db: LLDatabase) =
         |> AssemblyResourceTools.createCardRecordForStrings(lesson.ID, "", lang, "masculine")
 
 
-    aoe2HDLanguages
-    |> Array.collect cardsForLanguage
+    [| (lesson, aoe2HDLanguages |> Array.collect cardsForLanguage) |]
 
 let private aoe2HDLauncherStringRegex = new Regex(@"^([^=]+)=(.+)$")
-let private extractAOE2HDLauncherStrings(path: string, db: LLDatabase) = 
-    let lesson = createLesson(db)("Launcher Text")
+let private extractAOE2HDLauncherStrings(path: string) = 
+    let lesson = { LessonRecord.ID = 0; Name = "Launcher Text" }
     let cardsForLocaleIni(lang: string) = 
-        let p = Path.Combine(path, @"launcher_res\" + lang + @"\locale.ini")
+        let p = Path.Combine(path, @"resources\_launcher\" + lang + @"\locale.ini")
         let lines =
             File.ReadAllLines(p)
             |> Array.map (fun l -> l.Trim())
@@ -107,26 +115,49 @@ let private extractAOE2HDLauncherStrings(path: string, db: LLDatabase) =
         |> Map.ofArray
         |> AssemblyResourceTools.createCardRecordForStrings(lesson.ID, "", lang, "masculine")
 
-    aoe2HDLanguages
-    |> Array.collect cardsForLocaleIni
+    [| (lesson, aoe2HDLanguages |> Array.collect cardsForLocaleIni) |]
 
-let ExtractAOE2HD(path: string, db: LLDatabase, args: string array) = 
+let ExtractAOE2HD(path: string) = 
     // Extract strings from the "history" files, each of which is just a single long passage.
-    [|
-        extractAOE2HDHistoryFiles(path, db)
-        extractAOE2HDCampaignStrings(path, db)
-        extractAOE2HDLauncherStrings(path, db)
-    |]
-    |> Array.collect id
-    |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
-    |> db.CreateOrUpdateCards
+    let allLessonGroupsAndCards = 
+        [|
+            extractAOE2HDHistoryFiles(path)
+            extractAOE2HDCampaignStrings(path)
+            extractAOE2HDLauncherStrings(path)
+        |]
+
+    // Get all lessons, and renumber them. Then apply that remapping to all of the cards.
+    let originalLessonsToRemappedLessons = 
+        allLessonGroupsAndCards
+        |> Array.collect(fun lgc -> lgc |> Array.map(fst))
+        |> Array.mapi(fun i l -> (l, { l with ID = i }))
+
+    let originalLessonIDsToRemappedLessonIDs = 
+        originalLessonsToRemappedLessons
+        |> Array.map(fun (original, remapped) -> (original.ID, remapped.ID))
+        |> Map.ofArray
+
+    let remapLessonForCardGroup(mapping: Map<int, int>)(lcg: LessonRecord * CardRecord array) = 
+        let (lesson, cards) = lcg
+        let newLessonID = mapping |> Map.find(lesson.ID)
+        cards |> Array.map(fun c -> { c with LessonID = newLessonID })
+
+    let allCards = 
+        allLessonGroupsAndCards
+        |> Array.collect(fun lgc -> lgc |> Array.map(remapLessonForCardGroup(originalLessonIDsToRemappedLessonIDs)))
+        |> Array.collect id
+
+    {
+        LudumLinguarumPlugins.ExtractedContent.lessons = originalLessonsToRemappedLessons |> Array.map snd
+        LudumLinguarumPlugins.ExtractedContent.cards = allCards
+    }
 
 /////////////////////////////////////////////////////////////////////////////
 
 /////////////////////////////////////////////////////////////////////////////
 // Age of Empires III
 
-let ExtractAOE3(path: string, db: LLDatabase, args: string array) = 
+let ExtractAOE3(path: string) = 
     let stringSources = 
         [|
             (@"bin\data\stringtable.xml", "Base Game")
@@ -145,16 +176,19 @@ let ExtractAOE3(path: string, db: LLDatabase, args: string array) =
         else
             [||]
 
-    let xmlCards = 
+    let pathsToLessons = 
         stringSources
-        |> Array.map (fun (p, lessonName) -> (Path.Combine(path, p), createLesson(db)(lessonName)))
-        |> Array.collect generateCardsForXml
-        |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
-        |> Array.distinctBy(fun c -> c.Text)
+        |> Array.mapi (fun i (p, lessonName) -> (Path.Combine(path, p), { LessonRecord.ID = i; Name = lessonName }))
+
+    let lessonsAndCardGroups = 
+        pathsToLessons
+        |> Array.map(fun ptl -> (snd(ptl), generateCardsForXml(ptl)))
+
+    let lessons = lessonsAndCardGroups |> Array.map fst
+    let cards = lessonsAndCardGroups |> Array.map(snd) |> Array.collect(id)
 
     // TODO: extract launcher strings from resource DLLs?
-    xmlCards
-    |> db.CreateOrUpdateCards
-
-
-/////////////////////////////////////////////////////////////////////////////
+    {
+        LudumLinguarumPlugins.ExtractedContent.lessons = lessons
+        LudumLinguarumPlugins.ExtractedContent.cards = cards
+    }

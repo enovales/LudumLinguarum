@@ -1,10 +1,8 @@
 ﻿module PillarsOfEternity
 
-open ICSharpCode.SharpZipLib.Zip
 open LLDatabase
 open System
 open System.IO
-open System.Text
 open System.Text.RegularExpressions
 open System.Xml.Linq
 
@@ -130,15 +128,13 @@ let internal generateCardsForAssetPath(languageMap: Map<string, string>, lessons
     |> Map.toArray
     |> Array.collect generateCardsForLanguage
 
-let internal createLesson(db: LLDatabase)(title: string): LessonRecord = 
-    let lessonEntry = {
-        LessonRecord.ID = 0;
+let internal createLesson(i: int)(title: string): LessonRecord = 
+    {
+        LessonRecord.ID = i;
         Name = title
     }
-    { lessonEntry with ID = db.CreateOrUpdateLesson(lessonEntry) }
 
-let ExtractPillarsOfEternity(path: string, db: LLDatabase, args: string array) = 
-    let configuredLessonCreator = createLesson(db)
+let ExtractPillarsOfEternity(path: string) = 
     let languageMap = 
         [|
             (@"localized\en", "en")
@@ -159,7 +155,7 @@ let ExtractPillarsOfEternity(path: string, db: LLDatabase, args: string array) =
             (@"text\conversations", "Conversations")
             (@"text\quests", "Quests")
         |]
-        |> Array.map(fun (k, v) -> (k, configuredLessonCreator(v)))
+        |> Array.mapi(fun i (k, v) -> (k, createLesson(i)(v)))
         |> Map.ofArray
 
     let fileExclusions = 
@@ -168,22 +164,24 @@ let ExtractPillarsOfEternity(path: string, db: LLDatabase, args: string array) =
 
     // load zips in reverse order, so the call to distinct will preserve the most recent ones
     let cardKeyAndLanguage(c: CardRecord) = c.LanguageTag + c.Key
-    [|
-        @"PillarsOfEternity_Data\data_expansion2"
-        @"PillarsOfEternity_Data\data_expansion1"
-        @"PillarsOfEternity_Data\data"
-    |]
-    |> Array.map(fun p -> Path.Combine(path, p))
-    |> Array.filter Directory.Exists
-    |> Array.collect(generateCardsForAssetPath(languageMap, lessonsMap, fileExclusions))
-    |> Array.distinctBy cardKeyAndLanguage
-    |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
-    |> db.CreateOrUpdateCards
+    let cards = 
+        [|
+            @"PillarsOfEternity_Data\data_expansion2"
+            @"PillarsOfEternity_Data\data_expansion1"
+            @"PillarsOfEternity_Data\data"
+        |]
+        |> Array.map(fun p -> Path.Combine(path, p))
+        |> Array.filter Directory.Exists
+        |> Array.collect(generateCardsForAssetPath(languageMap, lessonsMap, fileExclusions))
+        |> Array.distinctBy cardKeyAndLanguage
 
-    ()
+    let (_, lessons) = lessonsMap |> Map.toArray |> Array.unzip
+    {
+        LudumLinguarumPlugins.ExtractedContent.lessons = lessons
+        LudumLinguarumPlugins.ExtractedContent.cards = cards
+    }
 
-let ExtractTormentTidesOfNumenera(path: string, db: LLDatabase, args: string array) = 
-    let configuredLessonCreator = createLesson(db)
+let ExtractTormentTidesOfNumenera(path: string) = 
     let languageMap = 
         [|
             (@"localized\en", "en")
@@ -203,7 +201,7 @@ let ExtractTormentTidesOfNumenera(path: string, db: LLDatabase, args: string arr
             (@"text\conversations", "Conversations")
             (@"text\quests", "Quests")
         |]
-        |> Array.map(fun (k, v) -> (k, configuredLessonCreator(v)))
+        |> Array.mapi(fun i (k, v) -> (k, createLesson(i)(v)))
         |> Map.ofArray
 
     let fileExclusions = 
@@ -225,20 +223,22 @@ let ExtractTormentTidesOfNumenera(path: string, db: LLDatabase, args: string arr
 
     // load zips in reverse order, so the call to distinct will preserve the most recent ones
     let cardKeyAndLanguage(c: CardRecord) = c.LanguageTag + c.Key
-    [|
-        @"WIN\TidesOfNumenera_Data\StreamingAssets\data"
-    |]
-    |> Array.map(fun p -> Path.Combine(path, p))
-    |> Array.filter Directory.Exists
-    |> Array.collect(generateCardsForAssetPath(languageMap, lessonsMap, fileExclusions))
-    |> Array.distinctBy cardKeyAndLanguage
-    |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
-    |> db.CreateOrUpdateCards
+    let cards = 
+        [|
+            @"WIN\TidesOfNumenera_Data\StreamingAssets\data"
+        |]
+        |> Array.map(fun p -> Path.Combine(path, p))
+        |> Array.filter Directory.Exists
+        |> Array.collect(generateCardsForAssetPath(languageMap, lessonsMap, fileExclusions))
+        |> Array.distinctBy cardKeyAndLanguage
 
-    ()
+    let (_, lessons) = lessonsMap |> Map.toArray |> Array.unzip
+    {
+        LudumLinguarumPlugins.ExtractedContent.lessons = lessons
+        LudumLinguarumPlugins.ExtractedContent.cards = cards
+    }
 
-let ExtractTyranny(path: string, db: LLDatabase, args: string array) = 
-    let configuredLessonCreator = createLesson(db)
+let ExtractTyranny(path: string) = 
     let languageMap = 
         [|
             (@"localized\en", "en")
@@ -257,7 +257,7 @@ let ExtractTyranny(path: string, db: LLDatabase, args: string array) =
             (@"text\conversations", "Conversations")
             (@"text\quests", "Quests")
         |]
-        |> Array.map(fun (k, v) -> (k, configuredLessonCreator(v)))
+        |> Array.mapi(fun i (k, v) -> (k, createLesson(i)(v)))
         |> Map.ofArray
 
     let fileExclusions = 
@@ -273,14 +273,17 @@ let ExtractTyranny(path: string, db: LLDatabase, args: string array) =
 
     // load zips in reverse order, so the call to distinct will preserve the most recent ones
     let cardKeyAndLanguage(c: CardRecord) = c.LanguageTag + c.Key
-    [|
-        @"Data\data\exported"
-    |]
-    |> Array.map(fun p -> Path.Combine(path, p))
-    |> Array.filter Directory.Exists
-    |> Array.collect(generateCardsForAssetPath(languageMap, lessonsMap, fileExclusions))
-    |> Array.distinctBy cardKeyAndLanguage
-    |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
-    |> db.CreateOrUpdateCards
+    let cards = 
+        [|
+            @"Data\data\exported"
+        |]
+        |> Array.map(fun p -> Path.Combine(path, p))
+        |> Array.filter Directory.Exists
+        |> Array.collect(generateCardsForAssetPath(languageMap, lessonsMap, fileExclusions))
+        |> Array.distinctBy cardKeyAndLanguage
 
-    ()
+    let (_, lessons) = lessonsMap |> Map.toArray |> Array.unzip
+    {
+        LudumLinguarumPlugins.ExtractedContent.lessons = lessons
+        LudumLinguarumPlugins.ExtractedContent.cards = cards
+    }

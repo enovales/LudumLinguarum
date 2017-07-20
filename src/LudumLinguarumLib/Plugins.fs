@@ -20,6 +20,15 @@ type NullPlugin() =
         member this.Name = "Null"
         member this.Parameters = [| new Object() |]
 
+type ExtractedContent = 
+    {
+        lessons: LessonRecord array
+        cards: CardRecord array
+    }
+
+// Arguments are intended to be game name, path, and command line arguments
+type ExtractAllFunc = string -> string -> string array -> ExtractedContent
+
 [<Interface>]
 type IGameExtractorPlugin = 
     inherit IPlugin
@@ -30,7 +39,7 @@ type IGameExtractorPlugin =
     /// Generic call to extract all localized resources from the game and path specified
     /// into the provided database.
     /// </summary>
-    abstract member ExtractAll: string * string * LLDatabase * [<ParamArray>] args: string[] -> unit
+    abstract member ExtractAll: string * string * string array -> ExtractedContent
 
 [<Interface>]
 type IPluginManager = 

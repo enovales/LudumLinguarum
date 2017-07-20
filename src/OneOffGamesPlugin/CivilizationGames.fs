@@ -81,12 +81,11 @@ let internal generateCardsForXml(lessonID: int, keyRoot: string)(xmlContent: str
     let xel = XElement.Load(stringReader)
     generateCardsForXElement(lessonID, keyRoot)(xel)
 
-let internal createLesson(db: LLDatabase)(title: string): LessonRecord = 
-    let lessonEntry = {
-        LessonRecord.ID = 0;
+let internal createLesson(i: int)(title: string): LessonRecord = 
+    {
+        LessonRecord.ID = i;
         Name = title
     }
-    { lessonEntry with ID = db.CreateOrUpdateLesson(lessonEntry) }
 
 let internal civ4Content = 
     [|
@@ -148,74 +147,90 @@ let internal civ4ColonizationContent =
         (@"Assets\XML\Text\CIV4GameTextInfos_Original.xml", "Infos Original")
     |]
 
-let ExtractCiv4(path: string, db: LLDatabase, args: string array) = 
-    let configuredLessonCreator = createLesson(db)
-
+let ExtractCiv4(path: string) = 
     // create lessons for each of the localization files
     let contentPathsToLessons = 
         civ4Content
-        |> Array.map(fun (k, v) -> (Path.Combine(path, k), configuredLessonCreator(v)))
+        |> Array.mapi(fun i (k, v) -> (Path.Combine(path, k), createLesson(i)(v)))
 
     let cardsForContent(p: string, l: LessonRecord) = 
         let rootName = Path.GetFileNameWithoutExtension(p)
         use fs = new FileStream(p, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)
         generateCardsForXmlStream(l.ID, rootName)(fs)
 
-    contentPathsToLessons
-    |> Array.collect cardsForContent
-    |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
-    |> db.CreateOrUpdateCards
+    let cards = 
+        contentPathsToLessons
+        |> Array.collect cardsForContent
 
-let ExtractCiv4Warlords(path: string, db: LLDatabase, args: string array) = 
-    let configuredLessonCreator = createLesson(db)
+    let (_, lessons) = contentPathsToLessons |> Array.unzip
+    
+    {
+        LudumLinguarumPlugins.ExtractedContent.lessons = lessons
+        LudumLinguarumPlugins.ExtractedContent.cards = cards
+    }
 
+let ExtractCiv4Warlords(path: string) = 
     // create lessons for each of the localization files
     let contentPathsToLessons = 
         Array.concat([| civ4Content; civ4WarlordsContent |])
-        |> Array.map(fun (k, v) -> (Path.Combine(path, k), configuredLessonCreator(v)))
+        |> Array.mapi(fun i (k, v) -> (Path.Combine(path, k), createLesson(i)(v)))
 
     let cardsForContent(p: string, l: LessonRecord) = 
         let rootName = Path.GetFileNameWithoutExtension(p)
         use fs = new FileStream(p, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)
         generateCardsForXmlStream(l.ID, rootName)(fs)
 
-    contentPathsToLessons
-    |> Array.collect cardsForContent
-    |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
-    |> db.CreateOrUpdateCards
+    let cards = 
+        contentPathsToLessons
+        |> Array.collect cardsForContent
 
-let ExtractCiv4BeyondTheSword(path: string, db: LLDatabase, args: string array) = 
-    let configuredLessonCreator = createLesson(db)
+    let (_, lessons) = contentPathsToLessons |> Array.unzip
 
+    {
+        LudumLinguarumPlugins.ExtractedContent.lessons = lessons
+        LudumLinguarumPlugins.ExtractedContent.cards = cards
+    }
+
+let ExtractCiv4BeyondTheSword(path: string) = 
     // create lessons for each of the localization files
     let contentPathsToLessons = 
         Array.concat([| civ4Content; civ4WarlordsContent; civ4BtsContent |])
-        |> Array.map(fun (k, v) -> (Path.Combine(path, k), configuredLessonCreator(v)))
+        |> Array.mapi(fun i (k, v) -> (Path.Combine(path, k), createLesson(i)(v)))
 
     let cardsForContent(p: string, l: LessonRecord) = 
         let rootName = Path.GetFileNameWithoutExtension(p)
         use fs = new FileStream(p, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)
         generateCardsForXmlStream(l.ID, rootName)(fs)
 
-    contentPathsToLessons
-    |> Array.collect cardsForContent
-    |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
-    |> db.CreateOrUpdateCards
+    let cards = 
+        contentPathsToLessons
+        |> Array.collect cardsForContent
 
-let ExtractCiv4Colonization(path: string, db: LLDatabase, args: string array) = 
-    let configuredLessonCreator = createLesson(db)
+    let (_, lessons) = contentPathsToLessons |> Array.unzip
 
+    {
+        LudumLinguarumPlugins.ExtractedContent.lessons = lessons
+        LudumLinguarumPlugins.ExtractedContent.cards = cards
+    }
+
+let ExtractCiv4Colonization(path: string) = 
     // create lessons for each of the localization files
     let contentPathsToLessons = 
         civ4ColonizationContent
-        |> Array.map(fun (k, v) -> (Path.Combine(path, k), configuredLessonCreator(v)))
+        |> Array.mapi(fun i (k, v) -> (Path.Combine(path, k), createLesson(i)(v)))
 
     let cardsForContent(p: string, l: LessonRecord) = 
         let rootName = Path.GetFileNameWithoutExtension(p)
         use fs = new FileStream(p, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)
         generateCardsForXmlStream(l.ID, rootName)(fs)
 
-    contentPathsToLessons
-    |> Array.collect cardsForContent
-    |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
-    |> db.CreateOrUpdateCards
+    let cards = 
+        contentPathsToLessons
+        |> Array.collect cardsForContent
+
+    let (_, lessons) = contentPathsToLessons |> Array.unzip
+
+    {
+        LudumLinguarumPlugins.ExtractedContent.lessons = lessons
+        LudumLinguarumPlugins.ExtractedContent.cards = cards
+    }

@@ -113,21 +113,12 @@ let internal generateCardsForAssetZip(languageMap: Map<string, string>, lesson: 
     |> Map.toArray
     |> Array.collect(fun (dir: string, language: string) -> generateCardsForLessons(language)(dir, lesson))
 
-let internal createLesson(db: LLDatabase)(title: string): LessonRecord = 
-    let lessonEntry = {
-        LessonRecord.ID = 0;
-        Name = title
-    }
-    { lessonEntry with ID = db.CreateOrUpdateLesson(lessonEntry) }
-
-let private extractOMDZips(assetZips: string array, db: LLDatabase, l: LessonRecord, languageMap: Map<string, string>) = 
+let private extractOMDZips(assetZips: string array, l: LessonRecord, languageMap: Map<string, string>) = 
     let cardKeyAndLanguage(c: CardRecord) = c.LanguageTag + c.Key
 
     assetZips
     |> Array.collect(generateCardsForAssetZip(languageMap, l))
     |> Array.distinctBy cardKeyAndLanguage
-    |> Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t.Text)))
-    |> db.CreateOrUpdateCards
 
 // Both Orcs Must Die! games have the same set of localizations.
 let private languageMap = 
@@ -144,10 +135,20 @@ let private languageMap =
     |]
     |> Map.ofArray
 
-let ExtractOrcsMustDie(path: string, db: LLDatabase, args: string array) = 
-    let configuredLessonCreator = createLesson(db)
-    let lessonEntry = configuredLessonCreator("Game Text")
+let private extractOMDGame(assetZips: string array) =
+    let lessonEntry = 
+        {
+            LessonRecord.ID = 0;
+            Name = "Game Text"
+        }
 
+    let cards = extractOMDZips(assetZips, lessonEntry, languageMap)
+    {
+        LudumLinguarumPlugins.ExtractedContent.lessons = [| lessonEntry |]
+        LudumLinguarumPlugins.ExtractedContent.cards = cards
+    }
+
+let ExtractOrcsMustDie(path: string) = 
     // load zips in reverse order, so the call to distinct will preserve the most recent ones
     let assetZips = 
         [|
@@ -156,12 +157,9 @@ let ExtractOrcsMustDie(path: string, db: LLDatabase, args: string array) =
         |]
         |> Array.map(fun p -> Path.Combine(path, p))
 
-    extractOMDZips(assetZips, db, lessonEntry, languageMap)
+    extractOMDGame(assetZips)
 
-let ExtractOrcsMustDie2(path: string, db: LLDatabase, args: string array) = 
-    let configuredLessonCreator = createLesson(db)
-    let lessonEntry = configuredLessonCreator("Game Text")
-
+let ExtractOrcsMustDie2(path: string) = 
     // load zips in reverse order, so the call to distinct will preserve the most recent ones
     let assetZips = 
         [|
@@ -169,4 +167,4 @@ let ExtractOrcsMustDie2(path: string, db: LLDatabase, args: string array) =
         |]
         |> Array.map(fun p -> Path.Combine(path, p))
 
-    extractOMDZips(assetZips, db, lessonEntry, languageMap)
+    extractOMDGame(assetZips)
