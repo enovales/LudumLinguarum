@@ -433,6 +433,17 @@
   <Choose>
     <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.6.1'">
       <ItemGroup>
+        <Reference Include="PInvoke.WtsApi32">
+          <HintPath>..\..\packages\PInvoke.WtsApi32\lib\net45\PInvoke.WtsApi32.dll</HintPath>
+          <Private>True</Private>
+          <Paket>True</Paket>
+        </Reference>
+      </ItemGroup>
+    </When>
+  </Choose>
+  <Choose>
+    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.6.1'">
+      <ItemGroup>
         <Reference Include="Validation">
           <HintPath>..\..\packages\Validation\lib\net45\Validation.dll</HintPath>
           <Private>True</Private>

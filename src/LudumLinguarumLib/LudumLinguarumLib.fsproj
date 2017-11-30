@@ -121,6 +121,9 @@
   <Choose>
     <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.6.1'">
       <ItemGroup>
+        <Reference Include="Microsoft.CSharp">
+          <Paket>True</Paket>
+        </Reference>
         <Reference Include="CsvHelper">
           <HintPath>..\..\packages\CsvHelper\lib\net45\CsvHelper.dll</HintPath>
           <Private>True</Private>
