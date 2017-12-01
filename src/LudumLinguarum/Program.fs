@@ -496,6 +496,8 @@ let main argv =
 
     let pluginManager = new PluginManager()
     let iPluginManager = pluginManager :> IPluginManager
+    
+    Console.OutputEncoding <- Encoding.UTF8
 
     let otw = 
         match results.TryGetResult(<@ Log_File @>) with

@@ -47,6 +47,7 @@ type OneOffGamesPlugin() =
             ("IHF Handball Challenge 14", SimpleGames.ExtractIHFHandballChallenge14)
             ("Torment: Tides of Numenera", PillarsOfEternity.ExtractTormentTidesOfNumenera)
             ("Tyranny", PillarsOfEternity.ExtractTyranny)
+            ("F1 Race Stars", CodemastersGames.ExtractF1RaceStars)
         |] |> Map.ofArray
 
     interface IPlugin with

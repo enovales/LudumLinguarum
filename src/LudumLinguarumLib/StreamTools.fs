@@ -6,6 +6,7 @@ open System.IO
 type ReaderWrapper(br: BinaryReader) = 
     let needToConvert = BitConverter.IsLittleEndian
     member this.Seek(offset: int64) = br.BaseStream.Seek(offset, SeekOrigin.Begin)
+    member this.Position = br.BaseStream.Position
     member this.ReadByte() = br.ReadByte()
     member this.ReadBytes(count: int) = br.ReadBytes(count)
     member this.ReadUInt16() = 
