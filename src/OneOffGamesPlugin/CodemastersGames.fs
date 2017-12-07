@@ -174,9 +174,12 @@ let internal readStringsFromReader(br: BinaryReader, encoding: Encoding) =
 
 let internal cardsForLanguage(lid: int)(fpl: string * (string * Encoding)) = 
     let (filePath, (language, encoding)) = fpl
-    use br = new BinaryReader(new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
-    readStringsFromReader(br, encoding)
-    |> AssemblyResourceTools.createCardRecordForStrings(lid, "", language, "masculine")
+    if File.Exists(filePath) then
+      use br = new BinaryReader(new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+      readStringsFromReader(br, encoding)
+      |> AssemblyResourceTools.createCardRecordForStrings(lid, "", language, "masculine")
+    else
+      [||]
 
 let internal extractCodemastersEgoGame(filePathsLanguagesAndEncodings: (string * (string * Encoding)) array) = 
     let lessonEntry = {
@@ -246,6 +249,132 @@ let ExtractF12011(path: string) =
             ("pt-PT", Encoding.UTF8)
             ("ru", Encoding.UTF8)
             ("es", Encoding.UTF8)
+        |]
+
+    extractCodemastersEgoGame(Array.zip filePaths languagesAndEncodings)
+
+let ExtractF12012(path: string) = 
+    let filePaths = 
+        [|
+            @"language\language_bra.lng"
+            @"language\language_eng.lng"
+            @"language\language_fre.lng"
+            @"language\language_ger.lng"
+            @"language\language_ita.lng"
+            @"language\language_jpn.lng"
+            @"language\language_pol.lng"
+            @"language\language_rus.lng"
+            @"language\language_spa.lng"
+        |]
+        |> Array.map(fun p -> Path.Combine(path, p))
+
+    let languagesAndEncodings = 
+        [|
+            ("pt-BR", Encoding.UTF8)
+            ("en", Encoding.UTF8)
+            ("fr", Encoding.UTF8)
+            ("de", Encoding.UTF8)
+            ("it", Encoding.UTF8)
+            ("ja", Encoding.UTF8)
+            ("pl", Encoding.UTF8)
+            ("ru", Encoding.UTF8)
+            ("es", Encoding.UTF8)
+        |]
+
+    extractCodemastersEgoGame(Array.zip filePaths languagesAndEncodings)
+
+let ExtractF12014(path: string) = 
+    let filePaths = 
+        [|
+            @"language\language_bra.lng"
+            @"language\language_eng.lng"
+            @"language\language_fre.lng"
+            @"language\language_ger.lng"
+            @"language\language_ita.lng"
+            @"language\language_jpn.lng"
+            @"language\language_pol.lng"
+            @"language\language_spa.lng"
+        |]
+        |> Array.map(fun p -> Path.Combine(path, p))
+
+    let languagesAndEncodings = 
+        [|
+            ("pt-BR", Encoding.UTF8)
+            ("en", Encoding.UTF8)
+            ("fr", Encoding.UTF8)
+            ("de", Encoding.UTF8)
+            ("it", Encoding.UTF8)
+            ("ja", Encoding.UTF8)
+            ("pl", Encoding.UTF8)
+            ("es", Encoding.UTF8)
+        |]
+
+    extractCodemastersEgoGame(Array.zip filePaths languagesAndEncodings)
+
+let ExtractF12015(path: string) = 
+    let filePaths = 
+        [|
+            @"localisation\language_bra.lng"
+            @"localisation\language_eng.lng"
+            @"localisation\language_fre.lng"
+            @"localisation\language_ger.lng"
+            @"localisation\language_ita.lng"
+            @"localisation\language_jap.lng"
+            @"localisation\language_pol.lng"
+            @"localisation\language_rus.lng"
+            @"localisation\language_spa.lng"
+            @"localisation\language_zhs.lng"
+            @"localisation\language_zht.lng"
+        |]
+        |> Array.map(fun p -> Path.Combine(path, p))
+
+    let languagesAndEncodings = 
+        [|
+            ("pt-BR", Encoding.UTF8)
+            ("en", Encoding.UTF8)
+            ("fr", Encoding.UTF8)
+            ("de", Encoding.UTF8)
+            ("it", Encoding.UTF8)
+            ("ja", Encoding.UTF8)
+            ("pl", Encoding.UTF8)
+            ("ru", Encoding.UTF8)
+            ("es", Encoding.UTF8)
+            ("zh-CN", Encoding.UTF8)
+            ("zh-TW", Encoding.UTF8)
+        |]
+
+    extractCodemastersEgoGame(Array.zip filePaths languagesAndEncodings)
+
+let ExtractF12016(path: string) = 
+    let filePaths = 
+        [|
+            @"localisation\language_bra.lng"
+            @"localisation\language_eng.lng"
+            @"localisation\language_fre.lng"
+            @"localisation\language_ger.lng"
+            @"localisation\language_ita.lng"
+            @"localisation\language_jap.lng"
+            @"localisation\language_pol.lng"
+            @"localisation\language_rus.lng"
+            @"localisation\language_spa.lng"
+            @"localisation\language_zhs.lng"
+            @"localisation\language_zht.lng"
+        |]
+        |> Array.map(fun p -> Path.Combine(path, p))
+
+    let languagesAndEncodings = 
+        [|
+            ("pt-BR", Encoding.UTF8)
+            ("en", Encoding.UTF8)
+            ("fr", Encoding.UTF8)
+            ("de", Encoding.UTF8)
+            ("it", Encoding.UTF8)
+            ("ja", Encoding.UTF8)
+            ("pl", Encoding.UTF8)
+            ("ru", Encoding.UTF8)
+            ("es", Encoding.UTF8)
+            ("zh-CN", Encoding.UTF8)
+            ("zh-TW", Encoding.UTF8)
         |]
 
     extractCodemastersEgoGame(Array.zip filePaths languagesAndEncodings)

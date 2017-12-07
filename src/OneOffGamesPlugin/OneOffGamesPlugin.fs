@@ -49,6 +49,10 @@ type OneOffGamesPlugin() =
             ("Tyranny", PillarsOfEternity.ExtractTyranny)
             ("F1 Race Stars", CodemastersGames.ExtractF1RaceStars)
             ("F1 2011", CodemastersGames.ExtractF12011)
+            ("F1 2012", CodemastersGames.ExtractF12012)
+            ("F1 2014", CodemastersGames.ExtractF12014)
+            ("F1 2015", CodemastersGames.ExtractF12015)
+            ("F1 2016", CodemastersGames.ExtractF12016)
         |] |> Map.ofArray
 
     interface IPlugin with
