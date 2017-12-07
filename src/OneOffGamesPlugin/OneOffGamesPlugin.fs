@@ -48,6 +48,7 @@ type OneOffGamesPlugin() =
             ("Torment: Tides of Numenera", PillarsOfEternity.ExtractTormentTidesOfNumenera)
             ("Tyranny", PillarsOfEternity.ExtractTyranny)
             ("F1 Race Stars", CodemastersGames.ExtractF1RaceStars)
+            ("F1 2011", CodemastersGames.ExtractF12011)
         |] |> Map.ofArray
 
     interface IPlugin with

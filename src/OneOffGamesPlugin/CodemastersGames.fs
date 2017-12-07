@@ -7,81 +7,189 @@ open System.Text
 open System.IO
 open StreamTools
 
-type BinaryBlob = string * byte array
-type ChunkContainer = string * BinaryBlob array
+type LngtChunk = 
+  {
+    size: uint32
+  }
+  with
+    static member FromReader(rw: ReaderWrapper) = 
+      {
+        LngtChunk.size = rw.ReadUInt32()
+      }
+
+type HshsChunk = 
+  {
+    size: uint32
+    buckets: uint32
+    seed: uint32
+    multiplier: uint32
+  }
+  with
+    static member FromReader(rw: ReaderWrapper) = 
+     {
+       HshsChunk.size = rw.ReadUInt32()
+       buckets = rw.ReadUInt32()
+       seed = rw.ReadUInt32()
+       multiplier = rw.ReadUInt32()
+     }
+
+type HshtChunk = 
+  {
+    size: uint32
+    HashEntries: (uint32 * uint32) array
+  }
+  with
+    static member FromReader(rw: ReaderWrapper) = 
+      let n = rw.ReadUInt32()
+
+      {
+        HshtChunk.size = n
+        HashEntries = seq { for _ in uint32 1..n / 8u do yield (rw.ReadUInt32(), rw.ReadUInt32()) } |> Array.ofSeq
+      }
+
+type SidaChunk = 
+  {
+    size: uint32
+    KeyValueOffsets: (uint32 * uint32) array
+  }
+  with
+    static member FromReader(rw: ReaderWrapper) = 
+      let chunkSize = rw.ReadUInt32()
+      let recordCount = rw.ReadUInt32()
+
+      {
+        SidaChunk.size = chunkSize
+        KeyValueOffsets = seq { for _ in uint32 1..recordCount do yield (rw.ReadUInt32(), rw.ReadUInt32()) } |> Array.ofSeq
+      }
+
+type SidbChunk = 
+  {
+    size: uint32
+    data: byte array
+  }
+  with
+    static member FromReader(rw: ReaderWrapper) = 
+      let size = rw.ReadUInt32()
+      {
+        SidbChunk.size = size
+        data = rw.ReadBytes(int size)
+      }
+
+type LngbChunk = 
+  {
+    size: uint32
+    data: byte array
+  }
+  with
+    static member FromReader(rw: ReaderWrapper) = 
+      let size = rw.ReadUInt32()
+      {
+        LngbChunk.size = size
+        data = rw.ReadBytes(int size)
+      }
+
+type LngFile = 
+  {
+    lngt: LngtChunk option
+    hshs: HshsChunk option
+    hsht: HshtChunk option
+    sida: SidaChunk option
+    sidb: SidbChunk option
+    lngb: LngbChunk option
+  }
+  with
+    static member FromReader(rw: ReaderWrapper) = 
+      let mutable r = {
+          LngFile.lngt = None
+          hshs = None
+          hsht = None
+          sida = None
+          sidb = None
+          lngb = None
+        }
+
+      while (r.lngt.IsNone || r.hshs.IsNone || r.hsht.IsNone || r.sida.IsNone || r.sidb.IsNone || r.lngb.IsNone) do
+        r <- r.ReadNextChunk(rw)
+
+      r
+
+    member private this.ReadNextChunk(rw: ReaderWrapper) = 
+      match Encoding.ASCII.GetString(rw.ReadBytes(4)) with
+      | "LNGT" ->
+        {
+          this with lngt = Some(LngtChunk.FromReader(rw))
+        }
+      | "HSHS" ->
+        {
+          this with hshs = Some(HshsChunk.FromReader(rw))
+        }
+      | "HSHT" ->
+        {
+          this with hsht = Some(HshtChunk.FromReader(rw))
+        }
+      | "SIDA" ->
+        {
+          this with sida = Some(SidaChunk.FromReader(rw))
+        }
+      | "SIDB" ->
+        {
+          this with sidb = Some(SidbChunk.FromReader(rw))
+        }
+      | "LNGB" ->
+        {
+          this with lngb = Some(LngbChunk.FromReader(rw))
+        }
+      | s -> failwith("unrecognized chunk type [" + s + "]")
 
 // read null-terminated strings
-let readNextString(br: BinaryReader) = 
-    let readNextChar(c: char) = 
-        if c = char 0 then
-            None
-        else
-            Some((c, br.ReadChar()))
-    new string(Seq.unfold(readNextChar)(br.ReadChar()) |> Seq.toArray)
+let readNextString(bytes: byte array, startPosition: int, encoding: Encoding) = 
+  let mutable i = startPosition
+  let mutable readMore = true
+  let mutable endPosition = i
+  while readMore && (i < bytes.Length) do
+    if (bytes.[i] = 0uy) then
+      endPosition <- i
+      readMore <- false
 
-let readNextNullTerminatedString(br: BinaryReader, endPosition: int64)(currentPosition: int64) = 
-    if (currentPosition < endPosition) then
-        Some((readNextString(br), br.BaseStream.Position))
-    else
-        None
+    i <- i + 1
+  
+  encoding.GetString(bytes, startPosition, endPosition - startPosition)
 
-let internal readSIDBChunk(bytes: byte array) = 
-    let r = new BinaryReader(new MemoryStream(bytes))
-    Array.unfold (readNextNullTerminatedString(r, int64(bytes.Length - 1))) (int64 0)
-    
-let internal readLNGBChunk(bytes: byte array) = 
-    let r = new BinaryReader(new MemoryStream(bytes))
-    Array.unfold (readNextNullTerminatedString(r, int64(bytes.Length - 1))) (int64 0)
+let getStringsForLngFile(lf: LngFile, encoding: Encoding) = 
+  let stringPairForKVPair(keyOffset: uint32, valueOffset: uint32) = 
+    (
+      readNextString(lf.sidb.Value.data, int keyOffset, encoding),
+      readNextString(lf.lngb.Value.data, int valueOffset, encoding)
+    )
 
-let rec internal readNextChunk(r: ReaderWrapper, endPosition: int64)(currentPosition: int64) = 
-    if (currentPosition < endPosition) then
-        let typeString = Encoding.ASCII.GetString(r.ReadBytes(4))
-        let size = r.ReadUInt32()
+  lf.sida
+  |> Option.map(fun sida -> sida.KeyValueOffsets |> Array.map stringPairForKVPair |> Map.ofArray)
 
-        // Some chunk types have extra header information that we need to skip, because
-        // the size doesn't account for them.
-        if typeString = "SIDA" then
-            r.ReadUInt32() |> ignore
-
-        let next: BinaryBlob = (typeString, r.ReadBytes(int size))
-        Some((next, r.Position))
-    else
-        None
-
-let internal exteriorChunkFromReader(r: ReaderWrapper): ChunkContainer = 
-    let typeString = Encoding.ASCII.GetString(r.ReadBytes(4))
-    let endPosition = int64(r.ReadUInt32())
-    let internalChunks = Array.unfold (readNextChunk(r, endPosition)) (r.Position)
-
-    (typeString, internalChunks)
-
-let internal readStringsFromReader(br: BinaryReader) = 
+let internal readStringsFromReader(br: BinaryReader, encoding: Encoding) = 
     let wrapper = ReaderWrapper(br)
-    let (_, chunks) = exteriorChunkFromReader(wrapper)
-
-    let stringIds = 
-        chunks
-        |> Array.find(fun (ct, _) -> ct = "SIDB")
-        |> snd 
-        |> readSIDBChunk
-        |> Array.map(fun s -> s.Trim())
-
-    let stringValues = 
-        chunks
-        |> Array.find(fun (ct, _) -> ct = "LNGB")
-        |> snd
-        |> readLNGBChunk
-
-    Array.zip stringIds stringValues
-    |> Map.ofArray
+    let lngFile = LngFile.FromReader(wrapper)
+    match getStringsForLngFile(lngFile, encoding) with
+    | Some(strings) -> strings
+    | _ -> Map.empty
 
 let internal cardsForLanguage(lid: int)(fpl: string * (string * Encoding)) = 
     let (filePath, (language, encoding)) = fpl
-    use br = new BinaryReader(new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite), encoding)
-    readStringsFromReader(br)
+    use br = new BinaryReader(new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+    readStringsFromReader(br, encoding)
     |> AssemblyResourceTools.createCardRecordForStrings(lid, "", language, "masculine")
 
+let internal extractCodemastersEgoGame(filePathsLanguagesAndEncodings: (string * (string * Encoding)) array) = 
+    let lessonEntry = {
+        LessonRecord.ID = 0;
+        Name = "Game Text"
+    }
 
+    {
+        LudumLinguarumPlugins.ExtractedContent.lessons = [| lessonEntry |]
+        LudumLinguarumPlugins.ExtractedContent.cards = 
+            filePathsLanguagesAndEncodings
+            |> Array.collect(cardsForLanguage(lessonEntry.ID))
+    }
 let ExtractF1RaceStars(path: string) = 
     let filePaths = 
         [|
@@ -103,22 +211,41 @@ let ExtractF1RaceStars(path: string) =
             ("fr", Encoding.UTF8)
             ("de", Encoding.UTF8)
             ("it", Encoding.UTF8)
-            ("ja", Encoding.GetEncoding("shift_jis"))
+            ("ja", Encoding.UTF8)
             ("pl", Encoding.UTF8)
             ("es", Encoding.UTF8)
         |]
 
-    let filePathsLanguagesAndEncodings = 
-        Array.zip filePaths languagesAndEncodings
+    extractCodemastersEgoGame(Array.zip filePaths languagesAndEncodings)
 
-    let lessonEntry = {
-        LessonRecord.ID = 0;
-        Name = "Game Text"
-    }
+let ExtractF12011(path: string) = 
+    let filePaths = 
+        [|
+            @"language\language_bra.lng"
+            @"language\language_eng.lng"
+            @"language\language_fre.lng"
+            @"language\language_ger.lng"
+            @"language\language_ita.lng"
+            @"language\language_jpn.lng"
+            @"language\language_pol.lng"
+            @"language\language_por.lng"
+            @"language\language_rus.lng"
+            @"language\language_spa.lng"
+        |]
+        |> Array.map(fun p -> Path.Combine(path, p))
 
-    {
-        LudumLinguarumPlugins.ExtractedContent.lessons = [| lessonEntry |]
-        LudumLinguarumPlugins.ExtractedContent.cards = 
-            filePathsLanguagesAndEncodings
-            |> Array.collect(cardsForLanguage(lessonEntry.ID))
-    }
+    let languagesAndEncodings = 
+        [|
+            ("pt-BR", Encoding.UTF8)
+            ("en", Encoding.UTF8)
+            ("fr", Encoding.UTF8)
+            ("de", Encoding.UTF8)
+            ("it", Encoding.UTF8)
+            ("ja", Encoding.UTF8)
+            ("pl", Encoding.UTF8)
+            ("pt-PT", Encoding.UTF8)
+            ("ru", Encoding.UTF8)
+            ("es", Encoding.UTF8)
+        |]
+
+    extractCodemastersEgoGame(Array.zip filePaths languagesAndEncodings)
