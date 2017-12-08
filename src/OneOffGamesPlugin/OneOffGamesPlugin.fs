@@ -53,6 +53,7 @@ type OneOffGamesPlugin() =
             ("F1 2014", CodemastersGames.ExtractF12014)
             ("F1 2015", CodemastersGames.ExtractF12015)
             ("F1 2016", CodemastersGames.ExtractF12016)
+            ("DiRT", CodemastersGames.ExtractDirt)
         |] |> Map.ofArray
 
     interface IPlugin with

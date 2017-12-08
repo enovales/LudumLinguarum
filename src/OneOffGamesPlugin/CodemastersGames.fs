@@ -378,3 +378,27 @@ let ExtractF12016(path: string) =
         |]
 
     extractCodemastersEgoGame(Array.zip filePaths languagesAndEncodings)
+
+let ExtractDirt(path: string) = 
+    let filePaths = 
+        [|
+            @"language\languagedata_english.lng"
+            @"language\languagedata_french.lng"
+            @"language\languagedata_german.lng"
+            @"language\languagedata_italian.lng"
+            @"language\languagedata_spanish.lng"
+            @"language\languagedata_us.lng"
+        |]
+        |> Array.map(fun p -> Path.Combine(path, p))
+
+    let languagesAndEncodings = 
+        [|
+            ("en-GB", Encoding.UTF8)
+            ("fr", Encoding.UTF8)
+            ("de", Encoding.UTF8)
+            ("it", Encoding.UTF8)
+            ("es", Encoding.UTF8)
+            ("en-US", Encoding.UTF8)
+        |]
+
+    extractCodemastersEgoGame(Array.zip filePaths languagesAndEncodings)
