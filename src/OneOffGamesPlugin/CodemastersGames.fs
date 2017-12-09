@@ -500,3 +500,35 @@ let ExtractGrid2(path: string) =
         |]
 
     extractCodemastersEgoGame(Array.zip filePaths languagesAndEncodings)
+
+let ExtractGridAutosport(path: string) = 
+    let filePaths = 
+        [|
+            @"language\language_bra.lng"
+            @"language\language_eng.lng"
+            @"language\language_fre.lng"
+            @"language\language_ger.lng"
+            @"language\language_ita.lng"
+            @"language\language_jpn.lng"
+            @"language\language_pol.lng"
+            @"language\language_rus.lng"
+            @"language\language_spa.lng"
+            @"language\language_use.lng"
+        |]
+        |> Array.map(fun p -> Path.Combine(path, p))
+
+    let languagesAndEncodings = 
+        [|
+            ("pt-BR", Encoding.UTF8)
+            ("en-GB", Encoding.UTF8)
+            ("fr", Encoding.UTF8)
+            ("de", Encoding.UTF8)
+            ("it", Encoding.UTF8)
+            ("ja", Encoding.UTF8)
+            ("pl", Encoding.UTF8)
+            ("ru", Encoding.UTF8)
+            ("es", Encoding.UTF8)
+            ("en-US", Encoding.UTF8)
+        |]
+
+    extractCodemastersEgoGame(Array.zip filePaths languagesAndEncodings)

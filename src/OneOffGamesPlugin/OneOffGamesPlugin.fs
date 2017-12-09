@@ -57,6 +57,7 @@ type OneOffGamesPlugin() =
             ("DiRT 2", CodemastersGames.ExtractDirt2)
             ("GRID", CodemastersGames.ExtractGrid)
             ("GRID 2", CodemastersGames.ExtractGrid2)
+            ("GRID Autosport", CodemastersGames.ExtractGridAutosport)
         |] |> Map.ofArray
 
     interface IPlugin with

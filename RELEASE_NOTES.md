@@ -1,3 +1,17 @@
+#### 0.15.0 - December 8 2017
+* Added support for:
+    * [F1 Race Stars](http://store.steampowered.com/app/203680/F1_RACE_STARS/) \[de, en, es, fr, it, ja, pl, pt-BR\]
+    * [F1 2011](http://store.steampowered.com/app/44360/F1_2011/) \[de, en, es, fr, it, ja, pl, pt-BR, pt-PT, ru\]
+    * [F1 2012](http://store.steampowered.com/app/208500/F1_2012/) \[de, en, es, fr, it, ja, pl, pt-BR, ru\]
+    * [F1 2014](http://store.steampowered.com/app/226580/F1_2014/) \[de, en, es, fr, it, ja, pl, pt-BR\]
+    * [F1 2015](http://store.steampowered.com/app/286570/F1_2015/) \[de, en, es, fr, it, ja, pl, pt-BR, ru, zh-CN, zh-TW\]
+    * [F1 2016](http://store.steampowered.com/app/391040/F1_2016/) \[de, en, es, fr, it, ja, pl, pt-BR, ru, zh-CN, zh-TW\]
+    * [DiRT](http://store.steampowered.com/app/11440/) \[de, en-GB, en-US, es, fr, it\]
+    * [DiRT 2](http://store.steampowered.com/app/12840/) \[de, en-GB, en-US, es, fr, it, ja, pl, ru\]
+    * [GRID](http://store.steampowered.com/app/12750/) \[de, en-GB, en-US, es, fr, it, ja\]
+    * [GRID 2](http://store.steampowered.com/app/44350/GRID_2/) \[de, en-GB, en-US, es, fr, it, ja, pl, pt-BR\]
+    * [GRID Autosport](http://store.steampowered.com/app/255220/GRID_Autosport/) \[de, en-GB, en-US, es, fr, it, ja, pl, pt-BR, ru\]
+
 #### 0.14.0 - July 17 2017
 * Added command line options for 'export-anki' to limit the length (in characters or whitespace-delimited words) of the text of a card: --recognition-length-limit, --production-length-limit, --recognition-word-limit, and --production-word-limit.
 * Changed to use database files per-game, instead of a global one, to make them easier to manage when many games have been extracted.
