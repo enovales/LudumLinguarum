@@ -2,15 +2,25 @@
 ===============
 Games supported, and languages supported (for games that are a single download for all languages):
 
-
 * [Age of Empires II HD](http://store.steampowered.com/app/221380/) \[cn, de, en, es, fr, it, ja, ko, nl, pt, ru\]
 * [Age of Empires III](http://store.steampowered.com/app/105450/) \[de, en, es, fr, it\]
 * [Audiosurf](http://store.steampowered.com/app/12900/) \[en, ru\]
 * [Bastion](http://store.steampowered.com/app/107100/) \[de, en, es, fr, it\]
 * [Braid](http://store.steampowered.com/app/26800/) \[cs, de, en, es, fr, it, ja, ka, ko, pl, pt, ru, zh\]
 * [Crusader Kings II](http://store.steampowered.com/app/203770/) \[de, en, es, fr\]
+* [DiRT](http://store.steampowered.com/app/11440/) \[de, en-GB, en-US, es, fr, it\]
+* [DiRT 2](http://store.steampowered.com/app/12840/) \[de, en-GB, en-US, es, fr, it, ja, pl, ru\]
 * [Europa Universalis III](http://store.steampowered.com/app/25800/) \[en, de\]
 * [Europa Universalis IV](http://store.steampowered.com/app/236850/) \[de, en, es, fr\]
+* [F1 2011](http://store.steampowered.com/app/44360/F1_2011/) \[de, en, es, fr, it, ja, pl, pt-BR, pt-PT, ru\]
+* [F1 2012](http://store.steampowered.com/app/208500/F1_2012/) \[de, en, es, fr, it, ja, pl, pt-BR, ru\]
+* [F1 2014](http://store.steampowered.com/app/226580/F1_2014/) \[de, en, es, fr, it, ja, pl, pt-BR\]
+* [F1 2015](http://store.steampowered.com/app/286570/F1_2015/) \[de, en, es, fr, it, ja, pl, pt-BR, ru, zh-CN, zh-TW\]
+* [F1 2016](http://store.steampowered.com/app/391040/F1_2016/) \[de, en, es, fr, it, ja, pl, pt-BR, ru, zh-CN, zh-TW\]
+* [F1 Race Stars](http://store.steampowered.com/app/203680/F1_RACE_STARS/) \[de, en, es, fr, it, ja, pl, pt-BR\]
+* [GRID](http://store.steampowered.com/app/12750/) \[de, en-GB, en-US, es, fr, it, ja\]
+* [GRID 2](http://store.steampowered.com/app/44350/GRID_2/) \[de, en-GB, en-US, es, fr, it, ja, pl, pt-BR\]
+* [GRID Autosport](http://store.steampowered.com/app/255220/GRID_Autosport/) \[de, en-GB, en-US, es, fr, it, ja, pl, pt-BR, ru\]
 * [Hatoful Boyfriend](http://store.steampowered.com/app/310080/) \[de, en, es, fr, it, ja, ru\]
 * [Hatoful Boyfriend: Holiday Star](http://store.steampowered.com/app/377080/) \[de, fr\]
 * [Hearts of Iron 3](http://store.steampowered.com/app/25890/) \[de, en, fr\]

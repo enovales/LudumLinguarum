@@ -5,13 +5,13 @@ open System.Reflection
 [<assembly: AssemblyTitleAttribute("LudumLinguarumLib")>]
 [<assembly: AssemblyProductAttribute("LudumLinguarum")>]
 [<assembly: AssemblyDescriptionAttribute("Tools for extracting localized content from games, and turning them into language learning content.")>]
-[<assembly: AssemblyVersionAttribute("0.14.0")>]
-[<assembly: AssemblyFileVersionAttribute("0.14.0")>]
+[<assembly: AssemblyVersionAttribute("0.15.0")>]
+[<assembly: AssemblyFileVersionAttribute("0.15.0")>]
 do ()
 
 module internal AssemblyVersionInformation =
     let [<Literal>] AssemblyTitle = "LudumLinguarumLib"
     let [<Literal>] AssemblyProduct = "LudumLinguarum"
     let [<Literal>] AssemblyDescription = "Tools for extracting localized content from games, and turning them into language learning content."
-    let [<Literal>] AssemblyVersion = "0.14.0"
-    let [<Literal>] AssemblyFileVersion = "0.14.0"
+    let [<Literal>] AssemblyVersion = "0.15.0"
+    let [<Literal>] AssemblyFileVersion = "0.15.0"
