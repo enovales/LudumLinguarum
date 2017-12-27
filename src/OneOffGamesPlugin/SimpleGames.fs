@@ -3,6 +3,8 @@
 open CsvTools
 open FsGettextUtils.MoFile
 open LLDatabase
+open SharpCompress.Archives.Rar
+
 open System
 open System.IO
 open System.Text
@@ -517,3 +519,62 @@ let ExtractIHFHandballChallenge12(path: string) =
     extractIHFHandballChallenge(path)
 let ExtractIHFHandballChallenge14(path: string) = 
     extractIHFHandballChallenge(path)
+
+let internal extractIntroversionGame(path: string, archiveRelativePath: string) =
+    let lessonEntry = {
+        LessonRecord.ID = 0
+        Name = "Game Text"
+    }
+
+    use archive = RarArchive.Open(Path.Combine(path, archiveRelativePath))
+    let r = archive.ExtractAllEntries()
+
+    let languageMappings = 
+        [|
+            (@"data\language\english.txt", "en")
+            (@"data\language\french.txt", "fr")
+            (@"data\language\german.txt", "de")
+            (@"data\language\italian.txt", "it")
+            (@"data\language\spanish.txt", "es")
+        |]
+        |> Map.ofArray
+
+    let mutable entriesRemain = r.MoveToNextEntry()
+    let mutable cards = [||]
+    let cardsForEntry(l: string, fs: StreamReader) = 
+        let r = 
+            new Regex(@"(?<key>\S+)(\s+)(?<value>.+)")
+
+        let nonCommentLines = 
+            fs.ReadToEnd().Split([| '\r'; '\n' |], StringSplitOptions.RemoveEmptyEntries)
+            |> Array.filter(fun l -> not(l.Trim().StartsWith("#")) && r.IsMatch(l))
+
+        let kvForLine l = 
+            let m = r.Match(l)
+            (m.Groups.["key"].Value, m.Groups.["value"].Value)
+
+        nonCommentLines
+        |> Array.map kvForLine
+        |> Map.ofArray
+        |> AssemblyResourceTools.createCardRecordForStrings(lessonEntry.ID, "", l, "masculine")
+
+    while (entriesRemain) do
+        if languageMappings.ContainsKey(r.Entry.Key) then
+            use fs = new StreamReader(r.OpenEntryStream(), Encoding.UTF8)
+            cards <- Array.concat([cards; cardsForEntry(languageMappings |> Map.find(r.Entry.Key), fs)])
+
+        entriesRemain <- r.MoveToNextEntry()
+
+    {
+        LudumLinguarumPlugins.ExtractedContent.lessons = [| lessonEntry |]
+        LudumLinguarumPlugins.ExtractedContent.cards = cards
+    }
+
+let ExtractDefcon(path: string) = 
+    extractIntroversionGame(path, "main.dat")
+
+let ExtractDarwinia(path: string) = 
+    extractIntroversionGame(path, "language.dat")
+
+let ExtractMultiwinia(path: string) = 
+    extractIntroversionGame(path, "language.dat")

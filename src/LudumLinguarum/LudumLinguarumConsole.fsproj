@@ -28,7 +28,7 @@
     <StartArguments>dump-text --game="Braid" --languages en,de --sample-size=10</StartArguments>
     <StartAction>Program</StartAction>
     <StartProgram>C:\projects\LudumLinguarum\src\LudumLinguarum\bin\Debug\LudumLinguarum.exe</StartProgram>
-    <StartArguments>import --game="Tyranny" --database-path="e:\users\enova\Documents\LudumLinguarum\Tyranny.db3" --game-dir="E:\Users\enova\SteamLibrary\steamapps\common\Tyranny"</StartArguments>
+    <StartArguments>import --game="Multiwinia" --game-dir="C:\Program Files (x86)\Steam\steamapps\common\Multiwinia"</StartArguments>
     <StartAction>Project</StartAction>
     <StartProgram>E:\projects\LudumLinguarum\bin\LudumLinguarumConsole\LudumLinguarum.exe</StartProgram>
   </PropertyGroup>

@@ -38,3 +38,5 @@
 #r "../../../packages/PInvoke.Windows.Core/lib/net35/PInvoke.Windows.Core.dll"
 #r "../../../packages/PInvoke.Windows.ShellScalingApi/lib/net45/PInvoke.Windows.ShellScalingApi.dll"
 #r "../../../packages/Validation/lib/net45/Validation.dll"
+#r "../../../packages/PInvoke.WtsApi32/lib/net45/PInvoke.WtsApi32.dll"
+#r "../../../packages/SharpCompress/lib/net45/SharpCompress.dll"
