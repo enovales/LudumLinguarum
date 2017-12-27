@@ -1,3 +1,9 @@
+#### 0.16.0 - December 26 2017
+* Added support for:
+	* [Darwinia](http://store.steampowered.com/app/1500/) \[de, en, es, fr, it\]
+	* [Defcon](http://store.steampowered.com/app/1520/) \[de, en, es, fr, it\]
+	* [Multiwinia](http://store.steampowered.com/app/1530/) \[de, en, es, fr, it\]
+
 #### 0.15.0 - December 8 2017
 * Added support for:
     * [F1 Race Stars](http://store.steampowered.com/app/203680/F1_RACE_STARS/) \[de, en, es, fr, it, ja, pl, pt-BR\]

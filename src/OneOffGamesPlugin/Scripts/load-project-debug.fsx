@@ -19,6 +19,7 @@
       "../AgeOfEmpiresGames.fs"
       "../StarWarsGBS.fs"
       "../SonicAdventureDX.fs"
+      "../CodemastersGames.fs"
       "../SimpleGames.fs"
       "../OneOffGamesPlugin.fs"
       "../AssemblyInfoStatic.fs"

@@ -8,6 +8,8 @@ Games supported, and languages supported (for games that are a single download f
 * [Bastion](http://store.steampowered.com/app/107100/) \[de, en, es, fr, it\]
 * [Braid](http://store.steampowered.com/app/26800/) \[cs, de, en, es, fr, it, ja, ka, ko, pl, pt, ru, zh\]
 * [Crusader Kings II](http://store.steampowered.com/app/203770/) \[de, en, es, fr\]
+* [Darwinia](http://store.steampowered.com/app/1500/) \[de, en, es, fr, it\]
+* [Defcon](http://store.steampowered.com/app/1520/) \[de, en, es, fr, it\]
 * [DiRT](http://store.steampowered.com/app/11440/) \[de, en-GB, en-US, es, fr, it\]
 * [DiRT 2](http://store.steampowered.com/app/12840/) \[de, en-GB, en-US, es, fr, it, ja, pl, ru\]
 * [Europa Universalis III](http://store.steampowered.com/app/25800/) \[en, de\]
@@ -32,6 +34,7 @@ Games supported, and languages supported (for games that are a single download f
 * [Madballs: Babo Invasion](http://store.steampowered.com/app/25700/) \[de, en, es, fr, it, ja, ko, pt, ru, zh\]
 * [Magical Drop V](http://store.steampowered.com/app/204960/) \[de, en, es, fr, it, ja\]
 * [Magicka](http://store.steampowered.com/app/42910/) \[de, en, es, fr, hu, it, pl, ru\]
+* [Multiwinia](http://store.steampowered.com/app/1530/) \[de, en, es, fr, it\]
 * [Neverwinter Nights](https://www.gog.com/game/neverwinter_nights_diamond_edition)
 * [Orcs Must Die!](http://store.steampowered.com/app/102600/) \[de, en, es, fr, it, ja, pl, pt, ru\]
 * [Orcs Must Die! 2](http://store.steampowered.com/app/201790/) \[de, en, es, fr, it, ja, pl, pt, ru\]

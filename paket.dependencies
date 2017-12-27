@@ -10,6 +10,7 @@ nuget sqlite
 nuget SQLite.Native
 nuget YamlDotNet
 nuget Argu
+nuget sharpcompress
 //nuget PInvoke.Kernel32
 //nuget PInvoke.User32
 nuget PInvoke.Win32
