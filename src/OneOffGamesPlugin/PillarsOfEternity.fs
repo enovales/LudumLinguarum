@@ -287,3 +287,51 @@ let ExtractTyranny(path: string) =
         LudumLinguarumPlugins.ExtractedContent.lessons = lessons
         LudumLinguarumPlugins.ExtractedContent.cards = cards
     }
+
+let ExtractPillarsOfEternity2(path: string) = 
+    let languageMap = 
+        [|
+            (@"localized\en", "en")
+            (@"localized\fr", "fr")
+            (@"localized\de", "de")
+            (@"localized\it", "it")
+            (@"localized\es", "es")
+            (@"localized\ko", "ko")
+            (@"localized\pl", "pl")
+            (@"localized\pt", "pt")
+            (@"localized\ru", "ru")
+            (@"localized\zh", "zh-CN")
+        |]
+        |> Map.ofArray
+
+    // create lessons for each of the subdirectories in the asset zips
+    let lessonsMap = 
+        [|
+            (@"text\chatter", "Chatter")
+            (@"text\game", "Game Text")
+            (@"text\conversations", "Conversations")
+            (@"text\quests", "Quests")
+        |]
+        |> Array.mapi(fun i (k, v) -> (k, createLesson(i)(v)))
+        |> Map.ofArray
+
+    let fileExclusions = 
+        [|
+        |]
+
+    // load zips in reverse order, so the call to distinct will preserve the most recent ones
+    let cardKeyAndLanguage(c: CardRecord) = c.LanguageTag + c.Key
+    let cards = 
+        [|
+            @"PillarsOfEternity2_Data\exported"
+        |]
+        |> Array.map(fun p -> Path.Combine(path, p))
+        |> Array.filter Directory.Exists
+        |> Array.collect(generateCardsForAssetPath(languageMap, lessonsMap, fileExclusions))
+        |> Array.distinctBy cardKeyAndLanguage
+
+    let (_, lessons) = lessonsMap |> Map.toArray |> Array.unzip
+    {
+        LudumLinguarumPlugins.ExtractedContent.lessons = lessons
+        LudumLinguarumPlugins.ExtractedContent.cards = cards
+    }

@@ -22,6 +22,7 @@ type OneOffGamesPlugin() =
             ("Puzzle Kingdoms", PuzzleQuestGames.ExtractPuzzleKingdoms)
             ("Puzzle Quest 2", PuzzleQuestGames.ExtractPuzzleQuest2)
             ("Pillars of Eternity", PillarsOfEternity.ExtractPillarsOfEternity)
+            ("Pillars of Eternity II: Deadfire", PillarsOfEternity.ExtractPillarsOfEternity2)
             ("Orcs Must Die!", OrcsMustDie.ExtractOrcsMustDie)
             ("Orcs Must Die! 2", OrcsMustDie.ExtractOrcsMustDie2)
             ("Hatoful Boyfriend", SimpleGames.ExtractHatofulBoyfriend)

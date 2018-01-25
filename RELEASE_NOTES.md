@@ -1,3 +1,7 @@
+#### 0.17.0 - January 24 2018
+* Added support for:
+  * [Pillars of Eternity II: Deadfire](http://store.steampowered.com/app/560130/) \[de, en, es, fr, it, ko, pl, pt, ru, zh-CN \]
+
 #### 0.16.0 - December 26 2017
 * Added support for:
 	* [Darwinia](http://store.steampowered.com/app/1500/) \[de, en, es, fr, it\]
