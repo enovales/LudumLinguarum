@@ -1,7 +1,6 @@
 ﻿module StarWarsGBS
 
 open Argu
-open CommandLine
 open FSharp.Core
 open LLDatabase
 open LudumLinguarumPlugins
