@@ -1,10 +1,9 @@
-﻿CommandLineParser
-Argu
-YamlDotNet
-PInvoke.Win32
-LANGIDMappings
+﻿Argu
 FsGettextUtils
 ICSharpCode.SharpZipLib-dogfood
+LANGIDMappings
+PInvoke.Win32
 sharpcompress
+YamlDotNet
 
 File: AFS.fs
