@@ -39,6 +39,7 @@ Games supported, and languages supported (for games that are a single download f
 * [Orcs Must Die!](http://store.steampowered.com/app/102600/) \[de, en, es, fr, it, ja, pl, pt, ru\]
 * [Orcs Must Die! 2](http://store.steampowered.com/app/201790/) \[de, en, es, fr, it, ja, pl, pt, ru\]
 * [Pillars of Eternity](http://store.steampowered.com/app/291650/) \[de, en, es, fr, it, ko, pl, ru\]
+* [Pillars of Eternity II: Deadfire](http://store.steampowered.com/app/560130/) \[de, en, es, fr, it, ko, pl, pt, ru, zh-CN \]
 * [Puzzle Chronicles](http://store.steampowered.com/app/19020/) \[de, en, en-gb, es, es-mx, fr, fr-ca, it\]
 * [Puzzle Kingdoms](http://store.steampowered.com/app/23700/) \[de, en, es, fr, it\]
 * [Puzzle Quest 2](http://store.steampowered.com/app/47540/) \[de, en, es, fr, it\]

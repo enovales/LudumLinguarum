@@ -5,13 +5,13 @@ open System.Reflection
 [<assembly: AssemblyTitleAttribute("InfinityAuroraEnginePlugins")>]
 [<assembly: AssemblyProductAttribute("LudumLinguarum")>]
 [<assembly: AssemblyDescriptionAttribute("Tools for extracting localized content from games, and turning them into language learning content.")>]
-[<assembly: AssemblyVersionAttribute("0.16.0")>]
-[<assembly: AssemblyFileVersionAttribute("0.16.0")>]
+[<assembly: AssemblyVersionAttribute("0.17.0")>]
+[<assembly: AssemblyFileVersionAttribute("0.17.0")>]
 do ()
 
 module internal AssemblyVersionInformation =
     let [<Literal>] AssemblyTitle = "InfinityAuroraEnginePlugins"
     let [<Literal>] AssemblyProduct = "LudumLinguarum"
     let [<Literal>] AssemblyDescription = "Tools for extracting localized content from games, and turning them into language learning content."
-    let [<Literal>] AssemblyVersion = "0.16.0"
-    let [<Literal>] AssemblyFileVersion = "0.16.0"
+    let [<Literal>] AssemblyVersion = "0.17.0"
+    let [<Literal>] AssemblyFileVersion = "0.17.0"
