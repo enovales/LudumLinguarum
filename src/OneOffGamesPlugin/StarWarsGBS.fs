@@ -134,7 +134,7 @@ let private runExtractGBS(path: string)(settings: ParseResults<GBSPluginArgs>) =
 
     let cards = 
         modulesToExtract
-        |> Array.collect(extractCardsForModule(settings.GetResult(<@ Language_Tag @>)))
+        |> Array.collect(extractCardsForModule(settings.GetResult(Language_Tag)))
 
     {
         LudumLinguarumPlugins.ExtractedContent.lessons = [| mainLessonEntry; x1LessonEntry |]

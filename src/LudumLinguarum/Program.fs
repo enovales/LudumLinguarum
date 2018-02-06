@@ -175,18 +175,18 @@ let private makeLessonNameFilter(nameOpt: string option) =
 
 let runImportAction(iPluginManager: IPluginManager, 
                     _: TextWriter, dbRoot: string)(vc: ParseResults<ImportArgs>) = 
-    let gameName = vc.GetResult(<@ ImportArgs.Game @>)
+    let gameName = vc.GetResult(ImportArgs.Game)
     let pluginOpt = iPluginManager.GetPluginForGame(gameName)
     match pluginOpt with
     | Some(plugin) -> 
         // run the import action with the plugin
         let argv = 
-            match vc.TryGetResult(<@ ImportArgs.Plugin_Arguments @>) with
+            match vc.TryGetResult(ImportArgs.Plugin_Arguments) with
             | Some(args) -> args.Split([| '\r'; '\n'; ' '; '\t' |], StringSplitOptions.RemoveEmptyEntries)
             | _ -> [||]
 
         let llDatabase = new LLDatabase(Path.Combine(dbRoot, makeDatabaseFilenameForGame(gameName)))
-        let extractedContent = plugin.ExtractAll(vc.GetResult(<@ ImportArgs.Game @>), vc.GetResult(<@ ImportArgs.Game_Dir @>), argv)
+        let extractedContent = plugin.ExtractAll(vc.GetResult(ImportArgs.Game), vc.GetResult(ImportArgs.Game_Dir), argv)
 
         // Now, add lessons to the database, and remap lesson IDs in the cards before adding them.
         let actualLessonIds = 
@@ -206,24 +206,24 @@ let runImportAction(iPluginManager: IPluginManager,
         llDatabase.CreateOrUpdateCards(remappedCards)
 
     | _ ->
-        failwith("Could not find installed plugin for '" + vc.GetResult(<@ ImportArgs.Game @>) + "'")
+        failwith("Could not find installed plugin for '" + vc.GetResult(ImportArgs.Game) + "'")
 
 let runExportAnkiAction(iPluginManager: IPluginManager, 
                         outputTextWriter: TextWriter, dbRoot: string)(args: ParseResults<ExportAnkiArgs>) = 
     let vc = 
         {
-            CardExport.AnkiExporterConfiguration.ExportPath = args.GetResult(<@ ExportAnkiArgs.Export_Path @>)
-            CardExport.AnkiExporterConfiguration.LessonToExport = args.TryGetResult(<@ ExportAnkiArgs.Lesson @>)
-            CardExport.AnkiExporterConfiguration.LessonRegexToExport = args.TryGetResult(<@ ExportAnkiArgs.Lesson_Regex @>)
-            CardExport.AnkiExporterConfiguration.RecognitionLanguage = args.GetResult(<@ ExportAnkiArgs.Recognition_Language @>)
-            CardExport.AnkiExporterConfiguration.ProductionLanguage = args.GetResult(<@ ExportAnkiArgs.Production_Language @>)
-            CardExport.AnkiExporterConfiguration.RecognitionLengthLimit = args.TryGetResult(<@ ExportAnkiArgs.Recognition_Length_Limit @>)
-            CardExport.AnkiExporterConfiguration.ProductionLengthLimit = args.TryGetResult(<@ ExportAnkiArgs.Production_Length_Limit @>)
-            CardExport.AnkiExporterConfiguration.RecognitionWordLimit = args.TryGetResult(<@ ExportAnkiArgs.Recognition_Word_Limit @>)
-            CardExport.AnkiExporterConfiguration.ProductionWordLimit = args.TryGetResult(<@ ExportAnkiArgs.Production_Word_Limit @>)
+            CardExport.AnkiExporterConfiguration.ExportPath = args.GetResult(ExportAnkiArgs.Export_Path)
+            CardExport.AnkiExporterConfiguration.LessonToExport = args.TryGetResult(ExportAnkiArgs.Lesson)
+            CardExport.AnkiExporterConfiguration.LessonRegexToExport = args.TryGetResult(ExportAnkiArgs.Lesson_Regex)
+            CardExport.AnkiExporterConfiguration.RecognitionLanguage = args.GetResult(ExportAnkiArgs.Recognition_Language)
+            CardExport.AnkiExporterConfiguration.ProductionLanguage = args.GetResult(ExportAnkiArgs.Production_Language)
+            CardExport.AnkiExporterConfiguration.RecognitionLengthLimit = args.TryGetResult(ExportAnkiArgs.Recognition_Length_Limit)
+            CardExport.AnkiExporterConfiguration.ProductionLengthLimit = args.TryGetResult(ExportAnkiArgs.Production_Length_Limit)
+            CardExport.AnkiExporterConfiguration.RecognitionWordLimit = args.TryGetResult(ExportAnkiArgs.Recognition_Word_Limit)
+            CardExport.AnkiExporterConfiguration.ProductionWordLimit = args.TryGetResult(ExportAnkiArgs.Production_Word_Limit)
         }
 
-    let gameName = args.GetResult(<@ ExportAnkiArgs.Game @>)
+    let gameName = args.GetResult(ExportAnkiArgs.Game)
     let llDatabase = new LLDatabase(Path.Combine(dbRoot, makeDatabaseFilenameForGame(gameName)))
     let exporter = new CardExport.AnkiExporter(iPluginManager, outputTextWriter, llDatabase, vc)
     exporter.RunExportAction()
@@ -231,10 +231,10 @@ let runExportAnkiAction(iPluginManager: IPluginManager,
 let runScanForTextAction(otw: TextWriter)(vc: ParseResults<ScanForTextArgs>) = 
     let config = 
         {
-            DebugTools.TextScannerConfiguration.Path = vc.GetResult(<@ ScanForTextArgs.Path @>)
-            DebugTools.TextScannerConfiguration.MinimumLength = vc.GetResult(<@ ScanForTextArgs.Minimum_Length @>, defaultValue = 1)
-            DebugTools.TextScannerConfiguration.MaximumLength = vc.GetResult(<@ ScanForTextArgs.Maximum_Length @>, defaultValue = 10)
-            DebugTools.TextScannerConfiguration.DictionaryFile = vc.GetResult(<@ ScanForTextArgs.Dictionary_File @>, defaultValue = "dictionary.txt")
+            DebugTools.TextScannerConfiguration.Path = vc.GetResult(ScanForTextArgs.Path)
+            DebugTools.TextScannerConfiguration.MinimumLength = vc.GetResult(ScanForTextArgs.Minimum_Length, defaultValue = 1)
+            DebugTools.TextScannerConfiguration.MaximumLength = vc.GetResult(ScanForTextArgs.Maximum_Length, defaultValue = 10)
+            DebugTools.TextScannerConfiguration.DictionaryFile = vc.GetResult(ScanForTextArgs.Dictionary_File, defaultValue = "dictionary.txt")
         }
     let scanner = new DebugTools.StringScanner(config)
     let results = scanner.Scan()
@@ -256,7 +256,7 @@ let runScanForTextAction(otw: TextWriter)(vc: ParseResults<ScanForTextArgs>) =
 let runListGamesAction(iPluginManager: IPluginManager, otw: TextWriter, dbRoot: string)(vc: ParseResults<ListGamesArgs>) = 
     let dbPaths = Directory.GetFiles(dbRoot, "*.db3", SearchOption.AllDirectories)
     let gameFilterFunc = 
-        match vc.TryGetResult(<@ ListGamesArgs.Filter_Regex @>) with
+        match vc.TryGetResult(ListGamesArgs.Filter_Regex) with
         | Some(rs) ->
             let rx = new Regex(rs)
             (fun s -> rx.IsMatch(s))
@@ -270,7 +270,7 @@ let runListGamesAction(iPluginManager: IPluginManager, otw: TextWriter, dbRoot: 
         |> Array.zip (filteredGames |> Array.map makeDatabaseFilenameForGame)
         |> Map.ofArray
 
-    let languagesToSearch = vc.TryGetResult(<@ ListGamesArgs.Languages @>) |> Option.map Set.ofList    
+    let languagesToSearch = vc.TryGetResult(ListGamesArgs.Languages) |> Option.map Set.ofList    
     let listGamesForDb(dbPath: string) = 
         match (databaseNamesToGameNames |> Map.tryFind(Path.GetFileName(dbPath)), languagesToSearch) with
         | (Some(gn), Some(lts)) ->
@@ -307,7 +307,7 @@ let runListLessonsAction(iPluginManager: IPluginManager, otw: TextWriter, dbRoot
     let dbPaths = Directory.GetFiles(dbRoot, "*.db3", SearchOption.AllDirectories)
 
     let gameFilterFunc = 
-        match vc.TryGetResult(<@ ListLessonsArgs.Game_Regex @>) with
+        match vc.TryGetResult(ListLessonsArgs.Game_Regex) with
         | Some(rs) ->
             let rx = new Regex(rs)
             (fun s -> rx.IsMatch(s))
@@ -321,7 +321,7 @@ let runListLessonsAction(iPluginManager: IPluginManager, otw: TextWriter, dbRoot
         |> Array.zip (filteredGames |> Array.map makeDatabaseFilenameForGame)
         |> Map.ofArray
 
-    let lessonFilter = makeLessonRegexFilter(vc.TryGetResult(<@ ListLessonsArgs.Filter_Regex @>))
+    let lessonFilter = makeLessonRegexFilter(vc.TryGetResult(ListLessonsArgs.Filter_Regex))
 
     let listLessonsForDb(dbPath: string) =
         let db = new LLDatabase(dbPath)
@@ -339,7 +339,7 @@ let runListLessonsAction(iPluginManager: IPluginManager, otw: TextWriter, dbRoot
     |> Array.iter otw.WriteLine
 
 let runDeleteGameAction(otw: TextWriter, dbRoot: string)(vc: ParseResults<DeleteGameArgs>) = 
-    let gameName = vc.GetResult(<@ DeleteGameArgs.Game @>)
+    let gameName = vc.GetResult(DeleteGameArgs.Game)
     let dbPath = Path.Combine(dbRoot, makeDatabaseFilenameForGame(gameName))
     try
         File.Delete(dbPath)
@@ -348,15 +348,15 @@ let runDeleteGameAction(otw: TextWriter, dbRoot: string)(vc: ParseResults<Delete
         | _ -> failwith("Couldn't delete database file [" + dbPath + "] for game [" + gameName + "]")
             
 let runDeleteLessonsAction(otw: TextWriter, dbRoot: string)(vc: ParseResults<DeleteLessonsArgs>) = 
-    let gameName = vc.GetResult(<@ DeleteLessonsArgs.Game @>)
+    let gameName = vc.GetResult(DeleteLessonsArgs.Game)
     let dbPath = Path.Combine(dbRoot, makeDatabaseFilenameForGame(gameName))
 
     if File.Exists(dbPath) then
         let db = new LLDatabase(dbPath)
 
         let lessonFilter = 
-            let f1 = makeLessonRegexFilter(vc.TryGetResult(<@ DeleteLessonsArgs.Filter_Regex @>))
-            let f2 = makeLessonNameFilter(vc.TryGetResult(<@ DeleteLessonsArgs.Lesson_Name @>))
+            let f1 = makeLessonRegexFilter(vc.TryGetResult(DeleteLessonsArgs.Filter_Regex))
+            let f2 = makeLessonNameFilter(vc.TryGetResult(DeleteLessonsArgs.Lesson_Name))
             fun (l: LessonRecord) -> f1(l) || f2(l)
 
         let deleteLesson(l: LessonRecord) = 
@@ -376,37 +376,37 @@ let runDeleteLessonsAction(otw: TextWriter, dbRoot: string)(vc: ParseResults<Del
 /// <param name="dbRoot">root path for databases</param>
 /// <param name="vc">configuration for the action</param>
 let runDumpTextAction(otw: TextWriter, dbRoot: string)(vc: ParseResults<DumpTextArgs>) = 
-    let gameName = vc.GetResult(<@ DumpTextArgs.Game @>)
+    let gameName = vc.GetResult(DumpTextArgs.Game)
     let db = new LLDatabase(Path.Combine(dbRoot, makeDatabaseFilenameForGame(gameName)))
 
-    let lessonNameFilter = makeLessonRegexFilter(vc.TryGetResult(<@ DumpTextArgs.Lesson_Filter_Regex @>))
+    let lessonNameFilter = makeLessonRegexFilter(vc.TryGetResult(DumpTextArgs.Lesson_Filter_Regex))
     let contentFilter = 
-        match vc.TryGetResult(<@ DumpTextArgs.Content_Filter_Regex @>) with
+        match vc.TryGetResult(DumpTextArgs.Content_Filter_Regex) with
         | Some(filterRegex) -> 
             let regex = new Regex(filterRegex)
             (fun (c: CardRecord) -> regex.IsMatch(c.Text))
         | _ -> (fun (_: CardRecord) -> true)
 
     let languagesFilter(c: CardRecord) = 
-        match vc.TryGetResult(<@ DumpTextArgs.Languages @>) with
+        match vc.TryGetResult(DumpTextArgs.Languages) with
         | Some(parameterLanguages) -> parameterLanguages |> Seq.contains(c.LanguageTag)
         | _ -> true
 
     let dumpCard(c: CardRecord) = 
         let includeKeyPrefix = 
-            if vc.Contains(<@ DumpTextArgs.Include_Key @>) then
+            if vc.Contains(DumpTextArgs.Include_Key) then
                 c.Key + "\t"
             else
                 ""
 
         let includeLanguagePrefix = 
-            if vc.Contains(<@ DumpTextArgs.Include_Language @>) then
+            if vc.Contains(DumpTextArgs.Include_Language) then
                 c.LanguageTag + "\t"
             else
                 ""
 
         let includeLessonPrefix = 
-            if vc.Contains(<@ DumpTextArgs.Include_Lesson @>) then
+            if vc.Contains(DumpTextArgs.Include_Lesson) then
                 (db.Lessons |> Array.find(fun l -> l.ID = c.LessonID)).Name + "\t"
             else
                 ""
@@ -432,7 +432,7 @@ let runDumpTextAction(otw: TextWriter, dbRoot: string)(vc: ParseResults<DumpText
             cards
             |> Array.groupBy(fun c -> (c.LessonID, c.Key))
 
-        let sampleSize = vc.GetResult(<@ DumpTextArgs.Sample_Size @>, defaultValue = 0)
+        let sampleSize = vc.GetResult(DumpTextArgs.Sample_Size, defaultValue = 0)
         if sampleSize = 0 then
             cards
         else
@@ -454,7 +454,7 @@ let rec parseCommands(cs: string array) =
         Console.WriteLine(parser.PrintUsage())
         results
     else
-        match results.TryGetResult(<@ Command_File @>) with
+        match results.TryGetResult(Command_File) with
         | Some(commandFile) ->
             let commands = File.ReadAllText(commandFile)
             let newArgs = commands.Split([| '\n'; '\r'; ' ' |], StringSplitOptions.RemoveEmptyEntries)
@@ -500,12 +500,12 @@ let main argv =
     Console.OutputEncoding <- Encoding.UTF8
 
     let otw = 
-        match results.TryGetResult(<@ Log_File @>) with
+        match results.TryGetResult(Log_File) with
         | Some(lf) -> new StreamWriter(lf, false, Encoding.UTF8) :> TextWriter
         | _ -> System.Console.Out
 
     let fldbPath = 
-        match results.TryGetResult(<@ Database_Path @>) with
+        match results.TryGetResult(Database_Path) with
         | Some(dbPath) when Directory.Exists(dbPath) -> dbPath
         | Some(dbPath) -> failwith("Database path [" + dbPath + "] doesn't exist")
         | _ -> 
