@@ -1,8 +1,8 @@
 RESTRICTION: == net461
 NUGET
   remote: https://www.nuget.org/api/v2
-    Argu (4.2.1)
-      FSharp.Core (>= 3.1.2)
+    Argu (5.0.1)
+      FSharp.Core (>= 4.0.0.1)
     CsvHelper (6.1.1)
     FsGettextUtils (0.1.1)
       FSharp.Core
@@ -107,7 +107,7 @@ NUGET
     sqlite (3.13)
     SQLite.Native (3.12.3)
     Validation (2.4.18)
-    YamlDotNet (4.2.4)
+    YamlDotNet (4.3)
 GITHUB
   remote: praeclarum/sqlite-net
     FULLPROJECT (5603ee0c66276e2242f4bd5bf654afb9bfc91db9)
@@ -622,7 +622,7 @@ NUGET
       System.Xml.ReaderWriter (>= 4.3) - restriction: || (&& (< monoandroid) (< net45) (>= netstandard1.0) (< netstandard1.3) (< win8) (< wp8) (< wpa81)) (&& (< monotouch) (< net45) (>= netstandard1.3) (< win8) (< wpa81) (< xamarinios) (< xamarinmac) (< xamarintvos) (< xamarinwatchos)) (< portable-net45+win8+wp8+wpa81)
 GITHUB
   remote: fsharp/FAKE
-    modules/Octokit/Octokit.fsx (51a7cae12acc7292db4623ae0e3cc3a2ce6ca1c9)
+    modules/Octokit/Octokit.fsx (c9d0757a8257dc1d1ac3d28b813bc0e1d89e521f)
       Octokit (>= 0.20)
 GROUP Test
 NUGET
