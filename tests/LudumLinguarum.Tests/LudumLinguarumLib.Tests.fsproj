@@ -9,7 +9,7 @@
     <OutputType>Library</OutputType>
     <RootNamespace>LudumLinguarum.Tests</RootNamespace>
     <AssemblyName>LudumLinguarumLib.Tests</AssemblyName>
-    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
     <TargetFSharpCoreVersion>4.4.0.0</TargetFSharpCoreVersion>
     <Name>LudumLinguarumLib.Tests</Name>
     <TargetFrameworkProfile />

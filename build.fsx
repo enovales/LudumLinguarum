@@ -159,7 +159,7 @@ Target "RunTests" (fun _ ->
     !! testConfiguration 
     |> NUnit (fun p -> 
         { p with
-            Framework = "4.5.2"
+            Framework = "4.6.2"
             DisableShadowCopy = true
             TimeOut = TimeSpan.FromMinutes 20.
             ShowLabels = true

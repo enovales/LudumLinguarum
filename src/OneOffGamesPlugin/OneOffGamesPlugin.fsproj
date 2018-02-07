@@ -9,7 +9,7 @@
     <OutputType>Library</OutputType>
     <RootNamespace>OneOffGamesPlugin</RootNamespace>
     <AssemblyName>OneOffGamesPlugin</AssemblyName>
-    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
     <TargetFSharpCoreVersion>4.4.0.0</TargetFSharpCoreVersion>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Name>OneOffGamesPlugin</Name>
@@ -113,7 +113,7 @@
     </ProjectReference>
   </ItemGroup>
   <Choose>
-    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.6.1'">
+    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.6.2'">
       <ItemGroup>
         <Reference Include="Argu">
           <HintPath>..\..\packages\Argu\lib\net45\Argu.dll</HintPath>
@@ -124,7 +124,7 @@
     </When>
   </Choose>
   <Choose>
-    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.6.1'">
+    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.6.2'">
       <ItemGroup>
         <Reference Include="FsGettextUtils">
           <HintPath>..\..\packages\FsGettextUtils\lib\net461\FsGettextUtils.dll</HintPath>
@@ -135,7 +135,7 @@
     </When>
   </Choose>
   <Choose>
-    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.6.1'">
+    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.6.2'">
       <ItemGroup>
         <Reference Include="FSharp.Core">
           <HintPath>..\..\packages\FSharp.Core\lib\net40\FSharp.Core.dll</HintPath>
@@ -146,7 +146,7 @@
     </When>
   </Choose>
   <Choose>
-    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.6.1'">
+    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.6.2'">
       <ItemGroup>
         <Reference Include="ICSharpCode.SharpZipLib">
           <HintPath>..\..\packages\ICSharpCode.SharpZipLib-dogfood\lib\Net45\ICSharpCode.SharpZipLib.dll</HintPath>
@@ -157,7 +157,7 @@
     </When>
   </Choose>
   <Choose>
-    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.6.1'">
+    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.6.2'">
       <ItemGroup>
         <Reference Include="LANGIDMappings">
           <HintPath>..\..\packages\LANGIDMappings\lib\net452\LANGIDMappings.dll</HintPath>
@@ -168,7 +168,7 @@
     </When>
   </Choose>
   <Choose>
-    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.6.1'">
+    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.6.2'">
       <ItemGroup>
         <Reference Include="PInvoke.AdvApi32">
           <HintPath>..\..\packages\PInvoke.AdvApi32\lib\net45\PInvoke.AdvApi32.dll</HintPath>
@@ -179,7 +179,7 @@
     </When>
   </Choose>
   <Choose>
-    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.6.1'">
+    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.6.2'">
       <ItemGroup>
         <Reference Include="PInvoke.BCrypt">
           <HintPath>..\..\packages\PInvoke.BCrypt\lib\net45\PInvoke.BCrypt.dll</HintPath>
@@ -190,7 +190,7 @@
     </When>
   </Choose>
   <Choose>
-    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.6.1'">
+    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.6.2'">
       <ItemGroup>
         <Reference Include="PInvoke.Crypt32">
           <HintPath>..\..\packages\PInvoke.Crypt32\lib\net45\PInvoke.Crypt32.dll</HintPath>
@@ -201,7 +201,7 @@
     </When>
   </Choose>
   <Choose>
-    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.6.1'">
+    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.6.2'">
       <ItemGroup>
         <Reference Include="PInvoke.DbgHelp">
           <HintPath>..\..\packages\PInvoke.DbgHelp\lib\net45\PInvoke.DbgHelp.dll</HintPath>
@@ -212,7 +212,7 @@
     </When>
   </Choose>
   <Choose>
-    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.6.1'">
+    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.6.2'">
       <ItemGroup>
         <Reference Include="PInvoke.DwmApi">
           <HintPath>..\..\packages\PInvoke.DwmApi\lib\net45\PInvoke.DwmApi.dll</HintPath>
@@ -223,7 +223,7 @@
     </When>
   </Choose>
   <Choose>
-    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.6.1'">
+    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.6.2'">
       <ItemGroup>
         <Reference Include="PInvoke.Gdi32">
           <HintPath>..\..\packages\PInvoke.Gdi32\lib\net45\PInvoke.Gdi32.dll</HintPath>
@@ -234,7 +234,7 @@
     </When>
   </Choose>
   <Choose>
-    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.6.1'">
+    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.6.2'">
       <ItemGroup>
         <Reference Include="PInvoke.Hid">
           <HintPath>..\..\packages\PInvoke.Hid\lib\net45\PInvoke.Hid.dll</HintPath>
@@ -245,7 +245,7 @@
     </When>
   </Choose>
   <Choose>
-    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.6.1'">
+    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.6.2'">
       <ItemGroup>
         <Reference Include="PInvoke.ImageHlp">
           <HintPath>..\..\packages\PInvoke.ImageHlp\lib\net45\PInvoke.ImageHlp.dll</HintPath>
@@ -256,7 +256,7 @@
     </When>
   </Choose>
   <Choose>
-    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.6.1'">
+    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.6.2'">
       <ItemGroup>
         <Reference Include="PInvoke.Kernel32">
           <HintPath>..\..\packages\PInvoke.Kernel32\lib\net45\PInvoke.Kernel32.dll</HintPath>
@@ -267,7 +267,7 @@
     </When>
   </Choose>
   <Choose>
-    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.6.1'">
+    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.6.2'">
       <ItemGroup>
         <Reference Include="PInvoke.Magnification">
           <HintPath>..\..\packages\PInvoke.Magnification\lib\net45\PInvoke.Magnification.dll</HintPath>
@@ -278,7 +278,7 @@
     </When>
   </Choose>
   <Choose>
-    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.6.1'">
+    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.6.2'">
       <ItemGroup>
         <Reference Include="PInvoke.Msi">
           <HintPath>..\..\packages\PInvoke.Msi\lib\net45\PInvoke.Msi.dll</HintPath>
@@ -289,7 +289,7 @@
     </When>
   </Choose>
   <Choose>
-    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.6.1'">
+    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.6.2'">
       <ItemGroup>
         <Reference Include="PInvoke.NCrypt">
           <HintPath>..\..\packages\PInvoke.NCrypt\lib\net45\PInvoke.NCrypt.dll</HintPath>
@@ -300,7 +300,7 @@
     </When>
   </Choose>
   <Choose>
-    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.6.1'">
+    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.6.2'">
       <ItemGroup>
         <Reference Include="PInvoke.NetApi32">
           <HintPath>..\..\packages\PInvoke.NetApi32\lib\net45\PInvoke.NetApi32.dll</HintPath>
@@ -311,7 +311,7 @@
     </When>
   </Choose>
   <Choose>
-    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.6.1'">
+    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.6.2'">
       <ItemGroup>
         <Reference Include="PInvoke.NTDll">
           <HintPath>..\..\packages\PInvoke.NTDll\lib\net45\PInvoke.NTDll.dll</HintPath>
@@ -322,7 +322,7 @@
     </When>
   </Choose>
   <Choose>
-    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.6.1'">
+    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.6.2'">
       <ItemGroup>
         <Reference Include="PInvoke.Psapi">
           <HintPath>..\..\packages\PInvoke.Psapi\lib\net45\PInvoke.Psapi.dll</HintPath>
@@ -333,7 +333,7 @@
     </When>
   </Choose>
   <Choose>
-    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.6.1'">
+    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.6.2'">
       <ItemGroup>
         <Reference Include="PInvoke.SetupApi">
           <HintPath>..\..\packages\PInvoke.SetupApi\lib\net45\PInvoke.SetupApi.dll</HintPath>
@@ -344,7 +344,7 @@
     </When>
   </Choose>
   <Choose>
-    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.6.1'">
+    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.6.2'">
       <ItemGroup>
         <Reference Include="PInvoke.SHCore">
           <HintPath>..\..\packages\PInvoke.SHCore\lib\net45\PInvoke.SHCore.dll</HintPath>
@@ -355,7 +355,7 @@
     </When>
   </Choose>
   <Choose>
-    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.6.1'">
+    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.6.2'">
       <ItemGroup>
         <Reference Include="PInvoke.Shell32">
           <HintPath>..\..\packages\PInvoke.Shell32\lib\net45\PInvoke.Shell32.dll</HintPath>
@@ -366,7 +366,7 @@
     </When>
   </Choose>
   <Choose>
-    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.6.1'">
+    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.6.2'">
       <ItemGroup>
         <Reference Include="PInvoke.User32">
           <HintPath>..\..\packages\PInvoke.User32\lib\net45\PInvoke.User32.dll</HintPath>
@@ -377,7 +377,7 @@
     </When>
   </Choose>
   <Choose>
-    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.6.1'">
+    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.6.2'">
       <ItemGroup>
         <Reference Include="PInvoke.Userenv">
           <HintPath>..\..\packages\PInvoke.Userenv\lib\net45\PInvoke.Userenv.dll</HintPath>
@@ -388,7 +388,7 @@
     </When>
   </Choose>
   <Choose>
-    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.6.1'">
+    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.6.2'">
       <ItemGroup>
         <Reference Include="PInvoke.UxTheme">
           <HintPath>..\..\packages\PInvoke.UxTheme\lib\net45\PInvoke.UxTheme.dll</HintPath>
@@ -399,7 +399,7 @@
     </When>
   </Choose>
   <Choose>
-    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.6.1'">
+    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.6.2'">
       <ItemGroup>
         <Reference Include="PInvoke.Windows.Core">
           <HintPath>..\..\packages\PInvoke.Windows.Core\lib\net35\PInvoke.Windows.Core.dll</HintPath>
@@ -410,7 +410,7 @@
     </When>
   </Choose>
   <Choose>
-    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.6.1'">
+    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.6.2'">
       <ItemGroup>
         <Reference Include="PInvoke.Windows.ShellScalingApi">
           <HintPath>..\..\packages\PInvoke.Windows.ShellScalingApi\lib\net45\PInvoke.Windows.ShellScalingApi.dll</HintPath>
@@ -421,7 +421,7 @@
     </When>
   </Choose>
   <Choose>
-    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.6.1'">
+    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.6.2'">
       <ItemGroup>
         <Reference Include="PInvoke.WtsApi32">
           <HintPath>..\..\packages\PInvoke.WtsApi32\lib\net45\PInvoke.WtsApi32.dll</HintPath>
@@ -432,7 +432,7 @@
     </When>
   </Choose>
   <Choose>
-    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.6.1'">
+    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.6.2'">
       <ItemGroup>
         <Reference Include="SharpCompress">
           <HintPath>..\..\packages\SharpCompress\lib\net45\SharpCompress.dll</HintPath>
@@ -443,7 +443,7 @@
     </When>
   </Choose>
   <Choose>
-    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.6.1'">
+    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.6.2'">
       <ItemGroup>
         <Reference Include="Validation">
           <HintPath>..\..\packages\Validation\lib\net45\Validation.dll</HintPath>
@@ -454,7 +454,7 @@
     </When>
   </Choose>
   <Choose>
-    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.6.1'">
+    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.6.2'">
       <ItemGroup>
         <Reference Include="YamlDotNet">
           <HintPath>..\..\packages\YamlDotNet\lib\net45\YamlDotNet.dll</HintPath>
