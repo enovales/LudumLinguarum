@@ -17,6 +17,7 @@ let formattingCodeRegexes =
     [|
         new Regex(@"\[[^\]]+?\]")
         new Regex(@"\{[^\d\}][^\}]*?\}")
+        new Regex(@"\<.*?\>")
     |]
 
 let rec internal stripFormattingCodes(v: string): string = 
@@ -323,7 +324,7 @@ let ExtractPillarsOfEternity2(path: string) =
     let cardKeyAndLanguage(c: CardRecord) = c.LanguageTag + c.Key
     let cards = 
         [|
-            @"PillarsOfEternity2_Data\exported"
+            @"PillarsOfEternityII_Data\exported"
         |]
         |> Array.map(fun p -> Path.Combine(path, p))
         |> Array.filter Directory.Exists

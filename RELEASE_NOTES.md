@@ -1,3 +1,6 @@
+#### 0.17.1 May 9 2018
+* Fixed support for [Pillars of Eternity II: Deadfire](http://store.steampowered.com/app/560130/) \[de, en, es, fr, it, ko, pl, pt, ru, zh-CN \] to work with the final released game.
+
 #### 0.17.0 - January 24 2018
 * Added support for:
   * [Pillars of Eternity II: Deadfire](http://store.steampowered.com/app/560130/) \[de, en, es, fr, it, ko, pl, pt, ru, zh-CN \]
