@@ -324,6 +324,17 @@
   <Choose>
     <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.6.2'">
       <ItemGroup>
+        <Reference Include="PInvoke.Ole32">
+          <HintPath>..\..\packages\PInvoke.Ole32\lib\net45\PInvoke.Ole32.dll</HintPath>
+          <Private>True</Private>
+          <Paket>True</Paket>
+        </Reference>
+      </ItemGroup>
+    </When>
+  </Choose>
+  <Choose>
+    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.6.2'">
+      <ItemGroup>
         <Reference Include="PInvoke.Psapi">
           <HintPath>..\..\packages\PInvoke.Psapi\lib\net45\PInvoke.Psapi.dll</HintPath>
           <Private>True</Private>
