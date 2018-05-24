@@ -1,6 +1,7 @@
+
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.27703.2000
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".paket", ".paket", "{63297B98-5CED-492C-A5B7-A5B4F73CF142}"
 	ProjectSection(SolutionItems) = preProject
@@ -10,53 +11,46 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".paket", ".paket", "{63297B
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{A6A6AF7D-D6E3-442D-9B1E-58CC91879BE1}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "LudumLinguarumConsole", "src\LudumLinguarum\LudumLinguarumConsole.fsproj", "{0E942E56-82F8-43A4-9E66-C9CE4D7267CA}"
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "LudumLinguarum", "src\LudumLinguarum\LudumLinguarum.fsproj", "{E8F392CF-1592-4F0C-9C93-8316F3DAAC5E}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "project", "project", "{BF60BC93-E09B-4E5F-9D85-95A519479D54}"
 	ProjectSection(SolutionItems) = preProject
-		build.fsx = build.fsx
-		LICENSE.txt = LICENSE.txt
 		README.md = README.md
 		RELEASE_NOTES.md = RELEASE_NOTES.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{83F16175-43B1-4C90-A1EE-8E351C33435D}"
 	ProjectSection(SolutionItems) = preProject
-		docs\tools\generate.fsx = docs\tools\generate.fsx
-		docs\tools\templates\template.cshtml = docs\tools\templates\template.cshtml
+		docsrc\tools\generate.fsx = docsrc\tools\generate.fsx
+		docsrc\tools\templates\template.cshtml = docsrc\tools\templates\template.cshtml
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "content", "content", "{8E6D5255-776D-4B61-85F9-73C37AA1FB9A}"
 	ProjectSection(SolutionItems) = preProject
-		docs\content\index.fsx = docs\content\index.fsx
-		docs\content\license.md = docs\content\license.md
-		docs\content\release-notes.md = docs\content\release-notes.md
-		docs\content\supported-games.md = docs\content\supported-games.md
-		docs\content\tutorial.fsx = docs\content\tutorial.fsx
-		docs\content\unsupported-games.md = docs\content\unsupported-games.md
+		docsrc\content\index.fsx = docsrc\content\index.fsx
+		docsrc\content\tutorial.fsx = docsrc\content\tutorial.fsx
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{ED8079DD-2B06-4030-9F0F-DC548F98E1C4}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "LudumLinguarum.Tests", "tests\LudumLinguarum.Tests\LudumLinguarum.Tests.fsproj", "{F4A57CD1-9F18-4E5D-B1F9-B4D72275552F}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "git", "git", "{078A9C52-DDC1-46F4-9235-9E6C89C87AFD}"
 	ProjectSection(SolutionItems) = preProject
-		AllTests.config = AllTests.config
-		tests\AllTests.nunit = tests\AllTests.nunit
+		.gitattributes = .gitattributes
+		.gitignore = .gitignore
 	EndProjectSection
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "LudumLinguarumLib.Tests", "tests\LudumLinguarum.Tests\LudumLinguarumLib.Tests.fsproj", "{ADF98A1C-6AF6-4AA1-9C1C-5A0D7C39693E}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".build", ".build", "{7C6D08E7-3EAC-4335-8F4B-252C193C27C9}"
+	ProjectSection(SolutionItems) = preProject
+		.travis.yml = .travis.yml
+		appveyor.yml = appveyor.yml
+		build.cmd = build.cmd
+		build.fsx = build.fsx
+		build.sh = build.sh
+	EndProjectSection
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "LudumLinguarumLib", "src\LudumLinguarumLib\LudumLinguarumLib.fsproj", "{BA653AD5-B3E5-419F-9963-092C22519E80}"
-EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "InfinityAuroraEnginePlugins", "src\InfinityAuroraEnginePlugins\InfinityAuroraEnginePlugins.fsproj", "{551EC15E-2D53-4ED8-BD64-E1DC64A228A3}"
-EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "OneOffGamesPlugin", "src\OneOffGamesPlugin\OneOffGamesPlugin.fsproj", "{0737FC91-C5E0-421A-8D56-B552F83B6DEC}"
-EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "InfinityAuroraEnginePlugins.Tests", "tests\InfinityAuroraEnginePlugins.Tests\InfinityAuroraEnginePlugins.Tests.fsproj", "{5E334B4A-9F0C-4E0B-B5DE-3FAD2F8239C5}"
-EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "OneOffGamesPlugin.Tests", "tests\OneOffGamesPlugin.Tests\OneOffGamesPlugin.Tests.fsproj", "{D36FFD25-B582-42D3-B56B-14AEFABECD25}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OneOffGamesData", "src\OneOffGamesData\OneOffGamesData.csproj", "{42818C9B-D028-47A4-8629-B2753C185915}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LLsqlite-net", "src\LLsqlite-net\LLsqlite-net.csproj", "{5399C00C-AF4D-46DE-ADA4-C20E02D4B26B}"
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "LudumLinguarumConsole", "src\LudumLinguarumConsole\LudumLinguarumConsole.fsproj", "{B7339FEC-0891-4DF8-8BB5-0B806A64F32F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -64,42 +58,18 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{0E942E56-82F8-43A4-9E66-C9CE4D7267CA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{0E942E56-82F8-43A4-9E66-C9CE4D7267CA}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{0E942E56-82F8-43A4-9E66-C9CE4D7267CA}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{0E942E56-82F8-43A4-9E66-C9CE4D7267CA}.Release|Any CPU.Build.0 = Release|Any CPU
-		{ADF98A1C-6AF6-4AA1-9C1C-5A0D7C39693E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{ADF98A1C-6AF6-4AA1-9C1C-5A0D7C39693E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{ADF98A1C-6AF6-4AA1-9C1C-5A0D7C39693E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{ADF98A1C-6AF6-4AA1-9C1C-5A0D7C39693E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{BA653AD5-B3E5-419F-9963-092C22519E80}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{BA653AD5-B3E5-419F-9963-092C22519E80}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{BA653AD5-B3E5-419F-9963-092C22519E80}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{BA653AD5-B3E5-419F-9963-092C22519E80}.Release|Any CPU.Build.0 = Release|Any CPU
-		{551EC15E-2D53-4ED8-BD64-E1DC64A228A3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{551EC15E-2D53-4ED8-BD64-E1DC64A228A3}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{551EC15E-2D53-4ED8-BD64-E1DC64A228A3}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{551EC15E-2D53-4ED8-BD64-E1DC64A228A3}.Release|Any CPU.Build.0 = Release|Any CPU
-		{0737FC91-C5E0-421A-8D56-B552F83B6DEC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{0737FC91-C5E0-421A-8D56-B552F83B6DEC}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{0737FC91-C5E0-421A-8D56-B552F83B6DEC}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{0737FC91-C5E0-421A-8D56-B552F83B6DEC}.Release|Any CPU.Build.0 = Release|Any CPU
-		{5E334B4A-9F0C-4E0B-B5DE-3FAD2F8239C5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{5E334B4A-9F0C-4E0B-B5DE-3FAD2F8239C5}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{5E334B4A-9F0C-4E0B-B5DE-3FAD2F8239C5}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{5E334B4A-9F0C-4E0B-B5DE-3FAD2F8239C5}.Release|Any CPU.Build.0 = Release|Any CPU
-		{D36FFD25-B582-42D3-B56B-14AEFABECD25}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D36FFD25-B582-42D3-B56B-14AEFABECD25}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D36FFD25-B582-42D3-B56B-14AEFABECD25}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D36FFD25-B582-42D3-B56B-14AEFABECD25}.Release|Any CPU.Build.0 = Release|Any CPU
-		{42818C9B-D028-47A4-8629-B2753C185915}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{42818C9B-D028-47A4-8629-B2753C185915}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{42818C9B-D028-47A4-8629-B2753C185915}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{42818C9B-D028-47A4-8629-B2753C185915}.Release|Any CPU.Build.0 = Release|Any CPU
-		{5399C00C-AF4D-46DE-ADA4-C20E02D4B26B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{5399C00C-AF4D-46DE-ADA4-C20E02D4B26B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{5399C00C-AF4D-46DE-ADA4-C20E02D4B26B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{5399C00C-AF4D-46DE-ADA4-C20E02D4B26B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E8F392CF-1592-4F0C-9C93-8316F3DAAC5E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E8F392CF-1592-4F0C-9C93-8316F3DAAC5E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E8F392CF-1592-4F0C-9C93-8316F3DAAC5E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E8F392CF-1592-4F0C-9C93-8316F3DAAC5E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F4A57CD1-9F18-4E5D-B1F9-B4D72275552F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F4A57CD1-9F18-4E5D-B1F9-B4D72275552F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F4A57CD1-9F18-4E5D-B1F9-B4D72275552F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F4A57CD1-9F18-4E5D-B1F9-B4D72275552F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B7339FEC-0891-4DF8-8BB5-0B806A64F32F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B7339FEC-0891-4DF8-8BB5-0B806A64F32F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B7339FEC-0891-4DF8-8BB5-0B806A64F32F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B7339FEC-0891-4DF8-8BB5-0B806A64F32F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -107,8 +77,6 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{83F16175-43B1-4C90-A1EE-8E351C33435D} = {A6A6AF7D-D6E3-442D-9B1E-58CC91879BE1}
 		{8E6D5255-776D-4B61-85F9-73C37AA1FB9A} = {A6A6AF7D-D6E3-442D-9B1E-58CC91879BE1}
-		{ADF98A1C-6AF6-4AA1-9C1C-5A0D7C39693E} = {ED8079DD-2B06-4030-9F0F-DC548F98E1C4}
-		{5E334B4A-9F0C-4E0B-B5DE-3FAD2F8239C5} = {ED8079DD-2B06-4030-9F0F-DC548F98E1C4}
-		{D36FFD25-B582-42D3-B56B-14AEFABECD25} = {ED8079DD-2B06-4030-9F0F-DC548F98E1C4}
+		{F4A57CD1-9F18-4E5D-B1F9-B4D72275552F} = {ED8079DD-2B06-4030-9F0F-DC548F98E1C4}
 	EndGlobalSection
 EndGlobal
