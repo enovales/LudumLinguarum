@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 using PInvoke;
 
-namespace OneOffGamesData
+namespace PInvokeStubs
 {
     /// <summary>
     /// Stubs for PInvoke wrappers that can't be invoked directly from F# due to

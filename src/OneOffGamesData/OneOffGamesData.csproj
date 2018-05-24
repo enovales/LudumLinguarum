@@ -2,11 +2,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
     <None Include="paket.references" />
-  </ItemGroup>
-  <ItemGroup>
     <EmbeddedResource Include="JetSetRadio\StringBlockExtraction.csv" />
     <EmbeddedResource Include="JetSetRadio\SrtExtraction.csv" />
   </ItemGroup>

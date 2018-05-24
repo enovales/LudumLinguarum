@@ -24,7 +24,6 @@
     <Compile Include="CivilizationGames.fs" />
     <Compile Include="ParadoxStrategyGames.fs" />
     <Compile Include="AgeOfEmpiresGames.fs" />
-    <Compile Include="StarWarsGBS.fs" />
     <Compile Include="SonicAdventureDX.fs" />
     <Compile Include="CodemastersGames.fs" />
     <Compile Include="SimpleGames.fs" />

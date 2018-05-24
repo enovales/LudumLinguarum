@@ -4,7 +4,7 @@ open Argu
 open FSharp.Core
 open LLDatabase
 open LudumLinguarumPlugins
-open OneOffGamesData
+open PInvokeStubs
 open PInvoke
 open System
 open System.IO
@@ -41,8 +41,8 @@ let private getResourceNames(languageDll: Kernel32.SafeLibraryHandle) =
     resourceNameList
 
 let private getLanguagesForNamedResource(languageDll: Kernel32.SafeLibraryHandle)(name: nativeint) = 
-    let stub = new OneOffGamesData.PInvokeStubs.EnumResourceLanguagesCallback()
-    let langsSuccess = OneOffGamesData.PInvokeStubs.EnumResourceLanguages(languageDll, Kernel32.RT_STRING, Kernel32.MAKEINTRESOURCE(int name), stub)
+    let stub = new PInvokeStubs.EnumResourceLanguagesCallback()
+    let langsSuccess = PInvokeStubs.EnumResourceLanguages(languageDll, Kernel32.RT_STRING, Kernel32.MAKEINTRESOURCE(int name), stub)
     stub.Languages |> List.ofSeq
 
 let private getResourceStrings(languageDll: Kernel32.SafeLibraryHandle)(name: nativeint, langs: Kernel32.LANGID list) = 
