@@ -4,8 +4,6 @@
     <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="PInvokeStubs.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
     <None Include="paket.references" />
   </ItemGroup>
   <ItemGroup>

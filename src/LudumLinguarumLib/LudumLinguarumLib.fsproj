@@ -23,5 +23,8 @@
     <Compile Include="YamlTools.fs" />
     <Compile Include="StreamTools.fs" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\LLsqlite-net\LLsqlite-net.csproj" />
+  </ItemGroup>
   <Import Project="..\..\.paket\Paket.Restore.targets" />
 </Project>

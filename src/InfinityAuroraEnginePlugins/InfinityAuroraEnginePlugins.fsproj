@@ -28,5 +28,8 @@
     <None Include="Scripts\load-references-release.fsx" />
     <None Include="Scripts\load-project-release.fsx" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\LudumLinguarumLib\LudumLinguarumLib.fsproj" />
+  </ItemGroup>
   <Import Project="..\..\.paket\Paket.Restore.targets" />
 </Project>
