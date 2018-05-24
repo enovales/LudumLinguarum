@@ -4,9 +4,6 @@
     <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="..\..\paket-files\praeclarum\sqlite-net\src\AssemblyInfo.cs">
-      <Link>Properties\AssemblyInfo.cs</Link>
-    </Compile>
     <Compile Include="..\..\paket-files\praeclarum\sqlite-net\src\SQLite.cs">
       <Link>SQLite.cs</Link>
     </Compile>
