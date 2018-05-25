@@ -3,6 +3,9 @@
 open SQLite
 open System.Collections.Generic
 
+// one-time initialization of provider
+SQLitePCL.raw.SetProvider(new SQLitePCL.SQLite3Provider_e_sqlite3())
+
 type LessonRecord = {
         ID: int
         Name: string

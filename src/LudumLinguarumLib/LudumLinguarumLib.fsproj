@@ -2,9 +2,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="AssemblyInfo.fs" />
     <None Include="paket.references" />
     <Compile Include="BaseResources.fs" />
     <Compile Include="LLDatabase.fs" />
@@ -22,9 +22,6 @@
     <Compile Include="CsvTools.fs" />
     <Compile Include="YamlTools.fs" />
     <Compile Include="StreamTools.fs" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\LLsqlite-net\LLsqlite-net.csproj" />
   </ItemGroup>
   <Import Project="..\..\.paket\Paket.Restore.targets" />
 </Project>

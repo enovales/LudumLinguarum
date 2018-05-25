@@ -2,7 +2,7 @@
 namespace System
 open System.Reflection
 
-[<assembly: AssemblyTitleAttribute("LudumLinguarum")>]
+[<assembly: AssemblyTitleAttribute("WindowsOnlyPlugin")>]
 [<assembly: AssemblyProductAttribute("LudumLinguarum")>]
 [<assembly: AssemblyDescriptionAttribute("Tools for extracting localized content from games, and turning them into language learning content.")>]
 [<assembly: AssemblyVersionAttribute("0.17.2")>]
@@ -11,7 +11,7 @@ open System.Reflection
 do ()
 
 module internal AssemblyVersionInformation =
-    let [<Literal>] AssemblyTitle = "LudumLinguarum"
+    let [<Literal>] AssemblyTitle = "WindowsOnlyPlugin"
     let [<Literal>] AssemblyProduct = "LudumLinguarum"
     let [<Literal>] AssemblyDescription = "Tools for extracting localized content from games, and turning them into language learning content."
     let [<Literal>] AssemblyVersion = "0.17.2"

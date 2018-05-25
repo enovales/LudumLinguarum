@@ -2,13 +2,13 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="..\..\paket-files\enovales\SegaAFSTools\src\SegaAFSTools\AFS.fs">
       <Paket>True</Paket>
       <Link>paket-files/AFS.fs</Link>
     </Compile>
-    <Compile Include="AssemblyInfo.fs" />
     <None Include="paket.references" />
     <Compile Include="Utils.fs" />
     <Compile Include="Data.fs" />

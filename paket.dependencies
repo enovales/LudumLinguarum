@@ -17,7 +17,11 @@ nuget Expecto.BenchmarkDotNet
 nuget Expecto.FsCheck
 nuget Expecto.VisualStudio.TestAdapter version_in_path: true
 
-github praeclarum/sqlite-net
+//github praeclarum/sqlite-net
+nuget sqlite-net-pcl
+nuget SQLitePCLRaw.core
+nuget SQLitePCLRaw.provider.e_sqlite3.netstandard11
+
 nuget CsvHelper
 nuget sqlite
 nuget SQLite.Native
