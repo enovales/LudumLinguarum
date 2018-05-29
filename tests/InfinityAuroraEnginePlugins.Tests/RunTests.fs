@@ -8,6 +8,8 @@ module RunTests =
     let main args =
 
         Tests.runTestsWithArgs defaultConfig args ArchiveFilesTests.tests |> ignore
+        Tests.runTestsWithArgs defaultConfig args GFFFileTypesTests.tests |> ignore
+        Tests.runTestsWithArgs defaultConfig args TwoDATests.tests |> ignore
 
         0
 
