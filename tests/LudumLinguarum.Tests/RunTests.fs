@@ -14,6 +14,11 @@ module RunTests =
         Tests.runTestsWithArgs defaultConfig args DebugToolsTests.rabinKarpStringScannerTests |> ignore
         Tests.runTestsWithArgs defaultConfig args DebugToolsTests.streamStringScannerTests |> ignore
         Tests.runTestsWithArgs defaultConfig args DebugToolsTests.textScannerTests |> ignore
+        Tests.runTestsWithArgs defaultConfig args LLDatabaseTests.tests |> ignore
+        Tests.runTestsWithArgs defaultConfig args PluginManagerTests.tests |> ignore
+        Tests.runTestsWithArgs defaultConfig args SrtToolsTests.tests |> ignore
+        Tests.runTestsWithArgs defaultConfig args StringExtractorsTests.tests |> ignore
+        Tests.runTestsWithArgs defaultConfig args TrieTests.tests |> ignore
 
         0
 

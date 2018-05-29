@@ -1,83 +1,80 @@
 ﻿module TrieTests
 
-open NUnit.Framework
+open Expecto
 open Trie
 
-[<TestFixture>]
-type TrieTests() = 
-    // data for .Contains tests
-    let testContainsTrie = 
-        Trie.Root(
-            [| Trie.Node('a', 
-                [| Trie.Node('b', 
-                    [| Trie.Node('c', [||], true) |], true)
-            |], false)
-        |])
+// data for .Contains tests
+let private testContainsTrie = 
+    Trie.Root(
+        [| Trie.Node('a', 
+            [| Trie.Node('b', 
+                [| Trie.Node('c', [||], true) |], true)
+        |], false)
+    |])
 
-    [<Test>]
-    member this.``Build trie from empty array``() = 
-        Assert.AreEqual(Trie.Root([||]), Trie.Build([||]))
+[<Tests>]
+let tests = 
+  testList "Trie tests" [
+    testCase "Build trie from empty array" <|
+      fun () -> Expect.equal (Trie.Root [||]) (Trie.Build [||]) "should just be an empty node"
 
-    [<Test>]
-    member this.``Build trie from empty string``() = 
-        Assert.AreEqual(Trie.Root([||]), Trie.Build([|""|]))
+    testCase "Build trie from empty string" <|
+      fun () -> Expect.equal (Trie.Root [||]) (Trie.Build [|""|]) "should just be an empty node"
 
-    [<Test>]
-    member this.``Build trie from single char``() = 
-        Assert.AreEqual(Trie.Root([| Node('a', [||], true) |]), Trie.Build([| "a" |]))
+    testCase "Build trie from single char" <|
+      fun () -> Expect.equal (Trie.Root [| Node('a', [||], true) |]) (Trie.Build [| "a" |]) "should be a single node"
 
-    [<Test>]
-    member this.``Build trie from two chars``() = 
-        Assert.AreEqual(Trie.Root([| Trie.Node('a', [| Trie.Node('b', [||], true) |], false) |]), Trie.Build([| "ab" |]))
+    testCase "Build trie from two chars" <|
+      fun () -> 
+        let expected = Trie.Root([| Trie.Node('a', [| Trie.Node('b', [||], true) |], false) |]
+        let built = Trie.Build([| "ab" |])
+        Expect.equal expected built "should be two nested nodes"
 
-    [<Test>]
-    member this.``Build trie from overlapping words``() = 
-        Assert.AreEqual(Trie.Root([| Trie.Node('a', [| Trie.Node('b', [||], true) |], true) |]), Trie.Build([| "a"; "ab" |]))
+    testCase "Build trie from overlapping words" <|
+      fun () ->
+        let expected = Trie.Root([| Trie.Node('a', [| Trie.Node('b', [||], true) |], true) |])
+        let built = Trie.Build([| "a"; "ab" |])
+        Expect.equal expected built "should be two nested nodes"
 
-    [<Test>]
-    member this.``Build trie from non-overlapping words``() = 
-        Assert.AreEqual(Trie.Root([| Trie.Node('a', [| Trie.Node('b', [||], true); Trie.Node('c', [||], true) |], false) |]), Trie.Build([| "ab"; "ac" |]))
+    testCase "Build trie from non-overlapping words" <|
+      fun () ->
+        let expected = Trie.Root([| Trie.Node('a', [| Trie.Node('b', [||], true); Trie.Node('c', [||], true) |], false) |])
+        let built = Trie.Build([| "ab"; "ac" |])
+        Expect.equal expected built "should be three nodes"
 
-    [<Test>]
-    member this.``Build trie from disjoint words``() = 
-        Assert.AreEqual(Trie.Root([| Trie.Node('a', [||], true); Trie.Node('b', [||], true) |]), Trie.Build([| "a"; "b" |]))
+    testCase "Build trie from disjoint words" <|
+      fun () ->
+        let expected = Trie.Root([| Trie.Node('a', [||], true); Trie.Node('b', [||], true) |])
+        let built = Trie.Build([| "a"; "b" |])
+        Expect.equal expected built "should be two disjoint nodes"
 
-    [<Test>]
-    member this.``Trie doesn't match empty string``() = 
-        Assert.AreEqual(false, testContainsTrie.Contains(""))
+    testCase "Trie doesn't match empty string" <|
+      fun () -> Expect.isFalse (testContainsTrie.Contains("")) "should not match empty string"
 
-    [<Test>]
-    member this.``Empty trie doesn't contain a string``() = 
-        Assert.AreEqual(false, Trie.Root([||]).Contains("anything"))
+    testCase "Empty trie doesn't contain a string" <|
+      fun () -> Expect.isFalse (Trie.Root([||]).Contains("anything")) "should not contain anything"
 
-    [<Test>]
-    member this.``Trie.Contains() returns false on non-matching string``() = 
-        Assert.AreEqual(false, testContainsTrie.Contains("xyz"))
+    testCase "Trie.Contains() returns false on non-matching string" <|
+      fun () -> Expect.isFalse (testContainsTrie.Contains("xyz")) "should return false for non-matching string"
 
-    [<Test>]
-    member this.``Trie.Contains() returns false on non-terminal string``() = 
-        Assert.AreEqual(false, testContainsTrie.Contains("a"))
+    testCase "Trie.Contains() returns false on non-terminal string" <|
+      fun () -> Expect.isFalse (testContainsTrie.Contains("a")) "should return false for non-terminal string"
 
-    [<Test>]
-    member this.``Trie.Contains() returns true on a matching string``() = 
-        Assert.AreEqual(true, testContainsTrie.Contains("ab"))
+    testCase "Trie.Contains() returns true on a matching string" <|
+      fun () -> Expect.isTrue (testContainsTrie.Contains("ab")) "should return true for matching string"
 
-    [<Test>]
-    member this.``Trie.Contains() returns true on a matching string that reaches a terminal node``() = 
-        Assert.AreEqual(true, testContainsTrie.Contains("abc"))
+    testCase "Trie.Contains() returns true on a matching string that reaches a terminal node" <|
+      fun () -> Expect.isTrue (testContainsTrie.Contains("abc")) "should return true when reaching terminal node"
 
-    [<Test>]
-    member this.``Trie.Contains() returns false on a string that's too long``() = 
-        Assert.AreEqual(false, testContainsTrie.Contains("abc1234567890"))
+    testCase "Trie.Contains() returns false on a string that's too long" <|
+      fun () -> Expect.isFalse (testContainsTrie.Contains("abc1234567890")) "should return false on too-long string"
 
-    [<Test>]
-    member this.``NextNode() returns None for non-matching next character``() = 
-        Assert.AreEqual(None, testContainsTrie.NextNode('1'))
+    testCase "NextNode() returns None for non-matching next character" <|
+      fun () -> Expect.isNone (testContainsTrie.NextNode('1')) "should return None for non-matching next character"
 
-    [<Test>]
-    member this.``NextNode() returns Some for matching next character``() = 
-        Assert.AreEqual(true, testContainsTrie.NextNode('a').IsSome)
+    testCase "NextNode() returns Some for matching next character" <|
+      fun () -> Expect.isTrue (testContainsTrie.NextNode('a').IsSome) "should return Some for matching next character"
 
-    [<Test>]
-    member this.``Matching is case-insensitive``() = 
-        Assert.AreEqual(true, testContainsTrie.Contains("ABC"))
+    testCase "Matching is case-insensitive" <|
+      fun () -> Expect.isTrue (testContainsTrie.Contains("ABC")) "matching should be case-insensitive"
+  ]
