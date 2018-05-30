@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net47</TargetFramework>
+    <TargetFramework>net471</TargetFramework>
     <RootNamespace>OneOffGamesPlugin.Tests</RootNamespace>
     <AssemblyName>OneOffGamesPlugin.Tests</AssemblyName>
     <Name>OneOffGamesPlugin.Tests</Name>
@@ -12,7 +12,6 @@
   <ItemGroup>
     <Compile Include="AssemblyInfo.fs" />
     <Compile Include="JetSetRadioTests.fs" />
-    <Compile Include="OneOffGamesPluginTests.fs" />
     <Compile Include="SimpleGamesTests.fs" />
     <Compile Include="XUIGamesTests.fs" />
     <Compile Include="WormsArmageddonTests.fs" />

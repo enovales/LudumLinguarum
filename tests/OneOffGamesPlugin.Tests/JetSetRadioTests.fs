@@ -12,23 +12,23 @@ let tests =
     testCase "Read until too many nulls, with one null" <|
       fun () ->
         use br = new BinaryReader(new MemoryStream([| byte 1; byte 0 |]))
-        Expect.equal (Some byte 1 0) (JetSetRadio.readUntilTooManyNulls(br, 1, false)(0)) ""
+        Expect.equal (Some(byte 1, 0)) (JetSetRadio.readUntilTooManyNulls(br, 1, false)(0)) ""
         Expect.equal (None) (JetSetRadio.readUntilTooManyNulls(br, 1, false)(0)) ""
 
     testCase "Read until too many nulls, with two nulls" <|
       fun () ->
         use br = new BinaryReader(new MemoryStream([| byte 1; byte 0; byte 0; |]))
-        Expect.equal (Some byte 1 0) (JetSetRadio.readUntilTooManyNulls(br, 2, false)(0)) ""
-        Expect.equal (Some byte 0 1) (JetSetRadio.readUntilTooManyNulls(br, 2, false)(0)) ""
+        Expect.equal (Some(byte 1, 0)) (JetSetRadio.readUntilTooManyNulls(br, 2, false)(0)) ""
+        Expect.equal (Some(byte 0, 1)) (JetSetRadio.readUntilTooManyNulls(br, 2, false)(0)) ""
         Expect.equal None (JetSetRadio.readUntilTooManyNulls(br, 2, false)(1)) ""
 
     testCase "Counting of nulls in readUntilTooManyNulls" <|
       fun () ->
         use br = new BinaryReader(new MemoryStream([| byte 1; byte 0; byte 2; byte 0; byte 0 |]))
-        Expect.equal (Some byte 1 0) (JetSetRadio.readUntilTooManyNulls(br, 2, false)(0)) ""
-        Expect.equal (Some byte 0 1) (JetSetRadio.readUntilTooManyNulls(br, 2, false)(0)) ""
-        Expect.equal (Some byte 2 0) (JetSetRadio.readUntilTooManyNulls(br, 2, false)(1)) ""
-        Expect.equal (Some byte 0 1) (JetSetRadio.readUntilTooManyNulls(br, 2, false)(0)) ""
+        Expect.equal (Some(byte 1, 0)) (JetSetRadio.readUntilTooManyNulls(br, 2, false)(0)) ""
+        Expect.equal (Some(byte 0, 1)) (JetSetRadio.readUntilTooManyNulls(br, 2, false)(0)) ""
+        Expect.equal (Some(byte 2, 0)) (JetSetRadio.readUntilTooManyNulls(br, 2, false)(1)) ""
+        Expect.equal (Some(byte 0, 1)) (JetSetRadio.readUntilTooManyNulls(br, 2, false)(0)) ""
         Expect.equal None (JetSetRadio.readUntilTooManyNulls(br, 2, false)(1)) ""
 
     testCase "Reading a single null-delimited string set" <|

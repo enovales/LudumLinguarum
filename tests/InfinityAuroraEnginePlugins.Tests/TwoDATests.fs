@@ -47,7 +47,7 @@ let private sample2DATextWithFloats =
 
 [<Tests>]
 let tests = 
-  testList [
+  testList "2DA tests" [
     testCase "Loading a simple 2DA" <|
       fun () ->
         let twoDA = TwoDAFile.FromString(sample2DAText)

@@ -1,4 +1,4 @@
-﻿namespace InfinityAuroraEnginePluginsTests
+﻿module ArchiveFilesTests
 
 open InfinityAuroraEnginePlugins.ArchiveFiles
 open InfinityAuroraEnginePlugins.CommonTypes
