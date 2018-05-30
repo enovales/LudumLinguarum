@@ -363,7 +363,9 @@ Target "Release" (fun _ ->
     // release on github
     createClient user pw
     |> createDraft gitOwner gitName release.NugetVersion (release.SemVer.PreRelease <> None) release.Notes
-    // TODO: |> uploadFile "PATH_TO_FILE"
+    |> uploadFile "publish/LudumLinguarum-win-x64.zip"
+    |> uploadFile "publish/LudumLinguarum-linux-x64.zip"
+    |> uploadFile "publish/LudumLinguarum-osx-x64.zip"
     |> releaseDraft
     |> Async.RunSynchronously
 )
@@ -398,7 +400,7 @@ Target "All" DoNothing
 "BuildPackage"
   ==> "PublishBinaries"
   ==> "ZipBinaries"
-  //==> "PublishNuget"
-  //==> "Release"
+  ==> "PublishNuget"
+  ==> "Release"
 
 RunTargetOrDefault "All"
