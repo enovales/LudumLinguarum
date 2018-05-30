@@ -1,20 +1,21 @@
 ﻿module OrcsMustDieTests
 
+open Expecto
 open LLDatabase
-open NUnit.Framework
 open System.Xml.Linq
 
-[<TestFixture>]
-type OrcsMustDieTests() = 
-    [<Test>]
-    member this.``Calling generateKVForTextElement returns a pair of the '_locID' element, and the value``() = 
+[<Tests>]
+let tests = 
+  testList "Orcs Must Die! tests" [
+    testCase "Calling generateKVForTextElement returns a pair of the '_locID' element, and the value" <|
+      fun () ->
         let contents: obj array = [| new XAttribute(XName.Get("_locID"), "12345"); "content" |]
         let el = new XElement(XName.Get("String"), contents)
         let expected = ("12345", "content")
-        Assert.AreEqual(expected, OrcsMustDie.generateKVForTextElement(el))
+        Expect.equal expected (OrcsMustDie.generateKVForTextElement el) ""
 
-    [<Test>]
-    member this.``Calling generateCardsForXml returns a card for an XML document with a single localized string``() = 
+    testCase "Calling generateCardsForXml returns a card for an XML document with a single localized string" <|
+      fun () ->
         let xml = """<?xml version="1.0" encoding="UTF-16"?>
 <StringTable version ='0'>
    <Language name ='Unused'>
@@ -41,10 +42,10 @@ type OrcsMustDieTests() =
                 }
             |]
 
-        Assert.AreEqual(expected, generated)
+        Expect.equal expected generated ""
 
-    [<Test>]
-    member this.``Calling generateCardsForXml autodetects the language to use from the XML string, if one is not specified``() = 
+    testCase "Calling generateCardsForXml autodetects the language to use from the XML string, if one is not specified" <|
+      fun () ->
         let xml = """<?xml version="1.0" encoding="UTF-16"?>
 <StringTable version ='0'>
    <Language name ='English'>
@@ -71,4 +72,5 @@ type OrcsMustDieTests() =
                 }
             |]
 
-        Assert.AreEqual(expected, generated)
+        Expect.equal expected generated ""
+  ]

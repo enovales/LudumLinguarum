@@ -1,47 +1,44 @@
 ﻿module XUIGamesTests
 
-open NUnit.Framework
+open Expecto
 open System.Globalization
 
-[<TestFixture>]
-type XUIGamesTests() = 
-    [<Test>]
-    member this.``The languageForXUITag function returns the tag for all language tags except 'jp'``() = 
-        Assert.AreEqual("en", XUIGames.languageForXUITag("en"))
-        Assert.AreEqual("es", XUIGames.languageForXUITag("es"))
-        Assert.AreEqual("de", XUIGames.languageForXUITag("de"))
-        Assert.AreEqual("fr", XUIGames.languageForXUITag("fr"))
-        Assert.AreEqual("it", XUIGames.languageForXUITag("it"))
-        ()
+[<Tests>]
+let tests = 
+  testList "XUI games tests" [
+    testCase "The languageForXUITag function returns the tag for all language tags except 'jp'" <|
+      fun () ->
+        Expect.equal "en" (XUIGames.languageForXUITag "en") ""
+        Expect.equal "es" (XUIGames.languageForXUITag "es") ""
+        Expect.equal "de" (XUIGames.languageForXUITag "de") ""
+        Expect.equal "fr" (XUIGames.languageForXUITag "fr") ""
+        Expect.equal "it" (XUIGames.languageForXUITag "it") ""
 
-    [<Test>]
-    member this.``The languageForXUITag function returns 'ja' for 'jp'``() = 
-        Assert.AreEqual("ja", XUIGames.languageForXUITag("jp"))
+    testCase "The languageForXUITag function returns 'ja' for 'jp'" <|
+      fun () -> Expect.equal "ja" (XUIGames.languageForXUITag "jp") ""
 
-    [<Test>]
-    member this.``The languageTagsForHeaderRow function skips the first two entries in the row``() = 
-        Assert.AreEqual([| "foo"; "bar" |], XUIGames.languageTagsForHeaderRow([| "1"; "2"; "foo"; "bar" |]))
+    testCase "The languageTagsForHeaderRow function skips the first two entries in the row" <|
+      fun () -> Expect.equal [| "foo"; "bar" |] (XUIGames.languageTagsForHeaderRow [| "1"; "2"; "foo"; "bar" |]) ""
 
-    [<Test>]
-    member this.``The languageTagsForHeaderRow function skips blank entries``() = 
-        Assert.AreEqual([| "foo" |], XUIGames.languageTagsForHeaderRow([| "1"; "2"; ""; " "; "foo" |]))
+    testCase "The languageTagsForHeaderRow function skips blank entries" <|
+      fun () -> Expect.equal [| "foo" |] (XUIGames.languageTagsForHeaderRow [| "1"; "2"; ""; " "; "foo" |]) ""
 
-    [<Test>]
-    member this.``The generateCardsForRow function creates the appropriate number of card entries``() = 
+    testCase "The generateCardsForRow function creates the appropriate number of card entries" <|
+      fun () -> 
         let languageTags = [| "en"; "de" |]
         let text = [| "key"; "category"; "enstring"; "destring" |]
         let result = XUIGames.generateCardsForRow(0, languageTags)(0)(text)
-        Assert.AreEqual(2, result.Length)
+        Expect.equal 2 result.Length ""
 
-    [<Test>]
-    member this.``The generateCardsForRow function creates a card with a key equal to the row index, key, and category concatenated``() = 
+    testCase "The generateCardsForRow function creates a card with a key equal to the row index, key, and category concatenated" <|
+      fun () ->
         let languageTags = [| "en" |]
         let text = [| "key"; "category"; "enstring" |]
         let result = XUIGames.generateCardsForRow(0, languageTags)(0)(text)
-        Assert.AreEqual("0keycategory", result.[0].Key)
+        Expect.equal "0keycategory" result.[0].Key ""
 
-    [<Test>]
-    member this.``The extractXUITabDelimited function creates a set of cards for all data lines``() = 
+    testCase "The extractXUITabDelimited function creates a set of cards for all data lines" <|
+      fun () ->
         let lines =
             [|
                 "key\tcategory\ten\tjp"
@@ -50,9 +47,10 @@ type XUIGamesTests() =
             |]
 
         let result = XUIGames.extractXUITabDelimited(lines, 0)
-        Assert.AreEqual(4, result.Length)
+        Expect.equal 4 result.Length ""
 
         // check that there are 2 of each language
         result 
         |> Array.groupBy(fun c -> c.LanguageTag) 
-        |> Array.iter(fun (_, cardsPerLanguage) -> Assert.AreEqual(2, cardsPerLanguage.Length))
+        |> Array.iter(fun (_, cardsPerLanguage) -> Expect.equal 2 cardsPerLanguage.Length "")
+  ]

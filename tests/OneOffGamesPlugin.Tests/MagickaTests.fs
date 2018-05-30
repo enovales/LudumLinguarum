@@ -1,27 +1,27 @@
 ﻿module MagickaTests
 
+open Expecto
 open LLDatabase
 open Magicka
-open NUnit.Framework
 open System.Xml.Linq
 
-[<TestFixture>]
-type MagickaTests() = 
-    [<Test>]
-    member this.``Calling getStringForCell() returns the value of the Data descendant``() = 
+[<Tests>]
+let tests = 
+  testList "Magicka tests" [
+    testCase "Calling getStringForCell() returns the value of the Data descendant" <|
+      fun () ->
         let contents: obj array = [| new XElement(XName.Get("Data", officeNs), "content") |]
         let el = new XElement(XName.Get("Cell", officeNs), contents)
 
-        Assert.AreEqual("content", getStringForCell(el))
+        Expect.equal "content" (getStringForCell el) ""
 
-    [<Test>]
-    member this.``Calling getStringForCell() returns an empty string if there is no Data descendant``() = 
+    testCase "Calling getStringForCell() returns an empty string if there is no Data descendant" <|
+      fun () ->
         let el = new XElement(XName.Get("Cell", officeNs))
-
-        Assert.AreEqual("", getStringForCell(el))
-
-    [<Test>]
-    member this.``Calling getFirstTwoCellsForRow() returns the first two XElements of Cell descendants``() = 
+        Expect.equal "" (getStringForCell el) ""
+    
+    testCase "Calling getFirstTwoCellsForRow() returns the first two XElements of Cell descendants" <|
+      fun () ->
         let cellContents1: obj array = [| new XElement(XName.Get("Data", officeNs), "content1") |]
         let cellContents2: obj array = [| new XElement(XName.Get("Data", officeNs), "content2") |]
         let cellContents3: obj array = [| new XElement(XName.Get("Data", officeNs), "should not be captured") |]
@@ -37,11 +37,11 @@ type MagickaTests() =
         let rowEl = new XElement(XName.Get("Row", officeNs), rowContents)
         let results = getFirstTwoCellsForRow(rowEl)
 
-        Assert.AreEqual(2, results.Length)
-        Assert.AreEqual([ cell1; cell2 ], results)
+        Expect.equal 2 results.Length ""
+        Expect.equal [ cell1; cell2 ] results ""
 
-    [<Test>]
-    member this.``Calling getFirstTwoColumnsForWorksheet() returns an array of tuples of the strings of the first two columns of each row after the first``() = 
+    testCase "Calling getFirstTwoColumnsForWorksheet() returns an array of tuples of the strings of the first two columns of each row after the first" <|
+      fun () ->
         let worksheetEl = 
             new XElement(XName.Get("Worksheet", officeNs),
                 new XElement(XName.Get("Table", officeNs),
@@ -98,12 +98,12 @@ type MagickaTests() =
                 ("row1column1", "row1column2")
                 ("row2column1", "row2column2")
             |]
-        Assert.AreEqual(expected.Length, results.Length)
-        Assert.AreEqual(expected.[0], results.[0])
-        Assert.AreEqual(expected.[1], results.[1])
+        Expect.equal expected.Length results.Length ""
+        Expect.equal expected.[0] results.[0] ""
+        Expect.equal expected.[1] results.[1] ""
 
-    [<Test>]
-    member this.``Calling generateCardsForXml() returns an array of CardRecords, based on the contents of the first two columns of each Row``() = 
+    testCase "Calling generateCardsForXml() returns an array of CardRecords, based on the contents of the first two columns of each Row" <|
+      fun () ->
         let testXml = """<?xml version="1.0"?>
 <?mso-application progid="Excel.Sheet"?>
 <Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"
@@ -168,16 +168,17 @@ type MagickaTests() =
             |]
 
         let results = generateCardsForXml(1, "en")(testXml)
-        Assert.AreEqual(expected, results)
+        Expect.equal expected results ""
 
-    [<Test>]
-    member this.``Calling stripFormattingCodes has no effect on a tuple with no formatting codes``() = 
+    testCase "Calling stripFormattingCodes has no effect on a tuple with no formatting codes" <|
+      fun () ->
         let testValue = ("key", "value")
         let expected = testValue
-        Assert.AreEqual(expected, stripFormattingCodes(testValue))
+        Expect.equal expected (stripFormattingCodes testValue) ""
 
-    [<Test>]
-    member this.``Calling stripFormattingCodes removes formatting codes if present``() = 
+    testCase "Calling stripFormattingCodes removes formatting codes if present" <|
+      fun () ->
         let testValue = ("key", "val[c foo]u[/c]e")
         let expected = ("key", "value")
-        Assert.AreEqual(expected, stripFormattingCodes(testValue))
+        Expect.equal expected (stripFormattingCodes testValue) ""
+  ]
