@@ -6,6 +6,7 @@
   </PropertyGroup>
   <ItemGroup>
     <None Include="paket.references" />
+    <Compile Include="AssemblyInfo.fs" />
     <Compile Include="CommonTypes.fs" />
     <Compile Include="TalkTable.fs" />
     <Compile Include="ArchiveFiles.fs" />

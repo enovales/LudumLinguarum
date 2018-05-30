@@ -176,7 +176,7 @@ DATA\VIDEOS\blah_en.srt,DATA\VIDEOS\blah.srt,1,en,1,1,comment
         Expect.equal 1 (entries |> Seq.length) "unexpected extracted entries length"
         Expect.equal expected entries.[0] "error during extraction"
 
-    testCase "Parsing a single entry .csv file with an empty "SubtitleIdEnd" field, which should default to the "SubtitleIdStart" field" <|
+    testCase "Parsing a single entry .csv file with an empty 'SubtitleIdEnd' field, which should default to the 'SubtitleIdStart' field" <|
       fun () ->
         let csvText = """File,MappedFile,StringId,Language,SubtitleIdStart,SubtitleIdEnd,Comment
 DATA\VIDEOS\blah_en.srt,DATA\VIDEOS\blah.srt,1,en,1,,comment

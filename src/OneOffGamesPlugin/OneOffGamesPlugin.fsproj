@@ -10,6 +10,8 @@
       <Link>paket-files/AFS.fs</Link>
     </Compile>
     <None Include="paket.references" />
+    <Compile Include="AssemblyInfo.fs" />
+    <Compile Include="AssemblyInfoStatic.fs" />
     <Compile Include="Utils.fs" />
     <Compile Include="Data.fs" />
     <Compile Include="XUIGames.fs" />
@@ -28,7 +30,6 @@
     <Compile Include="CodemastersGames.fs" />
     <Compile Include="SimpleGames.fs" />
     <Compile Include="OneOffGamesPlugin.fs" />
-    <Compile Include="AssemblyInfoStatic.fs" />
     <None Include="Scripts\load-references-debug.fsx" />
     <None Include="Scripts\load-project-debug.fsx" />
     <None Include="Scripts\load-references-release.fsx" />

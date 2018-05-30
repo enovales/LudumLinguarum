@@ -26,7 +26,7 @@ let tests =
 
     testCase "Build trie from two chars" <|
       fun () -> 
-        let expected = Trie.Root([| Trie.Node('a', [| Trie.Node('b', [||], true) |], false) |]
+        let expected = Trie.Root([| Trie.Node('a', [| Trie.Node('b', [||], true) |], false) |])
         let built = Trie.Build([| "ab" |])
         Expect.equal expected built "should be two nested nodes"
 
