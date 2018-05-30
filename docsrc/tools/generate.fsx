@@ -77,11 +77,85 @@ let binaries =
     let manuallyAdded = 
         referenceBinaries 
         |> List.map (fun b -> bin @@ b)
+
+    let findFrameworkDirectory(d: DirectoryInfo) = 
+      // From https://docs.microsoft.com/en-us/dotnet/standard/frameworks
+      // Entries are included in increasing preference order.
+      let frameworkNames = 
+        [|
+          // Windows Phone      
+          "wp"
+          "wp7"
+          "wp75"
+          "wp8"
+          "wp81"
+          "wpa81"
+
+          // Silverlight
+          "sl4"
+          "sl5"
+
+          // .NET Micro Framework
+          "netmf"
+
+          // Windows Store
+          "netcore"
+          "netcore45"
+          "netcore45"
+          "win"
+          "win8"
+          "netcore451"
+          "win81"
+
+          // Universal Windows Platform
+          "uap"
+          "uap10.0"
+          "uap10.0"
+          "win10"
+          "netcore50"
+
+          // .NET Framework
+          "net11"
+          "net20"
+          "net35"
+          "net40"
+          "net403"
+          "net45"
+          "net451"
+          "net452"
+          "net46"
+          "net461"
+          "net462"
+          "net47"
+          "net471"
+          "net472"
+
+          // .NET Core
+          "netcoreapp1.0"
+          "netcoreapp1.1"
+          "netcoreapp2.0"
+          "netcoreapp2.1"
+
+          // .NET Standard
+          "netstandard1.0"
+          "netstandard1.1"
+          "netstandard1.2"
+          "netstandard1.3"
+          "netstandard1.4"
+          "netstandard1.5"
+          "netstandard1.6"
+          "netstandard2.0"
+        |] 
+        |> Array.rev
+
+      subDirectories d
+      |> Seq.collect(fun sd -> frameworkNames |> Seq.tryFind(fun x -> sd.FullName.ToLower().Contains(x)) |> Option.map (fun _ -> sd) |> Option.toArray)
+      |> Seq.head
     
     let conventionBased = 
         directoryInfo bin 
         |> subDirectories
-        |> Array.map (fun d -> d.Name, (subDirectories d |> Array.filter(fun x -> x.FullName.ToLower().Contains("net47")) ).[0] )
+        |> Array.map (fun d -> d.Name, findFrameworkDirectory d )
         |> Array.map (fun (name, d) -> 
             d.GetFiles()
             |> Array.filter (fun x -> 

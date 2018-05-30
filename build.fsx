@@ -3,6 +3,7 @@
 // --------------------------------------------------------------------------------------
 
 #r @"packages/FAKE/tools/FakeLib.dll"
+#r @"packages/Fake.IO.Zip/lib/netstandard2.0/Fake.IO.Zip.dll"
 open Fake
 open Fake.Git
 open Fake.AssemblyInfoFile
@@ -136,7 +137,7 @@ Target "Clean" (fun _ ->
 
 Target "Build" (fun _ ->
     DotNetCli.Restore id
-    
+
     !! solutionFile
     |> MSBuildReleaseExt "" vsProjProps "Rebuild"
     |> ignore
@@ -169,6 +170,36 @@ Target "PublishNuget" (fun _ ->
             WorkingDir = "bin" })
 )
 
+// --------------------------------------------------------------------------------------
+// Build the binaries to package and distribute
+Target "PublishBinaries" (fun _ ->
+  let updatePublishParams(runtime: string)(framework: string)(po: DotNetCli.PublishParams) = 
+    { po with 
+        Configuration = "Release"
+        Runtime = runtime
+        Framework = framework
+        Project = "src/LudumLinguarum/LudumLinguarum.fsproj"
+        Output = "../../publish/" + runtime + "/"
+        WorkingDir = "."
+    }
+
+  // run dotnet publish on the main targets
+  DotNetCli.Publish (updatePublishParams "win-x64" "net471")
+  DotNetCli.Publish (updatePublishParams "linux-x64" "netcoreapp2.0")
+  DotNetCli.Publish (updatePublishParams "osx-x64" "netcoreapp2.0")
+)
+
+Target "ZipBinaries" (fun _ ->
+  let createZipForRuntime(runtime: string) = 
+    let runtimeDir = "publish/" + runtime
+    let finalZipPath = "publish/LudumLinguarum-" + runtime + ".zip"
+    let files = Directory.GetFiles(runtimeDir)
+    Fake.IO.Zip.zip runtimeDir finalZipPath files
+
+  createZipForRuntime "win-x64"
+  createZipForRuntime "linux-x64"
+  createZipForRuntime "osx-x64"
+)
 
 // --------------------------------------------------------------------------------------
 // Generate the documentation
@@ -365,7 +396,9 @@ Target "All" DoNothing
   ==> "Release"
 
 "BuildPackage"
-  ==> "PublishNuget"
-  ==> "Release"
+  ==> "PublishBinaries"
+  ==> "ZipBinaries"
+  //==> "PublishNuget"
+  //==> "Release"
 
 RunTargetOrDefault "All"
