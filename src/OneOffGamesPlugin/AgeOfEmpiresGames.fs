@@ -49,7 +49,7 @@ let private getHistoryLessonName(fn: string) =
 let private extractAOE2HDHistoryFiles(path: string) = 
     let languagesAndPathsByLessonNames = 
         aoe2HDLanguages
-        |> Array.collect (fun l -> Directory.GetFiles(Path.Combine(path, FixPathSeps(@"resources\" + l + @"\strings\history")) |> Array.map (fun p -> (l, p)))
+        |> Array.collect (fun l -> Directory.GetFiles(Path.Combine(path, FixPathSeps(@"resources\" + l + @"\strings\history"))) |> Array.map (fun p -> (l, p)))
         |> Array.groupBy (fun (_, p) -> getHistoryLessonName(p))
 
     let (lessonNames, languagesAndPaths) = languagesAndPathsByLessonNames |> Array.unzip
