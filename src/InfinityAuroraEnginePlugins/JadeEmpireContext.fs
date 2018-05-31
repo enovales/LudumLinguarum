@@ -2,6 +2,7 @@
 
 open InfinityAuroraEnginePlugins.ArchiveFiles
 open InfinityAuroraEnginePlugins.IAResourceManager
+open LLUtils
 
 open System.IO
 
@@ -10,7 +11,7 @@ type JadeEmpireContext(rootPath: string) =
         let rm = new ResourceManager()
 
         let erfPaths = 
-            Directory.GetFiles(Path.Combine(rootPath, @"data\bips"), "*.mod", SearchOption.AllDirectories) |> 
+            Directory.GetFiles(Path.Combine(rootPath, FixPathSeps(@"data/bips")), "*.mod", SearchOption.AllDirectories) |> 
                 Array.map(fun t -> t.Substring(rootPath.Length + 1))
 
         let rimPaths = 

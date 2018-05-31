@@ -3,6 +3,7 @@
 open Argu
 open FSharp.Core
 open LLDatabase
+open LLUtils
 open LudumLinguarumPlugins
 open PInvokeStubs
 open PInvoke
@@ -84,8 +85,8 @@ let private runExtractGBS(path: string)(settings: ParseResults<GBSPluginArgs>) =
 
     let modulesToExtract = 
         [|
-            (Path.Combine(path, @"game\language.dll"), mainLessonEntry.ID)
-            (Path.Combine(path, @"game\language_x1.dll"), x1LessonEntry.ID)
+            (Path.Combine(path, FixPathSeps @"game\language.dll"), mainLessonEntry.ID)
+            (Path.Combine(path, FixPathSeps @"game\language_x1.dll"), x1LessonEntry.ID)
         |]
 
     let extractCardsForModule(language: string)(modulePath: string, lid: int) = 

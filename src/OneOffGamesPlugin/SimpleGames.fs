@@ -3,6 +3,7 @@
 open CsvTools
 open FsGettextUtils.MoFile
 open LLDatabase
+open LLUtils
 open SharpCompress.Archives.Rar
 
 open System
@@ -96,12 +97,12 @@ let internal generateMagicalDropVStringMap(cleanedXml: string): Map<string, stri
 let ExtractMagicalDropV(path: string) = 
     let filePaths = 
         [|
-            @"localization\localization_de-DE.xml"
-            @"localization\localization_eng-US.xml"
-            @"localization\localization_es-ES.xml"
-            @"localization\localization_fr-FR.xml"
-            @"localization\localization_it-IT.xml"
-            @"localization\localization_ja-JP.xml"
+            FixPathSeps @"localization\localization_de-DE.xml"
+            FixPathSeps @"localization\localization_eng-US.xml"
+            FixPathSeps @"localization\localization_es-ES.xml"
+            FixPathSeps @"localization\localization_fr-FR.xml"
+            FixPathSeps @"localization\localization_it-IT.xml"
+            FixPathSeps @"localization\localization_ja-JP.xml"
         |]
         |> Array.map(fun p -> Path.Combine(path, p))
 
@@ -142,7 +143,7 @@ let ExtractAudiosurf(path: string) =
         Name = "Game Text"
     }
 
-    let languageFiles = Directory.GetFiles(Path.Combine(path, @"engine\LanguagePacks"), "aslang_*.xml", SearchOption.AllDirectories)
+    let languageFiles = Directory.GetFiles(Path.Combine(path, FixPathSeps @"engine\LanguagePacks"), "aslang_*.xml", SearchOption.AllDirectories)
     let languageRegex = new Regex("(aslang_)(..).+")
 
     let languageForFile(p: string) =
@@ -183,7 +184,7 @@ let private extractSupergiantGame(path: string) =
 
 
     // Subtitle handling
-    let subtitleDirectories = Directory.GetDirectories(Path.Combine(path, @"Content\Subtitles"))
+    let subtitleDirectories = Directory.GetDirectories(Path.Combine(path, FixPathSeps @"Content\Subtitles"))
     let generateCardsForSubtitles(subtitleDir: string) = 
         let files = Directory.GetFiles(subtitleDir, "*.csv")
         let language = stripLanguageRegion(Path.GetFileName(subtitleDir).ToLowerInvariant())
@@ -214,7 +215,7 @@ let private extractSupergiantGame(path: string) =
         |> Array.collect subtitlesForFile
 
     // HelpText.*.xml handling
-    let gameTextFiles = Directory.GetFiles(Path.Combine(path, @"Content\Game\Text"), "HelpText*.xml")
+    let gameTextFiles = Directory.GetFiles(Path.Combine(path, FixPathSeps @"Content\Game\Text"), "HelpText*.xml")
     let gameTextLanguageRegex = new Regex(@"(HelpText\.)(..).+")
     let generateCardsForGameText(filePath: string) = 
         let rec mungeText(s: string) = 
@@ -259,7 +260,7 @@ let private extractSupergiantGame(path: string) =
             |> Map.ofSeq
             |> AssemblyResourceTools.createCardRecordForStrings(lessonGameTextEntry.ID, "launchtext", language, "masculine")
 
-        let helpTextPath = Path.Combine(path, @"Content\Game\Text\LaunchText.xml")
+        let helpTextPath = Path.Combine(path, FixPathSeps @"Content\Game\Text\LaunchText.xml")
         use reader = new StreamReader(helpTextPath)
         let xel = XElement.Load(reader)
         xel.Descendants(XName.Get("HelpText"))
@@ -358,7 +359,7 @@ let ExtractHatofulBoyfriend(path: string) =
     }
     let filesToExtract = 
         [|
-            Path.Combine(path, @"hatoful_Data\StreamingAssets\LocalisationUnicode.txt")
+            Path.Combine(path, FixPathSeps @"hatoful_Data\StreamingAssets\LocalisationUnicode.txt")
         |]
 
     {
@@ -377,10 +378,10 @@ let ExtractHatofulBoyfriendHolidayStar(path: string) =
     }
     let filesToExtract = 
         [|
-            Path.Combine(path, @"HB2_Data\StreamingAssets\localisation\localisationunicode_EN.txt")
-            Path.Combine(path, @"HB2_Data\StreamingAssets\localisation\localisationunicode_FR.txt")
-            Path.Combine(path, @"HB2_Data\StreamingAssets\localisation\localisationunicode_GER.txt")
-            Path.Combine(path, @"HB2_Data\StreamingAssets\localisation\localisationunicode_JP.txt")
+            Path.Combine(path, FixPathSeps @"HB2_Data\StreamingAssets\localisation\localisationunicode_EN.txt")
+            Path.Combine(path, FixPathSeps @"HB2_Data\StreamingAssets\localisation\localisationunicode_FR.txt")
+            Path.Combine(path, FixPathSeps @"HB2_Data\StreamingAssets\localisation\localisationunicode_GER.txt")
+            Path.Combine(path, FixPathSeps @"HB2_Data\StreamingAssets\localisation\localisationunicode_JP.txt")
         |]
 
     {
@@ -405,7 +406,7 @@ let ExtractBraid(path: string) =
         |]
         |> Map.ofArray
 
-    let moFiles = Directory.GetFiles(Path.Combine(path, @"data\strings"), "*.mo", SearchOption.AllDirectories)
+    let moFiles = Directory.GetFiles(Path.Combine(path, FixPathSeps @"data\strings"), "*.mo", SearchOption.AllDirectories)
     let createCardForStringPair(lesson: LessonRecord, language: string)(data: int * (MoString * MoString)) = 
         let (index, (original, translated)) = data
         let key = 
@@ -507,7 +508,7 @@ let private extractIHFHandballChallenge(path: string) =
 
     let allCards = 
         Directory.GetDirectories(Path.Combine(path, @"language"))
-        |> Array.map (fun d -> (Path.GetFileName(d), Path.Combine(d, @"XMLData\i18n.xml")))
+        |> Array.map (fun d -> (Path.GetFileName(d), Path.Combine(d, FixPathSeps @"XMLData\i18n.xml")))
         |> Array.collect getCardsForXml
 
     {
@@ -531,11 +532,11 @@ let internal extractIntroversionGame(path: string, archiveRelativePath: string) 
 
     let languageMappings = 
         [|
-            (@"data\language\english.txt", "en")
-            (@"data\language\french.txt", "fr")
-            (@"data\language\german.txt", "de")
-            (@"data\language\italian.txt", "it")
-            (@"data\language\spanish.txt", "es")
+            (FixPathSeps @"data\language\english.txt", "en")
+            (FixPathSeps @"data\language\french.txt", "fr")
+            (FixPathSeps @"data\language\german.txt", "de")
+            (FixPathSeps @"data\language\italian.txt", "it")
+            (FixPathSeps @"data\language\spanish.txt", "es")
         |]
         |> Map.ofArray
 

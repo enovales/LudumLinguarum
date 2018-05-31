@@ -1,6 +1,7 @@
 ﻿module JetSetRadio
 
 open LLDatabase
+open LLUtils
 open SrtTools
 open System
 open System.Globalization
@@ -171,7 +172,7 @@ type StringBlockExtractor(entries: StringBlockExtractorEntry seq, streamGenerato
         let csvEntries = csvLines |> Array.map(fun line ->
                 let fields = line.Split(',') |> Array.map(fun f -> f.Trim())
                 
-                lastRelativePath <- getOrLast(fields.[0], lastRelativePath)
+                lastRelativePath <- getOrLast(FixPathSeps fields.[0], lastRelativePath)
                 lastStartingOffset <- getOrLast(fields.[2], lastStartingOffset)
                 lastID <- getOrLast(fields.[3], lastID)
 
@@ -421,7 +422,7 @@ type JetSetRadio =
     /// <param name="path">game path</param>
     /// <param name="lessonID">lesson ID to use for the generated cards</param>
     static member private ExtractJSRStringsDotStr(path: string, lessonID: int) = 
-        let jsr = JSRStringsBinary.FromFile(Path.Combine(path, @"CUSTOM\METRO\STRINGS.STR"))
+        let jsr = JSRStringsBinary.FromFile(Path.Combine(path, FixPathSeps @"CUSTOM\METRO\STRINGS.STR"))
         jsr.Strings |> Array.mapi(fun i t -> (i, t)) |> Array.collect(fun (i, t) -> 
                 let key = "string" + i.ToString()
                 t.substrings |> Array.mapi(fun l u ->
@@ -493,10 +494,10 @@ type JetSetRadio =
     static member private ExtractStringsFromCustomInstructions(path: string, lessonId: int) = 
         let pathsAndLanguages = 
             [|
-                (Path.Combine(path, @"CUSTOM\instructions.txt"), "en");
-                (Path.Combine(path, @"CUSTOM\instructions_DE.txt"), "de");
-                (Path.Combine(path, @"CUSTOM\instructions_ES.txt"), "es");
-                (Path.Combine(path, @"CUSTOM\instructions_FR.txt"), "fr")
+                (Path.Combine(path, FixPathSeps @"CUSTOM\instructions.txt"), "en");
+                (Path.Combine(path, FixPathSeps @"CUSTOM\instructions_DE.txt"), "de");
+                (Path.Combine(path, FixPathSeps @"CUSTOM\instructions_ES.txt"), "es");
+                (Path.Combine(path, FixPathSeps @"CUSTOM\instructions_FR.txt"), "fr")
             |]
 
         let generateCardsForLanguage(p: string, l: string) = 

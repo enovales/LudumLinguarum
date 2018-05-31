@@ -1,6 +1,7 @@
 ﻿module CivilizationGames
 
 open LLDatabase
+open LLUtils
 open System
 open System.IO
 open System.Text.RegularExpressions
@@ -89,62 +90,62 @@ let internal createLesson(i: int)(title: string): LessonRecord =
 
 let internal civ4Content = 
     [|
-        (@"Assets\XML\Text\CIV4DiplomacyText.xml", "Diplomacy Text")
-        (@"Assets\XML\Text\CIV4GameText_Civilopedia_Bonuses.xml", "Civilopedia Bonuses")
-        (@"Assets\XML\Text\CIV4GameText_Civilopedia_BuildingsProjects.xml", "Civilopedia Buildings and Projects")
-        (@"Assets\XML\Text\CIV4GameText_Civilopedia_CivicsReligion.xml", "Civilopedia Civics and Religions")
-        (@"Assets\XML\Text\CIV4GameText_Civilopedia_CivLeaders.xml", "Civilopedia Leaders")
-        (@"Assets\XML\Text\CIV4GameText_Civilopedia_Concepts.xml", "Civilopedia Concepts")
-        (@"Assets\XML\Text\CIV4GameText_Civilopedia_Techs.xml", "Civilopedia Techs")
-        (@"Assets\XML\Text\CIV4GameText_Civilopedia_Units.xml", "Civilopedia Units")
-        (@"Assets\XML\Text\CIV4GameText_Help.xml", "Help")
-        (@"Assets\XML\Text\CIV4GameText_Misc1.xml", "Misc")
-        (@"Assets\XML\Text\CIV4GameText_New.xml", "New")
-        (@"Assets\XML\Text\CIV4GameText_Strategy.xml", "Strategy")
-        (@"Assets\XML\Text\CIV4GameTextInfos.xml", "Infos")
-        (@"Assets\XML\Text\CIV4GameTextInfos_Cities.xml", "Infos Cities")
-        (@"Assets\XML\Text\CIV4GameTextInfos_GreatPeople.xml", "Infos Great People")
-        (@"Assets\XML\Text\CIV4GameTextInfos_Objects.xml", "Infos Objects")
+        (FixPathSeps @"Assets\XML\Text\CIV4DiplomacyText.xml", "Diplomacy Text")
+        (FixPathSeps @"Assets\XML\Text\CIV4GameText_Civilopedia_Bonuses.xml", "Civilopedia Bonuses")
+        (FixPathSeps @"Assets\XML\Text\CIV4GameText_Civilopedia_BuildingsProjects.xml", "Civilopedia Buildings and Projects")
+        (FixPathSeps @"Assets\XML\Text\CIV4GameText_Civilopedia_CivicsReligion.xml", "Civilopedia Civics and Religions")
+        (FixPathSeps @"Assets\XML\Text\CIV4GameText_Civilopedia_CivLeaders.xml", "Civilopedia Leaders")
+        (FixPathSeps @"Assets\XML\Text\CIV4GameText_Civilopedia_Concepts.xml", "Civilopedia Concepts")
+        (FixPathSeps @"Assets\XML\Text\CIV4GameText_Civilopedia_Techs.xml", "Civilopedia Techs")
+        (FixPathSeps @"Assets\XML\Text\CIV4GameText_Civilopedia_Units.xml", "Civilopedia Units")
+        (FixPathSeps @"Assets\XML\Text\CIV4GameText_Help.xml", "Help")
+        (FixPathSeps @"Assets\XML\Text\CIV4GameText_Misc1.xml", "Misc")
+        (FixPathSeps @"Assets\XML\Text\CIV4GameText_New.xml", "New")
+        (FixPathSeps @"Assets\XML\Text\CIV4GameText_Strategy.xml", "Strategy")
+        (FixPathSeps @"Assets\XML\Text\CIV4GameTextInfos.xml", "Infos")
+        (FixPathSeps @"Assets\XML\Text\CIV4GameTextInfos_Cities.xml", "Infos Cities")
+        (FixPathSeps @"Assets\XML\Text\CIV4GameTextInfos_GreatPeople.xml", "Infos Great People")
+        (FixPathSeps @"Assets\XML\Text\CIV4GameTextInfos_Objects.xml", "Infos Objects")
     |]
 
 let internal civ4WarlordsContent = 
     [|
-        (@"Warlords\Assets\XML\Text\CIV4GameText_Warlords.xml", "Warlords")
-        (@"Warlords\Assets\XML\Text\CIV4GameText_Warlords_Changed.xml", "Warlords Changed")
-        (@"Warlords\Assets\XML\Text\CIV4GameText_Warlords_Civ4Changed.xml", "Warlords Civ 4 Changed")
-        (@"Warlords\Assets\XML\Text\CIV4GameText_Warlords_Civilopedia.xml", "Warlords Civilopedia")
-        (@"Warlords\Assets\XML\Text\CIV4GameText_Warlords_Diplomacy.xml", "Warlords Diplomacy")
-        (@"Warlords\Assets\XML\Text\CIV4GameText_Warlords_Objects.xml", "Warlords Objects")
-        (@"Warlords\Assets\XML\Text\CIV4GameText_Warlords_Strategy.xml", "Warlords Strategy")
+        (FixPathSeps @"Warlords\Assets\XML\Text\CIV4GameText_Warlords.xml", "Warlords")
+        (FixPathSeps @"Warlords\Assets\XML\Text\CIV4GameText_Warlords_Changed.xml", "Warlords Changed")
+        (FixPathSeps @"Warlords\Assets\XML\Text\CIV4GameText_Warlords_Civ4Changed.xml", "Warlords Civ 4 Changed")
+        (FixPathSeps @"Warlords\Assets\XML\Text\CIV4GameText_Warlords_Civilopedia.xml", "Warlords Civilopedia")
+        (FixPathSeps @"Warlords\Assets\XML\Text\CIV4GameText_Warlords_Diplomacy.xml", "Warlords Diplomacy")
+        (FixPathSeps @"Warlords\Assets\XML\Text\CIV4GameText_Warlords_Objects.xml", "Warlords Objects")
+        (FixPathSeps @"Warlords\Assets\XML\Text\CIV4GameText_Warlords_Strategy.xml", "Warlords Strategy")
     |]
 
 let internal civ4BtsContent = 
     [|
-        (@"Beyond the Sword\Assets\XML\Text\CIV4GameText_BTS.xml", "Beyond the Sword")
-        (@"Beyond the Sword\Assets\XML\Text\CIV4GameText_BTS_Fixed.xml", "Beyond the Sword Fixed")
-        (@"Beyond the Sword\Assets\XML\Text\CIV4GameText_BTS_FourthRoundTranslation.xml", "Beyond the Sword Fourth Round Translation")
-        (@"Beyond the Sword\Assets\XML\Text\CIV4GameText_BTS_PatchText.xml", "Beyond the Sword Patch Text")
-        (@"Beyond the Sword\Assets\XML\Text\CIV4GameText_Cities_BTS.xml", "Beyond the Sword Cities")
-        (@"Beyond the Sword\Assets\XML\Text\CIV4GameText_Civilopedia_BTS.xml", "Beyond the Sword Civilopedia")
-        (@"Beyond the Sword\Assets\XML\Text\CIV4GameText_DiplomacyText_BTS.xml", "Beyond the Sword Diplomacy")
-        (@"Beyond the Sword\Assets\XML\Text\CIV4GameText_Events_BTS.xml", "Beyond the Sword Events")
-        (@"Beyond the Sword\Assets\XML\Text\CIV4GameText_Objects_BTS.xml", "Beyond the Sword Objects")
-        (@"Beyond the Sword\Assets\XML\Text\CIV4GameTextChanged_BTS.xml", "Beyond the Sword Changed")
+        (FixPathSeps @"Beyond the Sword\Assets\XML\Text\CIV4GameText_BTS.xml", "Beyond the Sword")
+        (FixPathSeps @"Beyond the Sword\Assets\XML\Text\CIV4GameText_BTS_Fixed.xml", "Beyond the Sword Fixed")
+        (FixPathSeps @"Beyond the Sword\Assets\XML\Text\CIV4GameText_BTS_FourthRoundTranslation.xml", "Beyond the Sword Fourth Round Translation")
+        (FixPathSeps @"Beyond the Sword\Assets\XML\Text\CIV4GameText_BTS_PatchText.xml", "Beyond the Sword Patch Text")
+        (FixPathSeps @"Beyond the Sword\Assets\XML\Text\CIV4GameText_Cities_BTS.xml", "Beyond the Sword Cities")
+        (FixPathSeps @"Beyond the Sword\Assets\XML\Text\CIV4GameText_Civilopedia_BTS.xml", "Beyond the Sword Civilopedia")
+        (FixPathSeps @"Beyond the Sword\Assets\XML\Text\CIV4GameText_DiplomacyText_BTS.xml", "Beyond the Sword Diplomacy")
+        (FixPathSeps @"Beyond the Sword\Assets\XML\Text\CIV4GameText_Events_BTS.xml", "Beyond the Sword Events")
+        (FixPathSeps @"Beyond the Sword\Assets\XML\Text\CIV4GameText_Objects_BTS.xml", "Beyond the Sword Objects")
+        (FixPathSeps @"Beyond the Sword\Assets\XML\Text\CIV4GameTextChanged_BTS.xml", "Beyond the Sword Changed")
     |]
 
 let internal civ4ColonizationContent = 
     [|
-        (@"Assets\XML\Text\CIV4GameText_BTS_PatchText.xml", "Patch Text")
-        (@"Assets\XML\Text\CIV4GameText_Colonization.xml", "Colonization")
-        (@"Assets\XML\Text\CIV4GameText_Colonization_DiplomacyText.xml", "Diplomacy Text")
-        (@"Assets\XML\Text\CIV4GameText_Colonization_Events.xml", "Events")
-        (@"Assets\XML\Text\CIV4GameText_Colonization_LastMinute.xml", "Last Minute")
-        (@"Assets\XML\Text\CIV4GameText_Colonization_Objects.xml", "Objects")
-        (@"Assets\XML\Text\CIV4GameText_Colonization_PatchMod.xml", "Patch Mod")
-        (@"Assets\XML\Text\CIV4GameText_Colonization_Pedia.xml", "Civilopedia")
-        (@"Assets\XML\Text\CIV4GameText_Colonization_Strategy.xml", "Strategy")
-        (@"Assets\XML\Text\CIV4GameTextInfos_Objects_Original.xml", "Infos Objects Original")
-        (@"Assets\XML\Text\CIV4GameTextInfos_Original.xml", "Infos Original")
+        (FixPathSeps @"Assets\XML\Text\CIV4GameText_BTS_PatchText.xml", "Patch Text")
+        (FixPathSeps @"Assets\XML\Text\CIV4GameText_Colonization.xml", "Colonization")
+        (FixPathSeps @"Assets\XML\Text\CIV4GameText_Colonization_DiplomacyText.xml", "Diplomacy Text")
+        (FixPathSeps @"Assets\XML\Text\CIV4GameText_Colonization_Events.xml", "Events")
+        (FixPathSeps @"Assets\XML\Text\CIV4GameText_Colonization_LastMinute.xml", "Last Minute")
+        (FixPathSeps @"Assets\XML\Text\CIV4GameText_Colonization_Objects.xml", "Objects")
+        (FixPathSeps @"Assets\XML\Text\CIV4GameText_Colonization_PatchMod.xml", "Patch Mod")
+        (FixPathSeps @"Assets\XML\Text\CIV4GameText_Colonization_Pedia.xml", "Civilopedia")
+        (FixPathSeps @"Assets\XML\Text\CIV4GameText_Colonization_Strategy.xml", "Strategy")
+        (FixPathSeps @"Assets\XML\Text\CIV4GameTextInfos_Objects_Original.xml", "Infos Objects Original")
+        (FixPathSeps @"Assets\XML\Text\CIV4GameTextInfos_Original.xml", "Infos Original")
     |]
 
 let ExtractCiv4(path: string) = 

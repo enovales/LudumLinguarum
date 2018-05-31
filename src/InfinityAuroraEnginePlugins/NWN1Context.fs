@@ -2,6 +2,7 @@
 
 open InfinityAuroraEnginePlugins.ArchiveFiles
 open InfinityAuroraEnginePlugins.IAResourceManager
+open LLUtils
 
 open System.IO
 
@@ -10,22 +11,22 @@ type NWN1Context(rootPath: string) =
         let rm = new ResourceManager()
 
         let erfPaths = [
-            @"nwm\Prelude.nwm";
-            @"nwm\Chapter1.nwm";
-            @"nwm\Chapter2.nwm";
-            @"nwm\Chapter3.nwm";
-            @"nwm\Chapter4.nwm";
-            @"nwm\Chapter1E.nwm";
-            @"nwm\Chapter2E.nwm";
-            @"nwm\XP1-Chapter 1.nwm";
-            @"nwm\XP1-Chapter 2.nwm";
-            @"nwm\XP1-Interlude.nwm";
-            @"nwm\XP2_Chapter1.nwm";
-            @"nwm\XP2_Chapter2.nwm";
-            @"nwm\XP2_Chapter3.nwm";
-            @"nwm\Neverwinter Nights - Kingmaker.nwm";
-            @"nwm\Neverwinter Nights - ShadowGuard.nwm";
-            @"nwm\Neverwinter Nights - Witch's Wake.nwm"
+            FixPathSeps @"nwm\Prelude.nwm"
+            FixPathSeps @"nwm\Chapter1.nwm"
+            FixPathSeps @"nwm\Chapter2.nwm"
+            FixPathSeps @"nwm\Chapter3.nwm"
+            FixPathSeps @"nwm\Chapter4.nwm"
+            FixPathSeps @"nwm\Chapter1E.nwm"
+            FixPathSeps @"nwm\Chapter2E.nwm"
+            FixPathSeps @"nwm\XP1-Chapter 1.nwm"
+            FixPathSeps @"nwm\XP1-Chapter 2.nwm"
+            FixPathSeps @"nwm\XP1-Interlude.nwm"
+            FixPathSeps @"nwm\XP2_Chapter1.nwm"
+            FixPathSeps @"nwm\XP2_Chapter2.nwm"
+            FixPathSeps @"nwm\XP2_Chapter3.nwm"
+            FixPathSeps @"nwm\Neverwinter Nights - Kingmaker.nwm"
+            FixPathSeps @"nwm\Neverwinter Nights - ShadowGuard.nwm"
+            FixPathSeps @"nwm\Neverwinter Nights - Witch's Wake.nwm"
         ]
 
         let keyPaths = [

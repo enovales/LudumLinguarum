@@ -1,6 +1,7 @@
 ﻿module Magicka
 
 open LLDatabase
+open LLUtils
 open System
 open System.IO
 open System.Text.RegularExpressions
@@ -138,7 +139,7 @@ let internal generateCardsAndLessonsForLanguage(lessons: LessonRecord array)(lan
     |> Array.collect(wrappedGenerateCardsForXmlStream(language))
 
 let ExtractMagicka(path: string) = 
-    let threeCharLanguages = Directory.GetDirectories(Path.Combine(path, @"Content\Languages"))
+    let threeCharLanguages = Directory.GetDirectories(Path.Combine(path, FixPathSeps @"Content\Languages"))
 
     let lessons = 
         threeCharLanguages
