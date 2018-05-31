@@ -1,7 +1,7 @@
 # Ludum Linguarum
 
 [![Build status](https://ci.appveyor.com/api/projects/status/v73o4eflpx781va3/branch/master?svg=true)](https://ci.appveyor.com/project/ErikNovales/ludumlinguarum/branch/master)
-[![Build stats](https://buildstats.info/appveyor/ErikNovales/ludumlinguarum)](https://ci.appveyor.com/project/ErikNovales/ludumlinguarum/branch/master)
+[![Build stats](https://buildstats.info/appveyor/chart/ErikNovales/ludumlinguarum)](https://ci.appveyor.com/project/ErikNovales/ludumlinguarum/ci-buildstats/history)
 
 Ludum Linguarum is a set of tools and recipes to extract localized content (currently just text) from a set of known 
 games, which can then be turned into flash cards for use with [Anki](http://ankisrs.net/) (one of the most popular 
