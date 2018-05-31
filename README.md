@@ -13,7 +13,7 @@ In other words, you can spice up your language learning regimen by drilling flas
 Currently only PC games are supported, although there's no technical reason other platforms couldn't be supported -- 
 it's just simpler to work on PC versions of titles.
 
-Ludum Linguarum can only be run on Windows at this time -- it has dependencies on some Windows-only libraries.
+Ludum Linguarum can run on Windows, Linux, and OS X! (Some titles may only be supported under Windows.) On Windows, the .NET Framework runtime is required to run (but should be part of any modern OS install, so you probably don't need to do anything special to run Ludum Linguarum). Linux and OS X builds are self-contained installations, and should have everything you need to run out-of-the-box.
 
 # Quick Start
 
