@@ -1,3 +1,8 @@
+#### 1.0.0 May 30 2018
+* Major update: Ludum Linguarum should now run on OS X and Linux!
+	* Some games may not be available under non-Windows operating systems. (Currently, this only applies to Star Wars: Galactic Battlegrounds Saga.)
+	* Game extraction recipes are still based on the Windows versions of games. If the resource files for the OS X/Linux version of a game are significantly different, Ludum Linguarum may fail to extract the assets.
+
 #### 0.17.2 May 9 2018
 * Fixed support for [Pillars of Eternity II: Deadfire](http://store.steampowered.com/app/560130/) \[de, en, es, fr, it, ko, pl, pt, ru, zh-CN \] to work with the final released game.
 
