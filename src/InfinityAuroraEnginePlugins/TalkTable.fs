@@ -139,7 +139,6 @@ type TalkTableV4String private (md: TalkTableStringMetadataV4, stringData: strin
         member this.Metadata = md
         static member Build(metadata: TalkTableStringMetadataV4, stringStream: Stream, br: BinaryReader, index: StrRef) = 
             ignore(stringStream.Seek(int64 metadata.offsetToString, SeekOrigin.Begin))
-            //let ansiEncoding = Encoding.GetEncoding(1252)
             let stringData = Encoding.UTF8.GetString(br.ReadBytes(int metadata.stringSize))
             new TalkTableV4String(metadata, stringData, index)
     end

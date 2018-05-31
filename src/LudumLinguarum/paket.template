@@ -1,23 +1,29 @@
-type project
+type file
+id LudumLinguarum
+title
+    LudumLinguarum
 owners
     Erik Novales
 authors 
     Erik Novales
 projectUrl
-    http://github.com/enovales/LudumLinguarum
+    https://github.com/enovales/LudumLinguarum
 iconUrl
     https://raw.githubusercontent.com/enovales/LudumLinguarum/master/docs/files/img/logo.png
 licenseUrl
-    http://github.com/enovales/LudumLinguarum/blob/master/LICENSE.txt
+    https://github.com/enovales/LudumLinguarum/blob/master/LICENSE.txt
 requireLicenseAcceptance
     false
+language
+    F#
 copyright
-    Copyright 2016 Erik Novales
+    Copyright 2017
 tags
-    GameDev LanguageLearning
+    GameDev LanguageLearning FlashCards
 summary
     Tools for extracting localized content from games, and turning them into language learning content.
 description
     Tools for extracting localized content from games, and turning them into language learning content.
 
-
+files
+	../../bin/LudumLinguarum ==> lib

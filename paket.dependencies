@@ -1,33 +1,35 @@
-framework net462
+//framework: auto-detect
+framework: net471, netstandard2.0
 
 source https://nuget.org/api/v2
+source https://ci.appveyor.com/nuget/fsharp-formatting
 
-nuget FSharp.Core ~> 4.0.0.1 redirects: force
+nuget FSharp.Core
+nuget Argu
 
-github praeclarum/sqlite-net
+nuget FAKE
+nuget Fake.IO.Zip
+nuget FSharp.Formatting prerelease
+
+github fsharp/FAKE modules/Octokit/Octokit.fsx
+
+nuget Expecto
+nuget Expecto.BenchmarkDotNet
+nuget Expecto.FsCheck
+nuget Expecto.VisualStudio.TestAdapter version_in_path: true
+
+//github praeclarum/sqlite-net
+nuget sqlite-net-pcl
+nuget SQLitePCLRaw.core
+nuget SQLitePCLRaw.provider.e_sqlite3.netstandard11
+
 nuget CsvHelper
 nuget sqlite
 nuget SQLite.Native
 nuget YamlDotNet
-nuget Argu
 nuget sharpcompress
 nuget PInvoke.Win32
 nuget LANGIDMappings
 nuget FsGettextUtils
 nuget ICSharpCode.SharpZipLib-dogfood
 github enovales/SegaAFSTools src/SegaAFSTools/AFS.fs
-
-group Build
-  source https://nuget.org/api/v2
-  
-  nuget SourceLink.Fake
-  nuget FAKE
-  nuget FSharp.Formatting
-
-  github fsharp/FAKE modules/Octokit/Octokit.fsx
-
-group Test
-  source https://nuget.org/api/v2
-  
-  nuget NUnit ~> 2.6.4
-  nuget NUnit.Runners ~> 2.6.4

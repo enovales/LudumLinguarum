@@ -1,6 +1,7 @@
 ﻿module SrtTools
 
 open LLDatabase
+open LLUtils
 open System
 open System.Globalization
 open System.IO
@@ -78,7 +79,7 @@ type SrtBlockExtractor(entries: SrtBlockExtractorEntry seq, entryGenerator: SrtB
             |> Array.filter(fun t -> t.Length >= 5)
 
         dataLinesSplitIntoFields |> Array.map(fun fields ->
-                lastRelativePath <- getOrLast(fields.[0], lastRelativePath)
+                lastRelativePath <- getOrLast(FixPathSeps fields.[0], lastRelativePath)
                 lastOverrideBaseKey <- getOrLast(fields.[1], lastOverrideBaseKey)
                 lastID <- getOrLast(fields.[2], lastID)
 

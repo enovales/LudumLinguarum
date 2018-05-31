@@ -1,6 +1,7 @@
 ﻿module SonicAdventureDX
 
 open LLDatabase
+open LLUtils
 open System
 open System.IO
 open System.Text
@@ -89,17 +90,17 @@ let ExtractSonicAdventureDX(path: string) =
     // make a lesson for each file that we need to extract.
     let filesToExtract: (string * ExtractionFunction) array = 
         [|
-            (@"system\CHAODX_MESSAGE_BLACKMARKET_{0}.BIN", extractCardsForSimpleBin)
-            (@"system\CHAODX_MESSAGE_HINT_{0}.BIN", extractCardsForSimpleBin)
-            (@"system\CHAODX_MESSAGE_ITEM_{0}.BIN", extractCardsForSimpleBin)
-            (@"system\CHAODX_MESSAGE_ODEKAKE_{0}.BIN", extractCardsForSimpleBin)
-            (@"system\CHAODX_MESSAGE_PLAYERACTION_{0}.BIN", extractCardsForSimpleBin)
-            (@"system\CHAODX_MESSAGE_RACE_{0}.BIN", extractCardsForSimpleBin)
-            (@"system\CHAODX_MESSAGE_SYSTEM_{0}.BIN", extractCardsForSimpleBin)
-            (@"system\MSGALITEM_{0}.BIN", extractCardsForSimpleBin)
-            (@"system\MSGALKINDERBL_{0}.BIN", extractCardsForSimpleBin)
-            (@"system\MSGALKINDERPR_{0}.BIN", extractCardsForSimpleBin)
-            (@"system\MSGALWARN_{0}.BIN", extractCardsForSimpleBin)
+            (FixPathSeps @"system\CHAODX_MESSAGE_BLACKMARKET_{0}.BIN", extractCardsForSimpleBin)
+            (FixPathSeps @"system\CHAODX_MESSAGE_HINT_{0}.BIN", extractCardsForSimpleBin)
+            (FixPathSeps @"system\CHAODX_MESSAGE_ITEM_{0}.BIN", extractCardsForSimpleBin)
+            (FixPathSeps @"system\CHAODX_MESSAGE_ODEKAKE_{0}.BIN", extractCardsForSimpleBin)
+            (FixPathSeps @"system\CHAODX_MESSAGE_PLAYERACTION_{0}.BIN", extractCardsForSimpleBin)
+            (FixPathSeps @"system\CHAODX_MESSAGE_RACE_{0}.BIN", extractCardsForSimpleBin)
+            (FixPathSeps @"system\CHAODX_MESSAGE_SYSTEM_{0}.BIN", extractCardsForSimpleBin)
+            (FixPathSeps @"system\MSGALITEM_{0}.BIN", extractCardsForSimpleBin)
+            (FixPathSeps @"system\MSGALKINDERBL_{0}.BIN", extractCardsForSimpleBin)
+            (FixPathSeps @"system\MSGALKINDERPR_{0}.BIN", extractCardsForSimpleBin)
+            (FixPathSeps @"system\MSGALWARN_{0}.BIN", extractCardsForSimpleBin)
             // TODO: add support for other file types, including files like
             // PAST_MES_*_*.BIN
             // MR_MES_*_*.BIN

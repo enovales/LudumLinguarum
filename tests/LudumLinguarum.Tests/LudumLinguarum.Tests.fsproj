@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net471</TargetFramework>
+    <RootNamespace>LudumLinguarum.Tests</RootNamespace>
+    <AssemblyName>LudumLinguarum.Tests</AssemblyName>
+    <Name>LudumLinguarum.Tests</Name>
+    <OutputType>Exe</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="DebugToolsTests.fs" />
+    <Compile Include="LLDatabaseTests.fs" />
+    <Compile Include="PluginManagerTests.fs" />
+    <Compile Include="StringExtractorsTests.fs" />
+    <Compile Include="TrieTests.fs" />
+    <Compile Include="SrtToolsTests.fs" />
+    <Compile Include="CsvToolsTests.fs" />
+    <Compile Include="CardExportTests.fs" />
+    <Compile Include="RunTests.fs" />
+    <None Include="paket.references" />
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\LudumLinguarum\LudumLinguarum.fsproj"></ProjectReference>
+  </ItemGroup>
+  <Import Project="..\..\.paket\Paket.Restore.targets" />
+</Project>

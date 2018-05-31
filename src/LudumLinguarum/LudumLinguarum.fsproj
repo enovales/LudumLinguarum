@@ -1,0 +1,25 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFrameworks>net471;netcoreapp2.0</TargetFrameworks>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <RuntimeIdentifiers>win-x64;linux-x64;osx-x64</RuntimeIdentifiers>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="AssemblyInfoStatic.fs" />
+    <Compile Include="AssemblyInfo.fs" />
+    <Compile Include="Program.fs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\InfinityAuroraEnginePlugins\InfinityAuroraEnginePlugins.fsproj" />
+    <ProjectReference Include="..\LudumLinguarumLib\LudumLinguarumLib.fsproj" />
+    <ProjectReference Include="..\OneOffGamesPlugin\OneOffGamesPlugin.fsproj" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == 'net471'">
+    <ProjectReference Include="..\WindowsOnlyPlugin\WindowsOnlyPlugin.fsproj" />
+  </ItemGroup>
+  <Import Project="..\..\.paket\Paket.Restore.targets" />
+</Project>

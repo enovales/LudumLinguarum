@@ -7,6 +7,7 @@ open System.Reflection
 [<assembly: AssemblyDescriptionAttribute("Tools for extracting localized content from games, and turning them into language learning content.")>]
 [<assembly: AssemblyVersionAttribute("0.17.2")>]
 [<assembly: AssemblyFileVersionAttribute("0.17.2")>]
+[<assembly: AssemblyConfigurationAttribute("Release")>]
 do ()
 
 module internal AssemblyVersionInformation =
@@ -15,3 +16,4 @@ module internal AssemblyVersionInformation =
     let [<Literal>] AssemblyDescription = "Tools for extracting localized content from games, and turning them into language learning content."
     let [<Literal>] AssemblyVersion = "0.17.2"
     let [<Literal>] AssemblyFileVersion = "0.17.2"
+    let [<Literal>] AssemblyConfiguration = "Release"

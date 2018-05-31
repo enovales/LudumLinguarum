@@ -1,6 +1,7 @@
 ﻿module XUIGames
 
 open LLDatabase
+open LLUtils
 open System
 open System.Globalization
 open System.IO
@@ -68,7 +69,7 @@ let ExtractKOF2002(path: string) =
         Name = "Game Text"
     }
 
-    let stringFilePath = Path.Combine(path, @"data\strings.txt")
+    let stringFilePath = Path.Combine(path, FixPathSeps @"data\strings.txt")
     let extractedCards = 
         extractXUITabDelimited(File.ReadAllLines(stringFilePath, Text.Encoding.UTF8), lessonEntry.ID)
 
@@ -83,7 +84,7 @@ let ExtractKOF98(path: string) =
         Name = "Game Text"
     }
 
-    let stringFilePath = Path.Combine(path, @"data\strings.txt")
+    let stringFilePath = Path.Combine(path, FixPathSeps @"data\strings.txt")
     let extractedCards = 
         extractXUITabDelimited(File.ReadAllLines(stringFilePath, Text.Encoding.UTF8), lessonEntry.ID)
 

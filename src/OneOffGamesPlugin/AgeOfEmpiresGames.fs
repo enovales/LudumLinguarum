@@ -1,6 +1,7 @@
 ﻿module AgeOfEmpiresGames
 
 open LLDatabase
+open LLUtils
 open System
 open System.IO
 open System.Text
@@ -48,7 +49,7 @@ let private getHistoryLessonName(fn: string) =
 let private extractAOE2HDHistoryFiles(path: string) = 
     let languagesAndPathsByLessonNames = 
         aoe2HDLanguages
-        |> Array.collect (fun l -> Directory.GetFiles(Path.Combine(path, @"resources\" + l + @"\strings\history")) |> Array.map (fun p -> (l, p)))
+        |> Array.collect (fun l -> Directory.GetFiles(Path.Combine(path, FixPathSeps(@"resources\" + l + @"\strings\history"))) |> Array.map (fun p -> (l, p)))
         |> Array.groupBy (fun (_, p) -> getHistoryLessonName(p))
 
     let (lessonNames, languagesAndPaths) = languagesAndPathsByLessonNames |> Array.unzip
@@ -72,7 +73,7 @@ let private extractAOE2HDCampaignStrings(path: string) =
         | _ -> s
 
     let cardsForLanguage(lang: string) = 
-        let p = Path.Combine(path, @"resources\" + lang + @"\strings\key-value\key-value-strings-utf8.txt")
+        let p = Path.Combine(path, FixPathSeps(@"resources\" + lang + @"\strings\key-value\key-value-strings-utf8.txt"))
         let lines = 
             File.ReadAllLines(p, Encoding.UTF8)
             |> Array.map(fun l -> l.Trim())
@@ -98,7 +99,7 @@ let private aoe2HDLauncherStringRegex = new Regex(@"^([^=]+)=(.+)$")
 let private extractAOE2HDLauncherStrings(path: string) = 
     let lesson = { LessonRecord.ID = 0; Name = "Launcher Text" }
     let cardsForLocaleIni(lang: string) = 
-        let p = Path.Combine(path, @"resources\_launcher\" + lang + @"\locale.ini")
+        let p = Path.Combine(path, FixPathSeps(@"resources\_launcher\" + lang + @"\locale.ini"))
         let lines =
             File.ReadAllLines(p)
             |> Array.map (fun l -> l.Trim())
@@ -160,12 +161,12 @@ let ExtractAOE2HD(path: string) =
 let ExtractAOE3(path: string) = 
     let stringSources = 
         [|
-            (@"bin\data\stringtable.xml", "Base Game")
-            (@"bin\data\stringtablex.xml", "Warchiefs Expansion")
-            (@"bin\data\stringtabley.xml", "Asian Dynasties Expansion")
-            (@"bin\data\unithelpstrings.xml", "Base Game Unit Help")
-            (@"bin\data\unithelpstringsx.xml", "Warchiefs Expansion Unit Help")
-            (@"bin\data\unithelpstringsy.xml", "Asian Dynasties Expansion Unit Help")
+            (FixPathSeps @"bin\data\stringtable.xml", "Base Game")
+            (FixPathSeps @"bin\data\stringtablex.xml", "Warchiefs Expansion")
+            (FixPathSeps @"bin\data\stringtabley.xml", "Asian Dynasties Expansion")
+            (FixPathSeps @"bin\data\unithelpstrings.xml", "Base Game Unit Help")
+            (FixPathSeps @"bin\data\unithelpstringsx.xml", "Warchiefs Expansion Unit Help")
+            (FixPathSeps @"bin\data\unithelpstringsy.xml", "Asian Dynasties Expansion Unit Help")
         |]
 
     let generateCardsForXml(xmlPath: string, lesson: LessonRecord) = 

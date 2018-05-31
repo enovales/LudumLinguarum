@@ -1,20 +1,21 @@
 ﻿module PuzzleQuestGamesTests
 
+open Expecto
 open LLDatabase
-open NUnit.Framework
 open System.Xml.Linq
 
-[<TestFixture>]
-type PuzzleQuestGamesTests() = 
-    [<Test>]
-    member this.``Calling generateKVForTextElement returns a pair of the 'tag' element, and the value``() = 
+[<Tests>]
+let tests = 
+  testList "Puzzle Quest games tests" [
+    testCase "Calling generateKVForTextElement returns a pair of the 'tag' element, and the value" <|
+      fun () ->
         let contents: obj array = [| new XAttribute(XName.Get("tag"), "[GAME_TAG]"); "content" |]
         let el = new XElement(XName.Get("Text"), contents)
         let expected = ("[GAME_TAG]", "content")
-        Assert.AreEqual(expected, PuzzleQuestGames.generateKVForTextElement(el))
+        Expect.equal expected (PuzzleQuestGames.generateKVForTextElement el) ""
 
-    [<Test>]
-    member this.``Calling generateCardsForXml returns a card for an XML document with a single localized string``() = 
+    testCase "Calling generateCardsForXml returns a card for an XML document with a single localized string" <|
+      fun () ->
         let xml = """<TextLibrary><Text tag="[GAME_TAG]">content</Text></TextLibrary>"""
         let lessonID = 0
         let generated = PuzzleQuestGames.generateCardsForXml(lessonID, "en", "keyroot")(xml)
@@ -35,4 +36,5 @@ type PuzzleQuestGamesTests() =
                 }
             |]
 
-        Assert.AreEqual(expected, generated)
+        Expect.equal expected generated ""
+  ]

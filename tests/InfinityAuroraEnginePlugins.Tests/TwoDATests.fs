@@ -1,109 +1,111 @@
 ﻿module TwoDATests
 
+open Expecto
 open InfinityAuroraEnginePlugins.TwoDA
-open NUnit.Framework
 open System.IO
 
-[<TestFixture>]
-type TwoDATests() = 
-    let sample2DAText = 
-        """2DA V2.0
+let private sample2DAText = 
+  """2DA V2.0
 DEFAULT: foo
  COLUMN1 COLUMN2 COLUMN3
 0 a b c
 1 d e f
 2 g h i
-        """
+  """
 
-    let sample2DATextWithEmpty = 
-        """2DA V2.0
+let private sample2DATextWithEmpty = 
+  """2DA V2.0
 DEFAULT: foo
  COLUMN1 COLUMN2 COLUMN3
 0 a **** c
-        """
+  """
 
-    let sample2DATextWithQuotes = 
-        """2DA V2.0
+let private sample2DATextWithQuotes = 
+  """2DA V2.0
 DEFAULT: foo
  COLUMN1 COLUMN2 COLUMN3
 0 "This has quotes" b c
 1 d e "This has quotes too"
 2 g **** i
-        """
+  """
 
-    let sample2DATextWithInts = 
-        """2DA V2.0
+let private sample2DATextWithInts = 
+  """2DA V2.0
 
  COLUMN1 COLUMN2 COLUMN3
 0 1 2 3
 1 4 5 6
 2 7 8 9"""
 
-    let sample2DATextWithFloats = 
-        """2DA V2.0
+let private sample2DATextWithFloats = 
+  """2DA V2.0
 
  COLUMN1 COLUMN2 COLUMN3
 0 1.0 2.0 3.0
 1 4.0 5.0 6.0
 2 7.0 8.0 9.0"""
 
-    [<Test>]
-    member this.``Loading a simple 2DA``(): Unit = 
+[<Tests>]
+let tests = 
+  testList "2DA tests" [
+    testCase "Loading a simple 2DA" <|
+      fun () ->
         let twoDA = TwoDAFile.FromString(sample2DAText)
-        Assert.AreEqual(3, twoDA.RowCount)
-        Assert.AreEqual(3, twoDA.ColumnCount)
-        ()
+        Expect.equal 3 twoDA.RowCount "expected 3 rows in file"
+        Expect.equal 3 twoDA.ColumnCount "expected 3 columns in file"
 
-    [<Test>]
-    member this.``Extracting by row and column indices``(): Unit = 
+    testCase "Extracting by row and column indices" <|
+      fun () ->
         let twoDA = TwoDAFile.FromString(sample2DAText)
-        Assert.AreEqual("a", twoDA.Value(0, 0))
-        Assert.AreEqual("b", twoDA.Value(0, 1))
-        Assert.AreEqual("c", twoDA.Value(0, 2))
-        Assert.AreEqual("d", twoDA.Value(1, 0))
-        Assert.AreEqual("e", twoDA.Value(1, 1))
-        Assert.AreEqual("f", twoDA.Value(1, 2))
-        Assert.AreEqual("g", twoDA.Value(2, 0))
-        Assert.AreEqual("h", twoDA.Value(2, 1))
-        Assert.AreEqual("i", twoDA.Value(2, 2))
+        Expect.equal "a" (twoDA.Value(0, 0)) "unexpected cell value"
+        Expect.equal "b" (twoDA.Value(0, 1)) "unexpected cell value"
+        Expect.equal "c" (twoDA.Value(0, 2)) "unexpected cell value"
+        Expect.equal "d" (twoDA.Value(1, 0)) "unexpected cell value"
+        Expect.equal "e" (twoDA.Value(1, 1)) "unexpected cell value"
+        Expect.equal "f" (twoDA.Value(1, 2)) "unexpected cell value"
+        Expect.equal "g" (twoDA.Value(2, 0)) "unexpected cell value"
+        Expect.equal "h" (twoDA.Value(2, 1)) "unexpected cell value"
+        Expect.equal "i" (twoDA.Value(2, 2)) "unexpected cell value"
 
-    [<Test>]
-    member this.``Extracting by column name``(): Unit = 
+    testCase "Extracting by column name" <|
+      fun () ->
         let twoDA = TwoDAFile.FromString(sample2DAText)
-        Assert.AreEqual("a", twoDA.Value(0, "COLUMN1"))
-        Assert.AreEqual("b", twoDA.Value(0, "COLUMN2"))
-        Assert.AreEqual("c", twoDA.Value(0, "COLUMN3"))
-        Assert.AreEqual("d", twoDA.Value(1, "COLUMN1"))
-        Assert.AreEqual("e", twoDA.Value(1, "COLUMN2"))
-        Assert.AreEqual("f", twoDA.Value(1, "COLUMN3"))
-        Assert.AreEqual("g", twoDA.Value(2, "COLUMN1"))
-        Assert.AreEqual("h", twoDA.Value(2, "COLUMN2"))
-        Assert.AreEqual("i", twoDA.Value(2, "COLUMN3"))
+        Expect.equal "a" (twoDA.Value(0, "COLUMN1")) "unexpected cell value"
+        Expect.equal "b" (twoDA.Value(0, "COLUMN2")) "unexpected cell value"
+        Expect.equal "c" (twoDA.Value(0, "COLUMN3")) "unexpected cell value"
+        Expect.equal "d" (twoDA.Value(1, "COLUMN1")) "unexpected cell value"
+        Expect.equal "e" (twoDA.Value(1, "COLUMN2")) "unexpected cell value"
+        Expect.equal "f" (twoDA.Value(1, "COLUMN3")) "unexpected cell value"
+        Expect.equal "g" (twoDA.Value(2, "COLUMN1")) "unexpected cell value"
+        Expect.equal "h" (twoDA.Value(2, "COLUMN2")) "unexpected cell value"
+        Expect.equal "i" (twoDA.Value(2, "COLUMN3")) "unexpected cell value"
 
-    [<Test>]
-    member this.``Default value is used for indices outside the bounds of the 2DA``(): Unit = 
+    testCase "Default value is used for indices outside the bounds of the 2DA" <|
+      fun () ->
         let twoDA = TwoDAFile.FromString(sample2DAText)
-        Assert.AreEqual("foo", twoDA.Value(900, 400))
+        Expect.equal "foo" (twoDA.Value(900, 400)) "default value not applied"
 
-    [<Test>]
-    member this.``Empty value is returned for ***``(): Unit = 
+    testCase "Empty value is returned for ***" <|
+      fun () ->
         let twoDA = TwoDAFile.FromString(sample2DATextWithEmpty)
-        Assert.AreEqual("", twoDA.Value(0, 1))
+        Expect.equal "" (twoDA.Value(0, 1)) "empty value not applied for ***"
 
-    [<Test>]
-    member this.``Quoted cell values in 2DAs``(): Unit = 
+    testCase "Quoted cell values in 2DAs" <|
+      fun () ->
         let twoDA = TwoDAFile.FromString(sample2DATextWithQuotes)
-        Assert.AreEqual("This has quotes", twoDA.Value(0, 0))
-        Assert.AreEqual("This has quotes too", twoDA.Value(1, 2))
+        Expect.equal "This has quotes" (twoDA.Value(0, 0)) "Quotes not handled correctly"
+        Expect.equal "This has quotes too" (twoDA.Value(1, 2)) "Quotes not handled correctly"
 
-    [<Test>]
-    member this.``Extracting integer values``(): Unit = 
+    testCase "Extracting integer values" <|
+      fun () ->
         let twoDA = TwoDAFile.FromString(sample2DATextWithInts)
-        Assert.AreEqual(Some(5), twoDA.ValueInt(1, 1))
+        Expect.equal (Some 5) (twoDA.ValueInt(1, 1)) "Integer value not handled correctly"
 
-    [<Test>]
-    member this.``Extracting float values``(): Unit = 
+    testCase "Extracting float values" <|
+      fun () ->
         let twoDA = TwoDAFile.FromString(sample2DATextWithFloats)
-        Assert.AreEqual(Some(5.0f), twoDA.ValueFloat(1, 1))
+        Expect.equal (Some 5.0f) (twoDA.ValueFloat(1, 1)) "Float value not handled correctly"
 
     // TODO: add binary 2DA read test, using test data
+  ]
+

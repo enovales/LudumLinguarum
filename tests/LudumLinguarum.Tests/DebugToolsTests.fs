@@ -1,16 +1,16 @@
 ﻿module DebugToolsTests
 
-open NUnit.Framework
 open DebugTools
+open Expecto
 open System.IO
 open System.Text
 
-[<TestFixture>]
-type RabinFingerprintHasherTests() = 
-    let hashBase = 101
-
-    [<Test>]
-    member this.``Seeding with an empty array``() = 
+[<Tests>]
+let rabinFingerprintHasherTests = 
+  let hashBase = 101
+  testList "Rabin fingerprint hasher tests" [
+    testCase "Seeding with an empty array" <|
+      fun () ->
         let expected = {
             RabinFingerprintHasher.ba = [||];
             startIndex = int64 0;
@@ -19,14 +19,14 @@ type RabinFingerprintHasherTests() =
             hashBase = hashBase
         }
         let computed = RabinFingerprintHasher.Seed([||], 0, hashBase) :?> RabinFingerprintHasher
-        Assert.AreEqual(expected.ba, computed.ba)
-        Assert.AreEqual(expected.startIndex, computed.startIndex)
-        Assert.AreEqual(expected.endIndex, computed.endIndex)
-        Assert.AreEqual(expected.h, computed.h)
-        Assert.AreEqual(expected.hashBase, computed.hashBase)
+        Expect.equal expected.ba computed.ba "unexpected byte array"
+        Expect.equal expected.startIndex computed.startIndex "unexpected start index"
+        Expect.equal expected.endIndex computed.endIndex "unexpected end index"
+        Expect.equal expected.h computed.h "unexpected hash"
+        Expect.equal expected.hashBase computed.hashBase "unexpected hash base"
 
-    [<Test>]
-    member this.``Seeding with a single byte``() = 
+    testCase "Seeding with a single byte" <|
+      fun () ->
         let expected = {
             RabinFingerprintHasher.ba = Encoding.UTF8.GetBytes("A");
             startIndex = int64 0;
@@ -35,14 +35,14 @@ type RabinFingerprintHasherTests() =
             hashBase = hashBase
         }
         let computed = RabinFingerprintHasher.Seed(Encoding.UTF8.GetBytes("A"), 1, hashBase) :?> RabinFingerprintHasher
-        Assert.AreEqual(expected.ba, computed.ba)
-        Assert.AreEqual(expected.startIndex, computed.startIndex)
-        Assert.AreEqual(expected.endIndex, computed.endIndex)
-        Assert.AreEqual(expected.h, computed.h)
-        Assert.AreEqual(expected.hashBase, computed.hashBase)
+        Expect.equal expected.ba computed.ba "unexpected byte array"
+        Expect.equal expected.startIndex computed.startIndex "unexpected start index"
+        Expect.equal expected.endIndex computed.endIndex "unexpected end index"
+        Expect.equal expected.h computed.h "unexpected hash"
+        Expect.equal expected.hashBase computed.hashBase "unexpected hash base"
 
-    [<Test>]
-    member this.``Seeding with two bytes``() = 
+    testCase "Seeding with two bytes" <|
+      fun () ->
         let expected = {
             RabinFingerprintHasher.ba = Encoding.UTF8.GetBytes("AB");
             startIndex = int64 0;
@@ -51,198 +51,206 @@ type RabinFingerprintHasherTests() =
             hashBase = hashBase
         }
         let computed = RabinFingerprintHasher.Seed(Encoding.UTF8.GetBytes("AB"), 2, hashBase) :?> RabinFingerprintHasher
-        Assert.AreEqual(expected.ba, computed.ba)
-        Assert.AreEqual(expected.startIndex, computed.startIndex)
-        Assert.AreEqual(expected.endIndex, computed.endIndex)
-        Assert.AreEqual(expected.h, computed.h)
-        Assert.AreEqual(expected.hashBase, computed.hashBase)
+        Expect.equal expected.ba computed.ba "unexpected byte array"
+        Expect.equal expected.startIndex computed.startIndex "unexpected start index"
+        Expect.equal expected.endIndex computed.endIndex "unexpected end index"
+        Expect.equal expected.h computed.h "unexpected hash"
+        Expect.equal expected.hashBase computed.hashBase "unexpected hash base"
+  ]
 
+[<Tests>]
+let fixedLengthRabinKarpStringScannerTests = 
+  let strings = 
+      [|
+          "abcd"
+          "abab"
+      |]
+  let stringLength = strings.[0].Length
+  let hashBase = 101
 
-[<TestFixture>]
-type FixedLengthRabinKarpStringScannerTests() = 
-    let strings = 
-        [|
-            "abcd"
-            "abab"
-        |]
-    let stringLength = strings.[0].Length
-    let hashBase = 101
-
-    [<Test>]
-    member this.``Scanning an empty string``() = 
+  testList "fixed length Rabin-Karp string scanner tests" [
+    testCase "Scanning an empty string" <|
+      fun () ->
         let rkss = new FixedLengthRabinKarpStringScanner(Encoding.UTF8.GetBytes(""), strings, stringLength, RabinFingerprintHasher.Seed([||], 0, hashBase))
         let expected = []
         let actual = rkss.GetStrings()
-        Assert.AreEqual(expected, actual)
-        
-    [<Test>]
-    member this.``Scanning a string that's not long enough to match any of the strings in the dictionary``() = 
+        Expect.equal expected actual "unexpected result"
+
+    testCase "Scanning a string that's not long enough to match any of the strings in the dictionary" <|
+      fun () ->
         let rkss = new FixedLengthRabinKarpStringScanner(Encoding.UTF8.GetBytes("aaa"), strings, stringLength, RabinFingerprintHasher.Seed([||], 0, hashBase))
         let expected = []
         let actual = rkss.GetStrings()
-        Assert.AreEqual(expected, actual)
-        
-    [<Test>]
-    member this.``Scanning a string that's an exact match for one of the strings in the dictionary``() = 
+        Expect.equal expected actual "unexpected result"
+
+    testCase "Scanning a string that's an exact match for one of the strings in the dictionary" <|
+      fun () ->
         let rkss = new FixedLengthRabinKarpStringScanner(Encoding.UTF8.GetBytes("abcd"), strings, stringLength, RabinFingerprintHasher.Seed([||], 0, hashBase))
         let expected = [ { StringOffsetPair.o = int64 0; s = "abcd" }]
         let actual = rkss.GetStrings()
-        Assert.AreEqual(expected, actual)
-        
-    [<Test>]
-    member this.``Scanning a string that matches one of the strings in the dictionary, and has some excess``() = 
+        Expect.equal expected actual "unexpected result"
+
+    testCase "Scanning a string that matches one of the strings in the dictionary, and has some excess" <|
+      fun () ->
         let rkss = new FixedLengthRabinKarpStringScanner(Encoding.UTF8.GetBytes("abcdefgh"), strings, stringLength, RabinFingerprintHasher.Seed([||], 0, hashBase))
         let expected = [ { StringOffsetPair.o = int64 0; s = "abcd" }]
         let actual = rkss.GetStrings()
-        Assert.AreEqual(expected, actual)
+        Expect.equal expected actual "unexpected result"
 
-    [<Test>]
-    member this.``Scanning a string where a match exists in the middle of the string``() = 
+    testCase "Scanning a string where a match exists in the middle of the string" <|
+      fun () ->
         let rkss = new FixedLengthRabinKarpStringScanner(Encoding.UTF8.GetBytes("efghabcdijkl"), strings, stringLength, RabinFingerprintHasher.Seed([||], 0, hashBase))
         let expected = [ { StringOffsetPair.o = int64 4; s = "abcd" }]
         let actual = rkss.GetStrings()
-        Assert.AreEqual(expected, actual)
+        Expect.equal expected actual "unexpected result"
 
-    [<Test>]
-    member this.``Scanning a string where a match exists at the end of the string``() = 
+    testCase "Scanning a string where a match exists at the end of the string" <|
+      fun () ->
         let rkss = new FixedLengthRabinKarpStringScanner(Encoding.UTF8.GetBytes("efghabcd"), strings, stringLength, RabinFingerprintHasher.Seed([||], 0, hashBase))
         let expected = [ { StringOffsetPair.o = int64 4; s = "abcd" }]
         let actual = rkss.GetStrings()
-        Assert.AreEqual(expected, actual)
-        
-    [<Test>]
-    member this.``Scanning a string with two non-overlapping matches``() = 
+        Expect.equal expected actual "unexpected result"
+
+    testCase "Scanning a string with two non-overlapping matches" <|
+      fun () ->
         let rkss = new FixedLengthRabinKarpStringScanner(Encoding.UTF8.GetBytes("abcdabab"), strings, stringLength, RabinFingerprintHasher.Seed([||], 0, hashBase))
         let expected = [ { StringOffsetPair.o = int64 0; s = "abcd" }; { StringOffsetPair.o = int64 4; s = "abab" }] |> Set.ofList
         let actual = rkss.GetStrings() |> Set.ofList
-        Assert.AreEqual(expected, actual)
-    
-    [<Test>]
-    member this.``Scanning a string with two overlapping matches``() = 
+        Expect.equal expected actual "unexpected result"
+
+    testCase "Scanning a string with two overlapping matches" <|
+      fun () ->
         let rkss = new FixedLengthRabinKarpStringScanner(Encoding.UTF8.GetBytes("ababcd"), strings, stringLength, RabinFingerprintHasher.Seed([||], 0, hashBase))
         let expected = [ { StringOffsetPair.o = int64 0; s = "abab" }; { StringOffsetPair.o = int64 2; s = "abcd" }] |> Set.ofList
         let actual = rkss.GetStrings() |> Set.ofList
-        Assert.AreEqual(expected, actual)
-        
-    [<Test>]
-    member this.``Scanning a string with two matches, where their dictionary entries have the same hash``() = 
+        Expect.equal expected actual "unexpected result"
+
+    testCase "Scanning a string with two matches, where their dictionary entries have the same hash" <|
+      fun () ->
         let rkss = new FixedLengthRabinKarpStringScanner(Encoding.UTF8.GetBytes("ababcd"), strings, stringLength, new MapHasher([| ("abab", int64 1); ("abcd", int64 1) |]))
         let expected = [ { StringOffsetPair.o = int64 0; s = "abab" }; { StringOffsetPair.o = int64 2; s = "abcd" }] |> Set.ofList
         let actual = rkss.GetStrings() |> Set.ofList
-        Assert.AreEqual(expected, actual)
+        Expect.equal expected actual "unexpected result"
+  ]
 
-[<TestFixture>]
-type RabinKarpStringScannerTests() = 
-    let hashBase = 101
-    let stringsToMatch = [|
-            "abcd";
-            "ab";
-            "cdef";
-            "ghi"
-        |]
-    let hasher = RabinFingerprintHasher.Seed([||], 0, hashBase)
-    let scanner(d: byte array) = new RabinKarpStringScanner(d, stringsToMatch, hasher)
+[<Tests>]
+let rabinKarpStringScannerTests = 
+  let hashBase = 101
+  let stringsToMatch = [|
+          "abcd";
+          "ab";
+          "cdef";
+          "ghi"
+      |]
+  let hasher = RabinFingerprintHasher.Seed([||], 0, hashBase)
+  let scanner(d: byte array) = new RabinKarpStringScanner(d, stringsToMatch, hasher)
 
-    [<Test>]
-    member this.``Scanning an empty string``() = 
-        Assert.IsEmpty(scanner(Encoding.UTF8.GetBytes("")).GetStrings())
+  testList "Rabin-Karp string scanner tests" [
+    testCase "Scanning an empty string" <|
+      fun () -> Expect.isEmpty (scanner(Encoding.UTF8.GetBytes("")).GetStrings()) "scanner should return no strings"
 
-    [<Test>]
-    member this.``Scanning a string with a minimal match``() = 
-        Assert.AreEqual([| { StringOffsetPair.o = int64 0; s = "ab" } |], scanner(Encoding.UTF8.GetBytes("ab")).GetStrings())
+    testCase "Scanning a string with a minimal match" <|
+      fun () -> Expect.equal [| { StringOffsetPair.o = int64 0; s = "ab" } |] (scanner(Encoding.UTF8.GetBytes("ab")).GetStrings()) "should have single string"
 
-    [<Test>]
-    member this.``Scanning a string with contained spans, and matching the longest one``() = 
-        Assert.AreEqual([| { StringOffsetPair.o = int64 0; s = "abcd" } |], scanner(Encoding.UTF8.GetBytes("abcd")).GetStrings())
+    testCase "Scanning a string with contained spans, and matching the longest one" <|
+      fun () -> Expect.equal [| { StringOffsetPair.o = int64 0; s = "abcd" } |] (scanner(Encoding.UTF8.GetBytes("abcd")).GetStrings()) "should match longest string"
 
-    [<Test>]
-    member this.``Scanning a string with two matches``() = 
-        Assert.AreEqual([| { StringOffsetPair.o = int64 0; s = "ab" }; { StringOffsetPair.o = int64 2; s = "ghi" } |] |> Set.ofArray, scanner(Encoding.UTF8.GetBytes("abghi")).GetStrings() |> Set.ofArray)
+    testCase "Scanning a string with two matches" <|
+      fun () -> 
+        let expected = [| { StringOffsetPair.o = int64 0; s = "ab" }; { StringOffsetPair.o = int64 2; s = "ghi" } |] |> Set.ofArray
+        let found = scanner(Encoding.UTF8.GetBytes("abghi")).GetStrings() |> Set.ofArray
+        Expect.equal expected found "should find two matches"
 
-    [<Test>]
-    member this.``Scanning a string with overlapping matches``() = 
-        Assert.AreEqual([| { StringOffsetPair.o = int64 0; s = "abcd" }; { StringOffsetPair.o = int64 2; s = "cdef" } |] |> Set.ofArray, scanner(Encoding.UTF8.GetBytes("abcdef")).GetStrings() |> Set.ofArray)
+    testCase "Scanning a string with overlapping matches" <|
+      fun () -> 
+        let expected = [| { StringOffsetPair.o = int64 0; s = "abcd" }; { StringOffsetPair.o = int64 2; s = "cdef" } |] |> Set.ofArray
+        let found = scanner(Encoding.UTF8.GetBytes("abcdef")).GetStrings() |> Set.ofArray
+        Expect.equal expected found "should find two overlapping matches"
+  ]
 
-[<TestFixture>]
-type StreamStringScannerTests() = 
-    let testContainsTrie = 
-        Trie.Root(
-            [| Trie.Node('a', 
-                [| Trie.Node('b', 
-                    [| Trie.Node('c', [||], true) |], true)
-            |], false)
-        |])
+[<Tests>]
+let streamStringScannerTests = 
+  let testContainsTrie = 
+      Trie.Root(
+          [| Trie.Node('a', 
+              [| Trie.Node('b', 
+                  [| Trie.Node('c', [||], true) |], true)
+          |], false)
+      |])
 
-    let readNextChar(sr: StringReader)() = 
-        match sr.Read() with
-        | -1 -> None
-        | c -> Some(char c)
+  let readNextChar(sr: StringReader)() = 
+      match sr.Read() with
+      | -1 -> None
+      | c -> Some(char c)
 
-    let emptyStream() = None
+  let emptyStream() = None
 
-    [<Test>]
-    member this.``Scanning an empty string``() = 
-        Assert.AreEqual(None, (new StreamStringScanner(emptyStream, testContainsTrie)).GetString())
+  testList "Stream string scanner tests" [
+    testCase "Scanning an empty string" <|
+      fun () -> Expect.equal None ((new StreamStringScanner(emptyStream, testContainsTrie)).GetString()) "should be None"
 
-    [<Test>]
-    member this.``Scanning a string with a single match``() = 
-        Assert.AreEqual(Some("ab"), (new StreamStringScanner(readNextChar(new StringReader("ab")), testContainsTrie)).GetString())
+    testCase "Scanning a string with a single match" <|
+      fun () -> Expect.equal (Some "ab") ((new StreamStringScanner(readNextChar(new StringReader("ab")), testContainsTrie)).GetString()) "should be 'ab'"
 
-    [<Test>]
-    member this.``Scanning a string with a match, and some extra characters beyond the match``() = 
-        Assert.AreEqual(Some("ab"), (new StreamStringScanner(readNextChar(new StringReader("aba")), testContainsTrie)).GetString())
+    testCase "Scanning a string with a match, and some extra characters beyond the match" <|
+      fun () -> Expect.equal (Some "ab") ((new StreamStringScanner(readNextChar(new StringReader("aba")), testContainsTrie)).GetString()) "should be 'ab'"
 
-    [<Test>]
-    member this.``Case insensitivity of matching``() = 
-        Assert.AreEqual(Some("AB"), (new StreamStringScanner(readNextChar(new StringReader("ABA")), testContainsTrie)).GetString())
+    testCase "Case insensitivity of matching" <|
+      fun () -> Expect.equal (Some "AB") ((new StreamStringScanner(readNextChar(new StringReader("ABA")), testContainsTrie)).GetString()) "should be 'ab'"
 
-    [<Test>]
-    member this.``Scanning a string with no matches``() = 
-        Assert.AreEqual(None, (new StreamStringScanner(readNextChar(new StringReader("a")), testContainsTrie)).GetString())
+    testCase "Scanning a string with no matches" <|
+      fun () -> Expect.equal None ((new StreamStringScanner(readNextChar(new StringReader("a")), testContainsTrie)).GetString()) "should be None"
+  ]
 
-[<TestFixture>]
-type TextScannerTests() = 
-    let minimalStringConfig = { TextScannerConfiguration.Empty with MinimumLength = 1 }
-    let tooLongStringConfig = { TextScannerConfiguration.Empty with MinimumLength = 10 }
-    let testContainsTrie = 
-        Trie.Root(
-            [| Trie.Node('a', 
-                [| Trie.Node('b', 
-                    [| Trie.Node('c', [||], true) |], true)
-            |], false)
-        |])
+[<Tests>]
+let textScannerTests = 
+  let minimalStringConfig = { TextScannerConfiguration.Empty with MinimumLength = 1 }
+  let tooLongStringConfig = { TextScannerConfiguration.Empty with MinimumLength = 10 }
+  let testContainsTrie = 
+      Trie.Root(
+          [| Trie.Node('a', 
+              [| Trie.Node('b', 
+                  [| Trie.Node('c', [||], true) |], true)
+          |], false)
+      |])
 
-    let minimalScanner = new NaiveTextScanner(minimalStringConfig, testContainsTrie)
-    let tooLongScanner = new NaiveTextScanner(tooLongStringConfig, testContainsTrie)
+  let minimalScanner = new NaiveTextScanner(minimalStringConfig, testContainsTrie)
+  let tooLongScanner = new NaiveTextScanner(tooLongStringConfig, testContainsTrie)
 
-    [<Test>]
-    member this.``Scanning an empty file returns no strings``() = 
-        Assert.IsEmpty(minimalScanner.ScanBytes([||]))
+  testList "Text scanner tests" [
+    testCase "Scanning an empty file returns no strings" <|
+      fun () -> Expect.isEmpty (minimalScanner.ScanBytes([||])) "should be empty"
 
-    [<Test>]
-    member this.``Matching no strings from a valid file``() = 
-        Assert.IsEmpty(minimalScanner.ScanBytes(Encoding.UTF8.GetBytes("12345")))
+    testCase "Matching no strings from a valid file" <|
+      fun () -> Expect.isEmpty (minimalScanner.ScanBytes(Encoding.UTF8.GetBytes("12345"))) "should be empty when no strings matched"
 
-    [<Test>]
-    member this.``Matching a single string``() = 
-        Assert.AreEqual([| { FoundString.offset = int64 0; value = "ab" } |], minimalScanner.ScanBytes(Encoding.UTF8.GetBytes("ab")))
+    testCase "Matching a single string" <|
+      fun () -> 
+        let expected = [| { FoundString.offset = int64 0; value = "ab" } |]
+        let found = minimalScanner.ScanBytes(Encoding.UTF8.GetBytes("ab"))
+        Expect.equal expected found "should match a single string"
 
-    [<Test>]
-    member this.``Matching is case insensitive``() = 
-        Assert.AreEqual([| { FoundString.offset = int64 0; value = "AB" } |], minimalScanner.ScanBytes(Encoding.UTF8.GetBytes("AB")))
+    testCase "Matching is case insensitive" <|
+      fun () ->
+        let expected = [| { FoundString.offset = int64 0; value = "AB" } |]
+        let found = minimalScanner.ScanBytes(Encoding.UTF8.GetBytes("AB"))
+        Expect.equal expected found "should match a single string"
 
-    [<Test>]
-    member this.``Matching multiple strings``() = 
+    testCase "Matching multiple strings" <|
+      fun () ->
         let expected = [|
-                { FoundString.offset = int64 0; value = "ab" };
-                { FoundString.offset = int64 2; value = "ab" }
-            |]
-        Assert.AreEqual(expected, minimalScanner.ScanBytes(Encoding.UTF8.GetBytes("abab")))
+            { FoundString.offset = int64 0; value = "ab" };
+            { FoundString.offset = int64 2; value = "ab" }
+          |]
+        let found = minimalScanner.ScanBytes(Encoding.UTF8.GetBytes("abab"))
+        Expect.equal expected found "should match multiple strings"
 
-    [<Test>]
-    member this.``Returning the longest possible match``() = 
-        Assert.AreEqual([| { FoundString.offset = int64 0; value = "abc" } |], minimalScanner.ScanBytes(Encoding.UTF8.GetBytes("abc")))
+    testCase "Returning the longest possible match" <|
+      fun () ->
+        let expected = [| { FoundString.offset = int64 0; value = "abc" } |]
+        let found = minimalScanner.ScanBytes(Encoding.UTF8.GetBytes("abc"))
+        Expect.equal expected found "should return the longest possible match"
 
-    [<Test>]
-    member this.``Skip strings that are shorter than the configured minimum``() = 
-        Assert.AreEqual([||], tooLongScanner.ScanBytes(Encoding.UTF8.GetBytes("ab")))
+    testCase "Skip strings that are shorter than the configured minimum" <|
+      fun () -> Expect.equal [||] (tooLongScanner.ScanBytes(Encoding.UTF8.GetBytes("ab"))) "should return no strings"
+  ]

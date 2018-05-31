@@ -1,6 +1,7 @@
 ﻿module WormsArmageddon
 
 open LLDatabase
+open LLUtils
 open System
 open System.IO
 open System.Text.RegularExpressions
@@ -104,7 +105,7 @@ let ExtractWormsArmageddon(path: string) =
             ("Spanish.txt", "es")
             ("Swedish.txt", "sv")
         |]
-        |> Array.map (fun (p, language) -> (Path.Combine(Path.Combine(path, @"DATA\User\Languages\3.7.2.1"), p), language))
+        |> Array.map (fun (p, language) -> (Path.Combine(Path.Combine(path, FixPathSeps @"DATA\User\Languages\3.7.2.1"), p), language))
     
     let cards = 
         stringFilesAndLanguages

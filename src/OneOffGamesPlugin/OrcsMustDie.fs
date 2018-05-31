@@ -2,6 +2,7 @@
 
 open ICSharpCode.SharpZipLib.Zip
 open LLDatabase
+open LLUtils
 open System
 open System.IO
 open System.Xml.Linq
@@ -123,15 +124,15 @@ let private extractOMDZips(assetZips: string array, l: LessonRecord, languageMap
 // Both Orcs Must Die! games have the same set of localizations.
 let private languageMap = 
     [|
-        (@"Localization\de", "de")
-        (@"Localization\default", "en")
-        (@"Localization\es", "es")
-        (@"Localization\fr", "fr")
-        (@"Localization\it", "it")
-        (@"Localization\ja", "ja")
-        (@"Localization\pl", "pl")
-        (@"Localization\pt", "pt")
-        (@"Localization\ru", "ru")
+        (FixPathSeps @"Localization\de", "de")
+        (FixPathSeps @"Localization\default", "en")
+        (FixPathSeps @"Localization\es", "es")
+        (FixPathSeps @"Localization\fr", "fr")
+        (FixPathSeps @"Localization\it", "it")
+        (FixPathSeps @"Localization\ja", "ja")
+        (FixPathSeps @"Localization\pl", "pl")
+        (FixPathSeps @"Localization\pt", "pt")
+        (FixPathSeps @"Localization\ru", "ru")
     |]
     |> Map.ofArray
 

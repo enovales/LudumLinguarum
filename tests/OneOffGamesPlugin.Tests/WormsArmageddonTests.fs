@@ -1,21 +1,23 @@
 ﻿module WormsArmageddonTests
 
-open NUnit.Framework
+open Expecto
 open WormsArmageddon
 
-type WormsArmageddonTests() = 
-    let emptyState = 
-        {
-            StringExtractState.AccumulatingKey = None
-            Accumulated = []
-            Complete = []
-        }
-    [<Test>]
-    member this.``Calling getAccumulatedString if there is no accumulating key returns an empty list``() = 
-        Assert.AreEqual([], WormsArmageddon.getAccumulatedString(emptyState))
+let private emptyState = 
+  {
+      StringExtractState.AccumulatingKey = None
+      Accumulated = []
+      Complete = []
+  }
 
-    [<Test>]
-    member this.``Calling getAccumulatedString returns a tuple of the accumulating key and the reversed accumulated strings``() = 
+[<Tests>]
+let tests =     
+  testList "Worms Armageddon tests" [
+    testCase "Calling getAccumulatedString if there is no accumulating key returns an empty list" <|
+      fun () -> Expect.equal [] (WormsArmageddon.getAccumulatedString emptyState) ""
+
+    testCase "Calling getAccumulatedString returns a tuple of the accumulating key and the reversed accumulated strings" <|
+      fun () -> 
         let populated = 
             {
                 StringExtractState.AccumulatingKey = Some("key")
@@ -23,10 +25,10 @@ type WormsArmageddonTests() =
                 Complete = []
             }            
         let expected = [("key", "foo bar baz")]
-        Assert.AreEqual(expected, WormsArmageddon.getAccumulatedString(populated))
+        Expect.equal expected (WormsArmageddon.getAccumulatedString populated) ""
 
-    [<Test>]
-    member this.``Calling foldStringLines reads one single-line string mapping``() = 
+    testCase "Calling foldStringLines reads one single-line string mapping" <|
+      fun () -> 
         let lines = 
             [|
                 "KEY \"Contained string\""
@@ -39,10 +41,10 @@ type WormsArmageddonTests() =
                 Complete = [("KEY", "Contained string")]
             }
 
-        Assert.AreEqual(expected, lines |> Array.fold foldStringLines emptyState)
+        Expect.equal expected (lines |> Array.fold foldStringLines emptyState) ""
 
-    [<Test>]
-    member this.``Calling foldStringLines reads two single-line string mappings``() =
+    testCase "Calling foldStringLines reads two single-line string mappings" <|
+      fun () -> 
         let lines = 
             [|
                 "KEY \"Contained string\""
@@ -56,10 +58,10 @@ type WormsArmageddonTests() =
                 Complete = [("KEY2", "Contained string 2"); ("KEY", "Contained string")]
             }
 
-        Assert.AreEqual(expected, lines |> Array.fold foldStringLines emptyState)
+        Expect.equal expected (lines |> Array.fold foldStringLines emptyState) ""
 
-    [<Test>]
-    member this.``Calling foldStringLines reads one partial mapping``() = 
+    testCase "Calling foldStringLines reads one partial mapping" <|
+      fun () ->
         let lines = 
             [|
                 "KEY"
@@ -73,10 +75,10 @@ type WormsArmageddonTests() =
                 Complete = []
             }
 
-        Assert.AreEqual(expected, lines |> Array.fold foldStringLines emptyState)
+        Expect.equal expected (lines |> Array.fold foldStringLines emptyState) ""
 
-    [<Test>]
-    member this.``Calling foldStringLines with one partial mapping containing two strings``() = 
+    testCase "Calling foldStringLines with one partial mapping containing two strings" <|
+      fun () ->
         let lines = 
             [|
                 "KEY"
@@ -91,10 +93,10 @@ type WormsArmageddonTests() =
                 Complete = []
             }
 
-        Assert.AreEqual(expected, lines |> Array.fold foldStringLines emptyState)
+        Expect.equal expected (lines |> Array.fold foldStringLines emptyState) ""
 
-    [<Test>]
-    member this.``A partial mapping followed by a single-line string mapping are both recognized``() = 
+    testCase "A partial mapping followed by a single-line string mapping are both recognized" <|
+      fun () ->
         let lines = 
             [|
                 "KEY"
@@ -110,4 +112,5 @@ type WormsArmageddonTests() =
                 Complete = [("SIMPLE1", "Simple string"); ("KEY", "Contained string Contained string 2")]
             }
 
-        Assert.AreEqual(expected, lines |> Array.fold foldStringLines emptyState)
+        Expect.equal expected (lines |> Array.fold foldStringLines emptyState) ""
+  ]

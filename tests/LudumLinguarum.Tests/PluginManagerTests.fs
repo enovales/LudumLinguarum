@@ -1,8 +1,8 @@
-﻿namespace LudumLinguarumLibTests2
+﻿module PluginManagerTests
 
-open NUnit.Framework
+open Expecto
 
-[<TestFixture>]
-type PluginManagerTests() = 
-    [<Test>]
-    member this.``Dummy test``() = ()
+[<Tests>]
+let tests = 
+  testList "PluginManager tests" [
+    ]

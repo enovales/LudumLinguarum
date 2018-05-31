@@ -1,6 +1,7 @@
 ﻿module MadballsBaboInvasion
 
 open LLDatabase
+open LLUtils
 open SQLite
 open System
 open System.IO
@@ -100,7 +101,7 @@ let ExtractMadballsBaboInvasion(path: string) =
         |> Array.mapi(createLessonForCategory)
 
     let generateCardsForLanguage(l: string) = 
-        let dbPath = Path.Combine(path, @"main\db\" + l + ".db")
+        let dbPath = Path.Combine(path, FixPathSeps(@"main\db\" + l + ".db"))
         createCardsForDatabase(dbPath, l, lessons)
 
     let cards = languages |> Array.collect generateCardsForLanguage

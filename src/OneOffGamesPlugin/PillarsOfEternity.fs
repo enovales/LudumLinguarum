@@ -1,6 +1,7 @@
 ﻿module PillarsOfEternity
 
 open LLDatabase
+open LLUtils
 open System
 open System.IO
 open System.Text.RegularExpressions
@@ -138,23 +139,23 @@ let internal createLesson(i: int)(title: string): LessonRecord =
 let ExtractPillarsOfEternity(path: string) = 
     let languageMap = 
         [|
-            (@"localized\en", "en")
-            (@"localized\fr", "fr")
-            (@"localized\de", "de")
-            (@"localized\it", "it")
-            (@"localized\es", "es")
-            (@"localized\ko", "ko")
-            (@"localized\pl", "pl")
-            (@"localized\ru", "ru")
+            (FixPathSeps @"localized\en", "en")
+            (FixPathSeps @"localized\fr", "fr")
+            (FixPathSeps @"localized\de", "de")
+            (FixPathSeps @"localized\it", "it")
+            (FixPathSeps @"localized\es", "es")
+            (FixPathSeps @"localized\ko", "ko")
+            (FixPathSeps @"localized\pl", "pl")
+            (FixPathSeps @"localized\ru", "ru")
         |]
         |> Map.ofArray
 
     // create lessons for each of the subdirectories in the asset zips
     let lessonsMap = 
         [|
-            (@"text\game", "Game Text")
-            (@"text\conversations", "Conversations")
-            (@"text\quests", "Quests")
+            (FixPathSeps @"text\game", "Game Text")
+            (FixPathSeps @"text\conversations", "Conversations")
+            (FixPathSeps @"text\quests", "Quests")
         |]
         |> Array.mapi(fun i (k, v) -> (k, createLesson(i)(v)))
         |> Map.ofArray
@@ -167,9 +168,9 @@ let ExtractPillarsOfEternity(path: string) =
     let cardKeyAndLanguage(c: CardRecord) = c.LanguageTag + c.Key
     let cards = 
         [|
-            @"PillarsOfEternity_Data\data_expansion2"
-            @"PillarsOfEternity_Data\data_expansion1"
-            @"PillarsOfEternity_Data\data"
+            FixPathSeps @"PillarsOfEternity_Data\data_expansion2"
+            FixPathSeps @"PillarsOfEternity_Data\data_expansion1"
+            FixPathSeps @"PillarsOfEternity_Data\data"
         |]
         |> Array.map(fun p -> Path.Combine(path, p))
         |> Array.filter Directory.Exists
@@ -185,22 +186,22 @@ let ExtractPillarsOfEternity(path: string) =
 let ExtractTormentTidesOfNumenera(path: string) = 
     let languageMap = 
         [|
-            (@"localized\en", "en")
-            (@"localized\fr", "fr")
-            (@"localized\de", "de")
-            (@"localized\it", "it")
-            (@"localized\es", "es")
-            (@"localized\pl", "pl")
-            (@"localized\ru", "ru")
+            (FixPathSeps @"localized\en", "en")
+            (FixPathSeps @"localized\fr", "fr")
+            (FixPathSeps @"localized\de", "de")
+            (FixPathSeps @"localized\it", "it")
+            (FixPathSeps @"localized\es", "es")
+            (FixPathSeps @"localized\pl", "pl")
+            (FixPathSeps @"localized\ru", "ru")
         |]
         |> Map.ofArray
 
     // create lessons for each of the subdirectories in the asset zips
     let lessonsMap = 
         [|
-            (@"text\game", "Game Text")
-            (@"text\conversations", "Conversations")
-            (@"text\quests", "Quests")
+            (FixPathSeps @"text\game", "Game Text")
+            (FixPathSeps @"text\conversations", "Conversations")
+            (FixPathSeps @"text\quests", "Quests")
         |]
         |> Array.mapi(fun i (k, v) -> (k, createLesson(i)(v)))
         |> Map.ofArray
@@ -226,7 +227,7 @@ let ExtractTormentTidesOfNumenera(path: string) =
     let cardKeyAndLanguage(c: CardRecord) = c.LanguageTag + c.Key
     let cards = 
         [|
-            @"WIN\TidesOfNumenera_Data\StreamingAssets\data"
+            FixPathSeps @"WIN\TidesOfNumenera_Data\StreamingAssets\data"
         |]
         |> Array.map(fun p -> Path.Combine(path, p))
         |> Array.filter Directory.Exists
@@ -242,21 +243,21 @@ let ExtractTormentTidesOfNumenera(path: string) =
 let ExtractTyranny(path: string) = 
     let languageMap = 
         [|
-            (@"localized\en", "en")
-            (@"localized\fr", "fr")
-            (@"localized\de", "de")
-            (@"localized\es", "es")
-            (@"localized\pl", "pl")
-            (@"localized\ru", "ru")
+            (FixPathSeps @"localized\en", "en")
+            (FixPathSeps @"localized\fr", "fr")
+            (FixPathSeps @"localized\de", "de")
+            (FixPathSeps @"localized\es", "es")
+            (FixPathSeps @"localized\pl", "pl")
+            (FixPathSeps @"localized\ru", "ru")
         |]
         |> Map.ofArray
 
     // create lessons for each of the subdirectories in the asset zips
     let lessonsMap = 
         [|
-            (@"text\game", "Game Text")
-            (@"text\conversations", "Conversations")
-            (@"text\quests", "Quests")
+            (FixPathSeps @"text\game", "Game Text")
+            (FixPathSeps @"text\conversations", "Conversations")
+            (FixPathSeps @"text\quests", "Quests")
         |]
         |> Array.mapi(fun i (k, v) -> (k, createLesson(i)(v)))
         |> Map.ofArray
@@ -276,7 +277,7 @@ let ExtractTyranny(path: string) =
     let cardKeyAndLanguage(c: CardRecord) = c.LanguageTag + c.Key
     let cards = 
         [|
-            @"Data\data\exported"
+            FixPathSeps @"Data\data\exported"
         |]
         |> Array.map(fun p -> Path.Combine(path, p))
         |> Array.filter Directory.Exists
@@ -292,26 +293,26 @@ let ExtractTyranny(path: string) =
 let ExtractPillarsOfEternity2(path: string) = 
     let languageMap = 
         [|
-            (@"localized\en", "en")
-            (@"localized\fr", "fr")
-            (@"localized\de", "de")
-            (@"localized\it", "it")
-            (@"localized\es", "es")
-            (@"localized\ko", "ko")
-            (@"localized\pl", "pl")
-            (@"localized\pt", "pt")
-            (@"localized\ru", "ru")
-            (@"localized\zh", "zh-CN")
+            (FixPathSeps @"localized\en", "en")
+            (FixPathSeps @"localized\fr", "fr")
+            (FixPathSeps @"localized\de", "de")
+            (FixPathSeps @"localized\it", "it")
+            (FixPathSeps @"localized\es", "es")
+            (FixPathSeps @"localized\ko", "ko")
+            (FixPathSeps @"localized\pl", "pl")
+            (FixPathSeps @"localized\pt", "pt")
+            (FixPathSeps @"localized\ru", "ru")
+            (FixPathSeps @"localized\zh", "zh-CN")
         |]
         |> Map.ofArray
 
     // create lessons for each of the subdirectories in the asset zips
     let lessonsMap = 
         [|
-            (@"text\chatter", "Chatter")
-            (@"text\game", "Game Text")
-            (@"text\conversations", "Conversations")
-            (@"text\quests", "Quests")
+            (FixPathSeps @"text\chatter", "Chatter")
+            (FixPathSeps @"text\game", "Game Text")
+            (FixPathSeps @"text\conversations", "Conversations")
+            (FixPathSeps @"text\quests", "Quests")
         |]
         |> Array.mapi(fun i (k, v) -> (k, createLesson(i)(v)))
         |> Map.ofArray
@@ -324,7 +325,7 @@ let ExtractPillarsOfEternity2(path: string) =
     let cardKeyAndLanguage(c: CardRecord) = c.LanguageTag + c.Key
     let cards = 
         [|
-            @"PillarsOfEternityII_Data\exported"
+            FixPathSeps @"PillarsOfEternityII_Data\exported"
         |]
         |> Array.map(fun p -> Path.Combine(path, p))
         |> Array.filter Directory.Exists

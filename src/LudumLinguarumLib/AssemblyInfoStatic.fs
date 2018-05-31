@@ -2,5 +2,5 @@
 
 open System.Runtime.CompilerServices
 
-[<assembly: InternalsVisibleToAttribute("LudumLinguarumLib.Tests")>]
+[<assembly: InternalsVisibleToAttribute("LudumLinguarum.Tests")>]
 do ()

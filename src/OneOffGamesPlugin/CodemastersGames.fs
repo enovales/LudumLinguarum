@@ -1,6 +1,7 @@
 module CodemastersGames
 
 open LLDatabase
+open LLUtils
 open StreamTools
 open System
 open System.Text
@@ -196,14 +197,14 @@ let internal extractCodemastersEgoGame(filePathsLanguagesAndEncodings: (string *
 let ExtractF1RaceStars(path: string) = 
     let filePaths = 
         [|
-            @"data_win\localisation\language_bra.lng"
-            @"data_win\localisation\language_eng.lng"
-            @"data_win\localisation\language_fre.lng"
-            @"data_win\localisation\language_ger.lng"
-            @"data_win\localisation\language_ita.lng"
-            @"data_win\localisation\language_jap.lng"
-            @"data_win\localisation\language_pol.lng"
-            @"data_win\localisation\language_spa.lng"
+            FixPathSeps @"data_win\localisation\language_bra.lng"
+            FixPathSeps @"data_win\localisation\language_eng.lng"
+            FixPathSeps @"data_win\localisation\language_fre.lng"
+            FixPathSeps @"data_win\localisation\language_ger.lng"
+            FixPathSeps @"data_win\localisation\language_ita.lng"
+            FixPathSeps @"data_win\localisation\language_jap.lng"
+            FixPathSeps @"data_win\localisation\language_pol.lng"
+            FixPathSeps @"data_win\localisation\language_spa.lng"
         |]
         |> Array.map(fun p -> Path.Combine(path, p))
 
@@ -224,16 +225,16 @@ let ExtractF1RaceStars(path: string) =
 let ExtractF12011(path: string) = 
     let filePaths = 
         [|
-            @"language\language_bra.lng"
-            @"language\language_eng.lng"
-            @"language\language_fre.lng"
-            @"language\language_ger.lng"
-            @"language\language_ita.lng"
-            @"language\language_jpn.lng"
-            @"language\language_pol.lng"
-            @"language\language_por.lng"
-            @"language\language_rus.lng"
-            @"language\language_spa.lng"
+            FixPathSeps @"language\language_bra.lng"
+            FixPathSeps @"language\language_eng.lng"
+            FixPathSeps @"language\language_fre.lng"
+            FixPathSeps @"language\language_ger.lng"
+            FixPathSeps @"language\language_ita.lng"
+            FixPathSeps @"language\language_jpn.lng"
+            FixPathSeps @"language\language_pol.lng"
+            FixPathSeps @"language\language_por.lng"
+            FixPathSeps @"language\language_rus.lng"
+            FixPathSeps @"language\language_spa.lng"
         |]
         |> Array.map(fun p -> Path.Combine(path, p))
 
@@ -256,15 +257,15 @@ let ExtractF12011(path: string) =
 let ExtractF12012(path: string) = 
     let filePaths = 
         [|
-            @"language\language_bra.lng"
-            @"language\language_eng.lng"
-            @"language\language_fre.lng"
-            @"language\language_ger.lng"
-            @"language\language_ita.lng"
-            @"language\language_jpn.lng"
-            @"language\language_pol.lng"
-            @"language\language_rus.lng"
-            @"language\language_spa.lng"
+            FixPathSeps @"language\language_bra.lng"
+            FixPathSeps @"language\language_eng.lng"
+            FixPathSeps @"language\language_fre.lng"
+            FixPathSeps @"language\language_ger.lng"
+            FixPathSeps @"language\language_ita.lng"
+            FixPathSeps @"language\language_jpn.lng"
+            FixPathSeps @"language\language_pol.lng"
+            FixPathSeps @"language\language_rus.lng"
+            FixPathSeps @"language\language_spa.lng"
         |]
         |> Array.map(fun p -> Path.Combine(path, p))
 
@@ -286,14 +287,14 @@ let ExtractF12012(path: string) =
 let ExtractF12014(path: string) = 
     let filePaths = 
         [|
-            @"language\language_bra.lng"
-            @"language\language_eng.lng"
-            @"language\language_fre.lng"
-            @"language\language_ger.lng"
-            @"language\language_ita.lng"
-            @"language\language_jpn.lng"
-            @"language\language_pol.lng"
-            @"language\language_spa.lng"
+            FixPathSeps @"language\language_bra.lng"
+            FixPathSeps @"language\language_eng.lng"
+            FixPathSeps @"language\language_fre.lng"
+            FixPathSeps @"language\language_ger.lng"
+            FixPathSeps @"language\language_ita.lng"
+            FixPathSeps @"language\language_jpn.lng"
+            FixPathSeps @"language\language_pol.lng"
+            FixPathSeps @"language\language_spa.lng"
         |]
         |> Array.map(fun p -> Path.Combine(path, p))
 
@@ -314,17 +315,17 @@ let ExtractF12014(path: string) =
 let ExtractF12015(path: string) = 
     let filePaths = 
         [|
-            @"localisation\language_bra.lng"
-            @"localisation\language_eng.lng"
-            @"localisation\language_fre.lng"
-            @"localisation\language_ger.lng"
-            @"localisation\language_ita.lng"
-            @"localisation\language_jap.lng"
-            @"localisation\language_pol.lng"
-            @"localisation\language_rus.lng"
-            @"localisation\language_spa.lng"
-            @"localisation\language_zhs.lng"
-            @"localisation\language_zht.lng"
+            FixPathSeps @"localisation\language_bra.lng"
+            FixPathSeps @"localisation\language_eng.lng"
+            FixPathSeps @"localisation\language_fre.lng"
+            FixPathSeps @"localisation\language_ger.lng"
+            FixPathSeps @"localisation\language_ita.lng"
+            FixPathSeps @"localisation\language_jap.lng"
+            FixPathSeps @"localisation\language_pol.lng"
+            FixPathSeps @"localisation\language_rus.lng"
+            FixPathSeps @"localisation\language_spa.lng"
+            FixPathSeps @"localisation\language_zhs.lng"
+            FixPathSeps @"localisation\language_zht.lng"
         |]
         |> Array.map(fun p -> Path.Combine(path, p))
 
@@ -348,17 +349,17 @@ let ExtractF12015(path: string) =
 let ExtractF12016(path: string) = 
     let filePaths = 
         [|
-            @"localisation\language_bra.lng"
-            @"localisation\language_eng.lng"
-            @"localisation\language_fre.lng"
-            @"localisation\language_ger.lng"
-            @"localisation\language_ita.lng"
-            @"localisation\language_jap.lng"
-            @"localisation\language_pol.lng"
-            @"localisation\language_rus.lng"
-            @"localisation\language_spa.lng"
-            @"localisation\language_zhs.lng"
-            @"localisation\language_zht.lng"
+            FixPathSeps @"localisation\language_bra.lng"
+            FixPathSeps @"localisation\language_eng.lng"
+            FixPathSeps @"localisation\language_fre.lng"
+            FixPathSeps @"localisation\language_ger.lng"
+            FixPathSeps @"localisation\language_ita.lng"
+            FixPathSeps @"localisation\language_jap.lng"
+            FixPathSeps @"localisation\language_pol.lng"
+            FixPathSeps @"localisation\language_rus.lng"
+            FixPathSeps @"localisation\language_spa.lng"
+            FixPathSeps @"localisation\language_zhs.lng"
+            FixPathSeps @"localisation\language_zht.lng"
         |]
         |> Array.map(fun p -> Path.Combine(path, p))
 
@@ -382,12 +383,12 @@ let ExtractF12016(path: string) =
 let ExtractDirt(path: string) = 
     let filePaths = 
         [|
-            @"language\languagedata_english.lng"
-            @"language\languagedata_french.lng"
-            @"language\languagedata_german.lng"
-            @"language\languagedata_italian.lng"
-            @"language\languagedata_spanish.lng"
-            @"language\languagedata_us.lng"
+            FixPathSeps @"language\languagedata_english.lng"
+            FixPathSeps @"language\languagedata_french.lng"
+            FixPathSeps @"language\languagedata_german.lng"
+            FixPathSeps @"language\languagedata_italian.lng"
+            FixPathSeps @"language\languagedata_spanish.lng"
+            FixPathSeps @"language\languagedata_us.lng"
         |]
         |> Array.map(fun p -> Path.Combine(path, p))
 
@@ -406,15 +407,15 @@ let ExtractDirt(path: string) =
 let ExtractDirt2(path: string) = 
     let filePaths = 
         [|
-            @"language\language_eng.lng"
-            @"language\language_fre.lng"
-            @"language\language_ger.lng"
-            @"language\language_ita.lng"
-            @"language\language_jpn.lng"
-            @"language\language_pol.lng"
-            @"language\language_rus.lng"
-            @"language\language_spa.lng"
-            @"language\language_use.lng"
+            FixPathSeps @"language\language_eng.lng"
+            FixPathSeps @"language\language_fre.lng"
+            FixPathSeps @"language\language_ger.lng"
+            FixPathSeps @"language\language_ita.lng"
+            FixPathSeps @"language\language_jpn.lng"
+            FixPathSeps @"language\language_pol.lng"
+            FixPathSeps @"language\language_rus.lng"
+            FixPathSeps @"language\language_spa.lng"
+            FixPathSeps @"language\language_use.lng"
         |]
         |> Array.map(fun p -> Path.Combine(path, p))
 
@@ -436,19 +437,19 @@ let ExtractDirt2(path: string) =
 let ExtractGrid(path: string) = 
     let filePaths = 
         [|
-            @"language\language_eng.lng"
-            @"language\language_eng_dlc_0.lng"
-            @"language\language_fre.lng"
-            @"language\language_fre_dlc_0.lng"
-            @"language\language_ger.lng"
-            @"language\language_ger_dlc_0.lng"
-            @"language\language_ita.lng"
-            @"language\language_ita_dlc_0.lng"
-            @"language\language_jpn_dlc_0.lng"
-            @"language\language_spa.lng"
-            @"language\language_spa_dlc_0.lng"
-            @"language\language_use.lng"
-            @"language\language_use_dlc_0.lng"
+            FixPathSeps @"language\language_eng.lng"
+            FixPathSeps @"language\language_eng_dlc_0.lng"
+            FixPathSeps @"language\language_fre.lng"
+            FixPathSeps @"language\language_fre_dlc_0.lng"
+            FixPathSeps @"language\language_ger.lng"
+            FixPathSeps @"language\language_ger_dlc_0.lng"
+            FixPathSeps @"language\language_ita.lng"
+            FixPathSeps @"language\language_ita_dlc_0.lng"
+            FixPathSeps @"language\language_jpn_dlc_0.lng"
+            FixPathSeps @"language\language_spa.lng"
+            FixPathSeps @"language\language_spa_dlc_0.lng"
+            FixPathSeps @"language\language_use.lng"
+            FixPathSeps @"language\language_use_dlc_0.lng"
         |]
         |> Array.map(fun p -> Path.Combine(path, p))
 
@@ -474,15 +475,15 @@ let ExtractGrid(path: string) =
 let ExtractGrid2(path: string) = 
     let filePaths = 
         [|
-            @"language\language_bra.lng"
-            @"language\language_eng.lng"
-            @"language\language_fre.lng"
-            @"language\language_ger.lng"
-            @"language\language_ita.lng"
-            @"language\language_jpn.lng"
-            @"language\language_pol.lng"
-            @"language\language_spa.lng"
-            @"language\language_use.lng"
+            FixPathSeps @"language\language_bra.lng"
+            FixPathSeps @"language\language_eng.lng"
+            FixPathSeps @"language\language_fre.lng"
+            FixPathSeps @"language\language_ger.lng"
+            FixPathSeps @"language\language_ita.lng"
+            FixPathSeps @"language\language_jpn.lng"
+            FixPathSeps @"language\language_pol.lng"
+            FixPathSeps @"language\language_spa.lng"
+            FixPathSeps @"language\language_use.lng"
         |]
         |> Array.map(fun p -> Path.Combine(path, p))
 
@@ -504,16 +505,16 @@ let ExtractGrid2(path: string) =
 let ExtractGridAutosport(path: string) = 
     let filePaths = 
         [|
-            @"language\language_bra.lng"
-            @"language\language_eng.lng"
-            @"language\language_fre.lng"
-            @"language\language_ger.lng"
-            @"language\language_ita.lng"
-            @"language\language_jpn.lng"
-            @"language\language_pol.lng"
-            @"language\language_rus.lng"
-            @"language\language_spa.lng"
-            @"language\language_use.lng"
+            FixPathSeps @"language\language_bra.lng"
+            FixPathSeps @"language\language_eng.lng"
+            FixPathSeps @"language\language_fre.lng"
+            FixPathSeps @"language\language_ger.lng"
+            FixPathSeps @"language\language_ita.lng"
+            FixPathSeps @"language\language_jpn.lng"
+            FixPathSeps @"language\language_pol.lng"
+            FixPathSeps @"language\language_rus.lng"
+            FixPathSeps @"language\language_spa.lng"
+            FixPathSeps @"language\language_use.lng"
         |]
         |> Array.map(fun p -> Path.Combine(path, p))
 

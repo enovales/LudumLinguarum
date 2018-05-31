@@ -1,3 +1,6 @@
 ﻿Argu
 CsvHelper
+sqlite-net-pcl
+SQLitePCLRaw.core
+SQLitePCLRaw.provider.e_sqlite3.netstandard11
 YamlDotNet

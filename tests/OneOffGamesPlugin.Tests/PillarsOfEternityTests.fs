@@ -1,14 +1,15 @@
 ﻿module PillarsOfEternityTests
 
+open Expecto
 open LLDatabase
-open NUnit.Framework
 open PillarsOfEternity
 open System.Xml.Linq
 
-[<TestFixture>]
-type PillarsOfEternityTests() = 
-    [<Test>]
-    member this.``Calling extractDataFromEntry returns a tuple of the ID, DefaultText, and FemaleText``() = 
+[<Tests>]
+let tests = 
+  testList "Pillars of Eternity tests" [
+    testCase "Calling extractDataFromEntry returns a tuple of the ID, DefaultText, and FemaleText" <|
+      fun () ->
         let idElement = new XElement(XName.Get("ID"), "1")
         let defaultTextElement = new XElement(XName.Get("DefaultText"), "TestText")
         let femaleTextElement = new XElement(XName.Get("FemaleText"), "TestTextF")
@@ -21,10 +22,10 @@ type PillarsOfEternityTests() =
                 DefaultText = Some("TestText")
                 FemaleText = Some("TestTextF")
             }
-        Assert.AreEqual(expected, PillarsOfEternity.extractDataFromEntry(el))
+        Expect.equal expected (PillarsOfEternity.extractDataFromEntry el) ""
 
-    [<Test>]
-    member this.``Calling extractDataFromEntry returns a tuple of the ID, DefaultText if FemaleText is empty``() = 
+    testCase "Calling extractDataFromEntry returns a tuple of the ID, DefaultText if FemaleText is empty" <|
+      fun () ->
         let idElement = new XElement(XName.Get("ID"), "1")
         let defaultTextElement = new XElement(XName.Get("DefaultText"), "TestText")
         let femaleTextElement = new XElement(XName.Get("FemaleText"))
@@ -37,11 +38,10 @@ type PillarsOfEternityTests() =
                 DefaultText = Some("TestText")
                 FemaleText = None
             }
-        Assert.AreEqual(expected, PillarsOfEternity.extractDataFromEntry(el))
+        Expect.equal expected (PillarsOfEternity.extractDataFromEntry el) ""
 
-
-    [<Test>]
-    member this.``Calling generateCardsForXml returns a card for an XML document with a single localized string``() = 
+    testCase "Calling generateCardsForXml returns a card for an XML document with a single localized string" <|
+      fun () ->
         let xml = """<?xml version="1.0" encoding="utf-8"?>
 <StringTableFile xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <Name>testconversation</Name>
@@ -89,4 +89,5 @@ type PillarsOfEternityTests() =
             |]
             |> Set.ofArray
 
-        Assert.AreEqual(expected, generated)
+        Expect.equal expected generated ""
+  ]
