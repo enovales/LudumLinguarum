@@ -13,7 +13,6 @@
 #r "../../../packages/CommandLineParser/lib/net45/CommandLine.dll"
 #r "../../../packages/FsGettextUtils/lib/net461/FsGettextUtils.dll"
 #r "../../../packages/Argu/lib/net40/Argu.dll"
-#r "../../../packages/ICSharpCode.SharpZipLib-dogfood/lib/Net45/ICSharpCode.SharpZipLib.dll"
 #r "../../../packages/PInvoke.AdvApi32/lib/net45/PInvoke.AdvApi32.dll"
 #r "../../../packages/PInvoke.BCrypt/lib/net45/PInvoke.BCrypt.dll"
 #r "../../../packages/PInvoke.Crypt32/lib/net45/PInvoke.Crypt32.dll"
