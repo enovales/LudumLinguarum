@@ -74,7 +74,6 @@ NUGET
       System.Security.Cryptography.Algorithms (>= 4.3) - restriction: || (&& (== net471) (< net45)) (== netstandard2.0)
       System.ValueTuple (>= 4.4) - restriction: || (== net471) (&& (== netstandard2.0) (>= net45))
     FSharp.Core (4.3.4)
-    ICSharpCode.SharpZipLib-dogfood (1.0.344)
     LANGIDMappings (0.2)
     Microsoft.AspNet.Razor (3.2.6)
     Microsoft.CodeAnalysis.Analyzers (2.6) - restriction: || (== net471) (&& (== netstandard2.0) (>= net46) (>= netcoreapp2.0)) (&& (== netstandard2.0) (>= net461))
@@ -606,4 +605,4 @@ GITHUB
     modules/Octokit/Octokit.fsx (7207fc85d52c6ee21f49c61551b8323b4e7608ed)
       Octokit (>= 0.20)
   remote: enovales/SegaAFSTools
-    src/SegaAFSTools/AFS.fs (dc0e215cba78565ba2fc3d0bc8af94fbc496e759)
+    src/SegaAFSTools/AFS.fs (745ab3beae6770558d8caa4f106a751924adfb1c)

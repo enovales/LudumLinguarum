@@ -184,9 +184,9 @@ Target "PublishBinaries" (fun _ ->
     }
 
   // run dotnet publish on the main targets
-  DotNetCli.Publish (updatePublishParams "win-x64" "net471")
-  DotNetCli.Publish (updatePublishParams "linux-x64" "netcoreapp2.0")
-  DotNetCli.Publish (updatePublishParams "osx-x64" "netcoreapp2.0")
+  DotNetCli.Publish (updatePublishParams "win-x64" "netcoreapp2.1")
+  DotNetCli.Publish (updatePublishParams "linux-x64" "netcoreapp2.1")
+  DotNetCli.Publish (updatePublishParams "osx-x64" "netcoreapp2.1")
 )
 
 Target "ZipBinaries" (fun _ ->
