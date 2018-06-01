@@ -1,3 +1,7 @@
+#### 1.0.1 May 31 2018
+* Built against .NET Core 2.1.
+* Changed Windows builds to use self-contained deployments.
+
 #### 1.0.0 May 30 2018
 * Major update: Ludum Linguarum should now run on OS X and Linux!
 	* Some games may not be available under non-Windows operating systems. (Currently, this only applies to Star Wars: Galactic Battlegrounds Saga.)
