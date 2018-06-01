@@ -1,6 +1,5 @@
 // Warning: generated file; your changes could be lost when a new file is generated.
 #I __SOURCE_DIRECTORY__
-#r "../../../paket-files/icsharpcode/SharpZipLib/bin/Release/ICSharpCode.SharpZipLib.dll"
 #r "../../LLsqlite-net/bin/Release/LLsqlite-net.dll"
 #r "../../LudumLinguarumLib/bin/Release/LudumLinguarumLib.dll"
 #r "../../OneOffGamesData/bin/Release/OneOffGamesData.dll"
