@@ -1,3 +1,7 @@
+#### 1.0.2 June 21 2018
+* Added support for:
+  * [The Witness](https://store.steampowered.com/app/210970/) \[ar, de, en, es-ES, es-LA, fr, hu, id, it, ja, ko, pl, pt-BR, pt-PT, ru, zh-CN, zh-TW\]
+
 #### 1.0.1 May 31 2018
 * Built against .NET Core 2.1.
 * Changed Windows builds to use self-contained deployments.
@@ -8,11 +12,11 @@
 	* Game extraction recipes are still based on the Windows versions of games. If the resource files for the OS X/Linux version of a game are significantly different, Ludum Linguarum may fail to extract the assets.
 
 #### 0.17.2 May 9 2018
-* Fixed support for [Pillars of Eternity II: Deadfire](http://store.steampowered.com/app/560130/) \[de, en, es, fr, it, ko, pl, pt, ru, zh-CN \] to work with the final released game.
+* Fixed support for [Pillars of Eternity II: Deadfire](http://store.steampowered.com/app/560130/) \[de, en, es, fr, it, ko, pl, pt, ru, zh-CN\] to work with the final released game.
 
 #### 0.17.0 - January 24 2018
 * Added support for:
-  * [Pillars of Eternity II: Deadfire](http://store.steampowered.com/app/560130/) \[de, en, es, fr, it, ko, pl, pt, ru, zh-CN \]
+  * [Pillars of Eternity II: Deadfire](http://store.steampowered.com/app/560130/) \[de, en, es, fr, it, ko, pl, pt, ru, zh-CN\]
 
 #### 0.16.0 - December 26 2017
 * Added support for:
