@@ -391,20 +391,13 @@ let ExtractHatofulBoyfriendHolidayStar(path: string) =
     }
 
 (***************************************************************************)
-(********************************** Braid **********************************)
+(*************************** Braid & The Witness ***************************)
 (***************************************************************************)
-let ExtractBraid(path: string) = 
+let private ExtractJBGames(path: string, fileNamesToLanguage: Map<string, string>) = 
     let lessonEntry = {
         LessonRecord.ID = 0
         Name = "Game Text"
     }
-    let fileNamesToLanguage = 
-        [|
-            ("english", "en"); ("french", "fr"); ("german", "de"); ("italian", "it"); ("japanese", "ja")
-            ("korean", "ko"); ("polish", "pl"); ("portuguese", "pt"); ("russian", "ru"); ("spanish", "es")
-            ("tchinese", "zh"); ("czech", "cs"); ("georgian", "ka")
-        |]
-        |> Map.ofArray
 
     let moFiles = Directory.GetFiles(Path.Combine(path, FixPathSeps @"data\strings"), "*.mo", SearchOption.AllDirectories)
     let createCardForStringPair(lesson: LessonRecord, language: string)(data: int * (MoString * MoString)) = 
@@ -462,6 +455,29 @@ let ExtractBraid(path: string) =
         LudumLinguarumPlugins.ExtractedContent.lessons = [| lessonEntry |]
         LudumLinguarumPlugins.ExtractedContent.cards = moFiles |> Array.collect(createCardsForMoFile(lessonEntry))
     }
+    
+let ExtractBraid(path: string) = 
+  let fileNamesToLanguage = 
+    [|
+      ("english", "en"); ("french", "fr"); ("german", "de"); ("italian", "it"); ("japanese", "ja")
+      ("korean", "ko"); ("polish", "pl"); ("portuguese", "pt"); ("russian", "ru"); ("spanish", "es")
+      ("tchinese", "zh"); ("czech", "cs"); ("georgian", "ka")
+    |]
+    |> Map.ofArray
+
+  ExtractJBGames(path, fileNamesToLanguage)
+
+let ExtractTheWitness(path: string) = 
+  let fileNamesToLanguage = 
+    [|
+      ("ar", "ar"); ("de", "de"); ("en", "en"); ("es_ES", "es-ES"); ("es_LA", "es-LA")
+      ("fr", "fr"); ("hu", "hu"); ("id", "id"); ("it", "it"); ("ja", "ja"); ("ko", "ko")
+      ("pl", "pl"); ("pt_BR", "pt-BR"); ("pt_PT", "pt-PT"); ("ru", "ru")
+      ("zh_CN", "zh-CN"); ("zh_TW", "zh-TW")
+    |]
+    |> Map.ofArray
+
+  ExtractJBGames(path, fileNamesToLanguage)
 
 (***************************************************************************)
 (************************** IHF Handball Challenge *************************)
