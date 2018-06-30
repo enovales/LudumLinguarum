@@ -1,6 +1,7 @@
 #### 1.0.2 June 21 2018
 * Added support for:
   * [The Witness](https://store.steampowered.com/app/210970/) \[ar, de, en, es-ES, es-LA, fr, hu, id, it, ja, ko, pl, pt-BR, pt-PT, ru, zh-CN, zh-TW\]
+  * [Prison Architect](https://store.steampowered.com/app/233450/) \[bg, cs, da, de, el, en, es, fi, fr, hu, it, ja, ko, nl, no, pl, pt-PT, pt-BR, ro, ru, sv, th, tr, uk, zh-CN, zh-TW\]
 
 #### 1.0.1 May 31 2018
 * Built against .NET Core 2.1.
