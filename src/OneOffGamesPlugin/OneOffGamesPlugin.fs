@@ -63,6 +63,7 @@ type OneOffGamesPlugin() =
             ("Darwinia", SimpleGames.ExtractDarwinia)
             ("Multiwinia", SimpleGames.ExtractMultiwinia)
             ("The Witness", SimpleGames.ExtractTheWitness)
+            ("Prison Architect", SimpleGames.ExtractPrisonArchitect)
         |] |> Map.ofArray
 
     interface IPlugin with

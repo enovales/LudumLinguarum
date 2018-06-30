@@ -537,28 +537,26 @@ let ExtractIHFHandballChallenge12(path: string) =
 let ExtractIHFHandballChallenge14(path: string) = 
     extractIHFHandballChallenge(path)
 
-let internal extractIntroversionGame(path: string, archiveRelativePath: string) =
-    let lessonEntry = {
-        LessonRecord.ID = 0
-        Name = "Game Text"
-    }
+let internal extractIntroversionGame(path: string, archiveRelativePath: string, languageMappings: Map<string array, string>) =
+    // create lessons for every distinct file in the language mappings
+    let languageFileRoots = 
+      languageMappings
+      |> Map.toArray
+      |> Array.map fst
+      |> Array.collect (fun fileNames -> fileNames |> Array.map Path.GetFileNameWithoutExtension)
+
+    let lessonsMap = 
+      languageFileRoots 
+      |> Array.mapi(fun i name -> { LessonRecord.ID = i; Name = name })
+      |> Array.zip(languageFileRoots)
+      |> Map.ofArray
 
     use archive = RarArchive.Open(Path.Combine(path, archiveRelativePath))
     let r = archive.ExtractAllEntries()
 
-    let languageMappings = 
-        [|
-            (FixPathSeps @"data\language\english.txt", "en")
-            (FixPathSeps @"data\language\french.txt", "fr")
-            (FixPathSeps @"data\language\german.txt", "de")
-            (FixPathSeps @"data\language\italian.txt", "it")
-            (FixPathSeps @"data\language\spanish.txt", "es")
-        |]
-        |> Map.ofArray
-
     let mutable entriesRemain = r.MoveToNextEntry()
     let mutable cards = [||]
-    let cardsForEntry(l: string, fs: StreamReader) = 
+    let cardsForEntry(l: string, fs: StreamReader, lessonRecord: LessonRecord) = 
         let r = 
             new Regex(@"(?<key>\S+)(\s+)(?<value>.+)")
 
@@ -573,25 +571,93 @@ let internal extractIntroversionGame(path: string, archiveRelativePath: string) 
         nonCommentLines
         |> Array.map kvForLine
         |> Map.ofArray
-        |> AssemblyResourceTools.createCardRecordForStrings(lessonEntry.ID, "", l, "masculine")
+        |> AssemblyResourceTools.createCardRecordForStrings(lessonRecord.ID, "", l, "masculine")
 
     while (entriesRemain) do
-        if languageMappings.ContainsKey(r.Entry.Key) then
-            use fs = new StreamReader(r.OpenEntryStream(), Encoding.UTF8)
-            cards <- Array.concat([cards; cardsForEntry(languageMappings |> Map.find(r.Entry.Key), fs)])
+        match languageMappings |> Map.tryFindKey(fun(ks)(_) -> ks |> Array.contains(r.Entry.Key)) with
+        | Some(ks) ->
+          let language = languageMappings.Item(ks)
+          use fs = new StreamReader(r.OpenEntryStream(), Encoding.UTF8)
+          let rootName = Path.GetFileNameWithoutExtension(r.Entry.Key)
+          cards <- Array.concat([cards; cardsForEntry(language, fs, lessonsMap |> Map.find rootName)])
+        | _ -> ()
 
         entriesRemain <- r.MoveToNextEntry()
 
     {
-        LudumLinguarumPlugins.ExtractedContent.lessons = [| lessonEntry |]
+        LudumLinguarumPlugins.ExtractedContent.lessons = lessonsMap |> Map.toArray |> Array.map snd
         LudumLinguarumPlugins.ExtractedContent.cards = cards
     }
 
 let ExtractDefcon(path: string) = 
-    extractIntroversionGame(path, "main.dat")
+    let languageMappings = 
+        [|
+            ([| FixPathSeps @"data\language\english.txt" |], "en")
+            ([| FixPathSeps @"data\language\french.txt" |], "fr")
+            ([| FixPathSeps @"data\language\german.txt" |], "de")
+            ([| FixPathSeps @"data\language\italian.txt" |], "it")
+            ([| FixPathSeps @"data\language\spanish.txt" |], "es")
+        |]
+        |> Map.ofArray
+
+    extractIntroversionGame(path, "main.dat", languageMappings)
 
 let ExtractDarwinia(path: string) = 
-    extractIntroversionGame(path, "language.dat")
+    let languageMappings = 
+        [|
+            ([| FixPathSeps @"data\language\english.txt" |], "en")
+            ([| FixPathSeps @"data\language\french.txt" |], "fr")
+            ([| FixPathSeps @"data\language\german.txt" |], "de")
+            ([| FixPathSeps @"data\language\italian.txt" |], "it")
+            ([| FixPathSeps @"data\language\spanish.txt" |], "es")
+        |]
+        |> Map.ofArray
+
+    extractIntroversionGame(path, "language.dat", languageMappings)
 
 let ExtractMultiwinia(path: string) = 
-    extractIntroversionGame(path, "language.dat")
+    let languageMappings = 
+        [|
+            ([| FixPathSeps @"data\language\english.txt" |], "en")
+            ([| FixPathSeps @"data\language\french.txt" |], "fr")
+            ([| FixPathSeps @"data\language\german.txt" |], "de")
+            ([| FixPathSeps @"data\language\italian.txt" |], "it")
+            ([| FixPathSeps @"data\language\spanish.txt" |], "es")
+        |]
+        |> Map.ofArray
+
+    extractIntroversionGame(path, "language.dat", languageMappings)
+
+let ExtractPrisonArchitect(path: string) = 
+  let languageMappings = 
+    [|
+      ([| FixPathSeps @"data\language\bulgarian\base-language.txt"; FixPathSeps @"data\language\bulgarian\fullgame.txt" |], "bg")
+      ([| FixPathSeps @"data\language\czech\base-language.txt"; FixPathSeps @"data\language\czech\fullgame.txt" |], "cs")
+      ([| FixPathSeps @"data\language\danish\base-language.txt"; FixPathSeps @"data\language\danish\fullgame.txt" |], "da")
+      ([| FixPathSeps @"data\language\dutch\base-language.txt"; FixPathSeps @"data\language\dutch\fullgame.txt" |], "nl")
+      ([| FixPathSeps @"data\language\base-language.txt"; FixPathSeps @"data\language\fullgame.txt" |], "en")
+      ([| FixPathSeps @"data\language\finnish\base-language.txt"; FixPathSeps @"data\language\finnish\fullgame.txt" |], "fi")
+      ([| FixPathSeps @"data\language\french\base-language.txt"; FixPathSeps @"data\language\french\fullgame.txt" |], "fr")
+      ([| FixPathSeps @"data\language\german\base-language.txt"; FixPathSeps @"data\language\german\fullgame.txt" |], "de")
+      ([| FixPathSeps @"data\language\greek\base-language.txt"; FixPathSeps @"data\language\greek\fullgame.txt" |], "el")
+      ([| FixPathSeps @"data\language\hungarian\base-language.txt"; FixPathSeps @"data\language\hungarian\fullgame.txt" |], "hu")
+      ([| FixPathSeps @"data\language\italian\base-language.txt"; FixPathSeps @"data\language\italian\fullgame.txt" |], "it")
+      ([| FixPathSeps @"data\language\japanese\base-language.txt"; FixPathSeps @"data\language\japanese\fullgame.txt" |], "ja")
+      ([| FixPathSeps @"data\language\korean\base-language.txt"; FixPathSeps @"data\language\korean\fullgame.txt" |], "ko")
+      ([| FixPathSeps @"data\language\norwegian\base-language.txt"; FixPathSeps @"data\language\norwegian\fullgame.txt" |], "no")
+      ([| FixPathSeps @"data\language\polish\base-language.txt"; FixPathSeps @"data\language\polish\fullgame.txt" |], "pl")
+      ([| FixPathSeps @"data\language\portuguese\base-language.txt"; FixPathSeps @"data\language\portuguese\fullgame.txt" |], "pt-PT")
+      ([| FixPathSeps @"data\language\portuguese-brazil\base-language.txt"; FixPathSeps @"data\language\portuguese-brazil\fullgame.txt" |], "pt-BR")
+      ([| FixPathSeps @"data\language\romanian\base-language.txt"; FixPathSeps @"data\language\romanian\fullgame.txt" |], "ro")
+      ([| FixPathSeps @"data\language\russian\base-language.txt"; FixPathSeps @"data\language\russian\fullgame.txt" |], "ru")
+      ([| FixPathSeps @"data\language\simplifiedchinese\base-language.txt"; FixPathSeps @"data\language\simplifiedchinese\fullgame.txt" |], "zh-CN")
+      ([| FixPathSeps @"data\language\spanish\base-language.txt"; FixPathSeps @"data\language\spanish\fullgame.txt" |], "es")
+      ([| FixPathSeps @"data\language\swedish\base-language.txt"; FixPathSeps @"data\language\swedish\fullgame.txt" |], "sv")
+      ([| FixPathSeps @"data\language\thai\base-language.txt"; FixPathSeps @"data\language\thai\fullgame.txt" |], "th")
+      ([| FixPathSeps @"data\language\traditionalchinese\base-language.txt"; FixPathSeps @"data\language\traditionalchinese\fullgame.txt" |], "zh-TW")
+      ([| FixPathSeps @"data\language\turkish\base-language.txt"; FixPathSeps @"data\language\turkish\fullgame.txt" |], "tr")
+      ([| FixPathSeps @"data\language\ukrainian\base-language.txt"; FixPathSeps @"data\language\ukrainian\fullgame.txt" |], "uk")
+    |]
+    |> Map.ofArray
+
+  extractIntroversionGame(path, "main.dat", languageMappings)
