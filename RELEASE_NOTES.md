@@ -1,4 +1,5 @@
 #### 1.0.2 June 30 2018
+* Region names in language tags are now normalized when adding cards to the database.
 * Added a new 'list-supported-languages' option, which shows all languages that are supported by at least one game.
 * 'list-supported-games' now lists the languages known to be supported by each game.
 * 'list-supported-games' now supports a '--languages' parameter, which allows you to filter based on particular 
