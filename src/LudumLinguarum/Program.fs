@@ -30,6 +30,13 @@ and ListGamesArgs =
                 | Filter_Regex _ -> "An optional regular expression to filter the list of games"
                 | Languages _ -> "Specifies a language that the game must support. Apply this multiple times if desired."
 and ListSupportedGamesArgs = 
+    | Languages of string list
+    with
+        interface IArgParserTemplate with
+            member this.Usage = 
+                match this with
+                | Languages _ -> "Specifies a language that the game must support. Apply this multiple times if desired."
+and ListSupportedLanguagesArgs = 
     | [<Hidden>] Nothing of string
     with
         interface IArgParserTemplate with
@@ -128,6 +135,7 @@ and [<RequireSubcommandAttribute>] BaseArgs =
     | [<Inherit; EqualsAssignment>] Log_File of string
     | [<CliPrefix(CliPrefix.None)>] Import of ParseResults<ImportArgs>
     | [<CliPrefix(CliPrefix.None)>] List_Supported_Games of ParseResults<ListSupportedGamesArgs>
+    | [<CliPrefix(CliPrefix.None)>] List_Supported_Languages of ParseResults<ListSupportedLanguagesArgs>
     | [<CliPrefix(CliPrefix.None)>] List_Games of ParseResults<ListGamesArgs>
     | [<CliPrefix(CliPrefix.None)>] List_Lessons of ParseResults<ListLessonsArgs>
     | [<CliPrefix(CliPrefix.None)>] Delete_Game of ParseResults<DeleteGameArgs>
@@ -144,6 +152,7 @@ and [<RequireSubcommandAttribute>] BaseArgs =
                 | Log_File _ -> "Optional log file to which output should be redirected"
                 | Import _ -> "Import localized content from a game"
                 | List_Supported_Games _ -> "List all games supported for extraction"
+                | List_Supported_Languages _ -> "List all languages that are supported by at least one game"
                 | List_Games _ -> "List all imported games"
                 | List_Lessons _ -> "List lessons, filtering by game and lesson names"
                 | Delete_Game _ -> "Delete a single game"
@@ -158,10 +167,7 @@ let private multipleWhitespaceRegex = new Regex(@"\s\s+")
 let private sanitizeGameNameForFile(n: string) = 
     Path.GetInvalidFileNameChars() |> Array.fold (fun (s: string)(c: char) -> s.Replace(c, '_')) n
 
-let private makeDatabaseFilenameForGameName(n: string) = 
-    sanitizeGameNameForFile(n) + ".db3"
-
-
+let private makeDatabaseFilenameForGameName(n: string) = sanitizeGameNameForFile(n) + ".db3"
 let private makeDatabaseFilenameForGameMetadata(gmd: GameMetadata) = makeDatabaseFilenameForGameName(gmd.name)
 
 let private makeLessonRegexFilter(reOpt: string option) = 
@@ -273,7 +279,7 @@ let runListGamesAction(iPluginManager: IPluginManager, otw: TextWriter, dbRoot: 
         |> Array.zip (filteredGames |> Array.map makeDatabaseFilenameForGameMetadata)
         |> Map.ofArray
 
-    let languagesToSearch = vc.TryGetResult(ListGamesArgs.Languages) |> Option.map Set.ofList    
+    let languagesToSearch = vc.TryGetResult(ListGamesArgs.Languages) |> Option.map Set.ofList
     let listGamesForDb(dbPath: string) = 
         match (databaseNamesToGameNames |> Map.tryFind(Path.GetFileName(dbPath)), languagesToSearch) with
         | (Some(gn), Some(lts)) ->
@@ -299,12 +305,41 @@ let runListGamesAction(iPluginManager: IPluginManager, otw: TextWriter, dbRoot: 
 /// </summary>
 /// <param name="iPluginManager">plugin manager</param>
 /// <param name="otw">output writer</param>
-/// <param name="_">configuration for this verb handler</param>
-let runListSupportedGamesAction(iPluginManager: IPluginManager, otw: TextWriter) = 
-    otw.WriteLine("Supported games:")
+/// <param name="vc">configuration for this verb handler</param>
+let runListSupportedGamesAction(iPluginManager: IPluginManager, otw: TextWriter)(vc: ParseResults<ListSupportedGamesArgs>) = 
+    let languagesToSearch = vc.TryGetResult(ListSupportedGamesArgs.Languages) |> Option.map Set.ofList
+    let languageFilterFunc = 
+        fun gmd ->
+            match languagesToSearch with
+            | Some(languages) -> languages |> Set.exists(fun l -> gmd.supportedLanguages |> Array.contains(l))
+            | _ -> true
+
+    let outputForGameMetadata(gmd: GameMetadata) = 
+        gmd.name + " [" + (String.Join(", ", gmd.supportedLanguages)) + "]"
+
+    match languagesToSearch with
+    | None -> otw.WriteLine("Supported games:")
+    | Some(languages) -> otw.WriteLine("Games that support [" + String.Join(", ", languages) + "]:")
+
     iPluginManager.SupportedGames
-    |> Array.sort
-    |> Array.iter otw.WriteLine
+    |> Array.filter languageFilterFunc
+    |> Array.sortBy(fun gmd -> gmd.name)
+    |> Array.iter (outputForGameMetadata >> otw.WriteLine)
+
+/// <summary>
+/// Runs the 'list-supported-languages' action.
+/// </summary>
+/// <param name="iPluginManager">plugin manager</param>
+/// <param name="otw">output writer</param>
+let runListSupportedLanguagesAction(iPluginManager: IPluginManager, otw: TextWriter) = 
+    otw.WriteLine("Supported languages:")
+    let languages = 
+        iPluginManager.SupportedGames
+        |> Array.collect (fun gmd -> gmd.supportedLanguages)
+        |> Array.distinct
+        |> Array.sort
+
+    otw.WriteLine(String.Join(", ", languages))
 
 let runListLessonsAction(iPluginManager: IPluginManager, otw: TextWriter, dbRoot: string)(vc: ParseResults<ListLessonsArgs>) = 
     let dbPaths = Directory.GetFiles(dbRoot, "*.db3", SearchOption.AllDirectories)
@@ -521,7 +556,8 @@ let main argv =
 
     match results.TryGetSubCommand() with
     | Some(Import ia) -> runImportAction(iPluginManager, otw, fldbPath)(ia)
-    | Some(List_Supported_Games _) -> runListSupportedGamesAction(iPluginManager, otw)
+    | Some(List_Supported_Games lsga) -> runListSupportedGamesAction(iPluginManager, otw)(lsga)
+    | Some(List_Supported_Languages _) -> runListSupportedLanguagesAction(iPluginManager, otw)
     | Some(List_Games lga) -> runListGamesAction(iPluginManager, otw, fldbPath)(lga)
     | Some(List_Lessons lla) -> runListLessonsAction(iPluginManager, otw, fldbPath)(lla)
     | Some(Delete_Game dga) -> runDeleteGameAction(otw, fldbPath)(dga)
