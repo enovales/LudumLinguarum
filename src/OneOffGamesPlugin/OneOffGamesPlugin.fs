@@ -18,7 +18,7 @@ type OneOffGamesPlugin() =
             ({ GameMetadata.name = "Bastion"; supportedLanguages = [| "de"; "en"; "es"; "fr"; "it" |] }, SimpleGames.ExtractBastion)
             ({ GameMetadata.name = "Magicka"; supportedLanguages = [| "de"; "en"; "es"; "fr"; "hu"; "it"; "pl"; "ru" |] }, Magicka.ExtractMagicka)
             ({ GameMetadata.name = "Worms Armageddon"; supportedLanguages = [| "de"; "en"; "es"; "fr"; "it"; "nl"; "pt"; "ru"; "sv" |] }, WormsArmageddon.ExtractWormsArmageddon)
-            ({ GameMetadata.name = "Puzzle Chronicles"; supportedLanguages = [| "de"; "en"; "en-gb"; "es"; "es-mx"; "fr"; "fr-ca"; "it" |] }, PuzzleQuestGames.ExtractPuzzleChronicles)
+            ({ GameMetadata.name = "Puzzle Chronicles"; supportedLanguages = [| "de"; "en"; "en-GB"; "es"; "es-MX"; "fr"; "fr-CA"; "it" |] }, PuzzleQuestGames.ExtractPuzzleChronicles)
             ({ GameMetadata.name = "Puzzle Kingdoms"; supportedLanguages = [| "de"; "en"; "es"; "fr"; "it" |] }, PuzzleQuestGames.ExtractPuzzleKingdoms)
             ({ GameMetadata.name = "Puzzle Quest 2"; supportedLanguages = [| "de"; "en"; "es"; "fr"; "it" |] }, PuzzleQuestGames.ExtractPuzzleQuest2)
             ({ GameMetadata.name = "Pillars of Eternity"; supportedLanguages = [| "de"; "en"; "es"; "fr"; "it"; "ko"; "pl"; "ru" |] }, PillarsOfEternity.ExtractPillarsOfEternity)

@@ -182,6 +182,14 @@ let private makeLessonNameFilter(nameOpt: string option) =
     | Some(name) -> fun (t: LessonRecord) -> t.Name = name
     | _ -> fun (_: LessonRecord) -> true
 
+let private normalizeIETFLanguageTagRegion(languageTag: string) = 
+    let splits = languageTag.Split([| '-' |])
+    if (splits.Length > 0) then
+        splits.[splits.Length - 1] <- splits.[splits.Length - 1].ToUpper()
+        String.Join("-", splits)
+    else
+        languageTag
+
 let runImportAction(iPluginManager: IPluginManager, 
                     _: TextWriter, dbRoot: string)(vc: ParseResults<ImportArgs>) = 
     let gameName = vc.GetResult(ImportArgs.Game)
@@ -211,6 +219,7 @@ let runImportAction(iPluginManager: IPluginManager,
             |> Array.map(fun c -> { c with LessonID = lessonIdMapping |> Map.find(c.LessonID) })
             |> Array.filter(fun c -> not(String.IsNullOrWhiteSpace(c.Text)))
             |> Array.map(fun c -> { c with Text = multipleWhitespaceRegex.Replace(c.Text, " ").Trim() })
+            |> Array.map(fun c -> { c with LanguageTag = normalizeIETFLanguageTagRegion(c.LanguageTag) })
 
         llDatabase.CreateOrUpdateCards(remappedCards)
 
