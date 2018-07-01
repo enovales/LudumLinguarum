@@ -101,10 +101,10 @@ type AuroraPlugin() =
     interface IGameExtractorPlugin with
         member this.SupportedGames = 
             [| 
-                "Neverwinter Nights"; 
-                "Jade Empire";
-                "Star Wars: Knights of the Old Republic";
-                "Star Wars: Knights of the Old Republic II"
+                { GameMetadata.name = "Neverwinter Nights"; supportedLanguages = [| "de"; "en"; "es"; "fr"; "it"; "pl" |] }
+                { GameMetadata.name = "Jade Empire"; supportedLanguages = [| "de"; "en"; "es"; "fr"; "it" |] }
+                { GameMetadata.name = "Star Wars: Knights of the Old Republic"; supportedLanguages = [| "de"; "en"; "es"; "fr"; "it" |] }
+                { GameMetadata.name = "Star Wars: Knights of the Old Republic II"; supportedLanguages = [| "de"; "en"; "es"; "fr"; "it" |] }
             |]
         member this.ExtractAll(game: string, path: string, args: string[]): ExtractedContent = 
             let parser = ArgumentParser.Create<AuroraPluginArgs>(errorHandler = new ProcessExiter())

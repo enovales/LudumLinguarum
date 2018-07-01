@@ -488,6 +488,21 @@ let private extractIHFHandballChallenge(path: string) =
         (subtrees |> Array.mapi (fun i n -> { LessonRecord.ID = i; Name = n }))
         |> Array.zip(subtrees)
 
+    let countryToLanguageMap = 
+        [|
+            ("de", "de")
+            ("dk", "da")
+            ("en", "en")
+            ("es", "es")
+            ("fr", "fr")
+            ("hu", "hu")
+            ("it", "it")
+            ("pl", "pl")
+            ("pt", "pt")
+            ("se", "sv")
+        |]
+        |> Map.ofArray
+
     let getCardsForXml(lang: string, fn: string) = 
         let sanitizeXml(s: string) = 
             s.Replace(new String([| char 0x1b |]), "")
@@ -524,7 +539,7 @@ let private extractIHFHandballChallenge(path: string) =
 
     let allCards = 
         Directory.GetDirectories(Path.Combine(path, @"language"))
-        |> Array.map (fun d -> (Path.GetFileName(d), Path.Combine(d, FixPathSeps @"XMLData\i18n.xml")))
+        |> Array.map (fun d -> (countryToLanguageMap.Item(Path.GetFileName(d)), Path.Combine(d, FixPathSeps @"XMLData\i18n.xml")))
         |> Array.collect getCardsForXml
 
     {

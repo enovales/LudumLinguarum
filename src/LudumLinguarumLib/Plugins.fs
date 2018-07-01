@@ -29,11 +29,17 @@ type ExtractedContent =
 // Arguments are intended to be game name, path, and command line arguments
 type ExtractAllFunc = string -> string -> string array -> ExtractedContent
 
+type GameMetadata = 
+    {
+        name: string
+        supportedLanguages: string array
+    }
+
 [<Interface>]
 type IGameExtractorPlugin = 
     inherit IPlugin
 
-    abstract member SupportedGames: string array
+    abstract member SupportedGames: GameMetadata array
 
     /// <summary>
     /// Generic call to extract all localized resources from the game and path specified
@@ -48,18 +54,21 @@ type IPluginManager =
     abstract member InstantiateArgv: TextWriter * Type * [<ParamArray>] args: string[] -> unit
     abstract member Plugins: list<IPlugin> with get
     abstract member GetPluginForGame: string -> IGameExtractorPlugin option
-    abstract member SupportedGames: string array
+    abstract member SupportedGames: GameMetadata array
 
 type PluginManager() = 
     let mutable plugins: list<IPlugin> = []
     interface IPluginManager with
         member this.Discover(a: Assembly): list<Type> = 
             let types = a.GetExportedTypes()
-            types |> Array.filter(fun (t: Type) -> 
+            let isTypeAPlugin(t: Type) = 
                 t.IsClass && 
                 (t.GetInterfaces() |> 
-                 Seq.exists(fun u -> 
-                    u.FullName = "LudumLinguarumPlugins+IPlugin" && (u.GetConstructors() |> Seq.isEmpty)))) |> List.ofArray
+                 Seq.exists(fun u -> u.FullName = "LudumLinguarumPlugins+IPlugin" && (u.GetConstructors() |> Seq.isEmpty)))
+
+            types
+            |> Array.filter isTypeAPlugin
+            |> List.ofArray
         member this.Instantiate(tw: TextWriter, t: Type, args: string[]): unit = 
             let newPluginObject = t.GetConstructor([||]).Invoke([||])
             match newPluginObject with
@@ -74,14 +83,16 @@ type PluginManager() =
         member this.GetPluginForGame(g: string): IGameExtractorPlugin option = 
             plugins |> List.tryPick(fun p ->
                 match p with
-                | :? IGameExtractorPlugin as gep when (gep.SupportedGames |> Array.contains(g)) ->
+                | :? IGameExtractorPlugin as gep when (gep.SupportedGames |> Array.exists(fun gmd -> gmd.name = g)) ->
                     Some(gep)
                 | _ -> None)
 
-        member this.SupportedGames: string array = 
+        member this.SupportedGames: GameMetadata array = 
             let geps = plugins |> List.filter(fun p ->
                 match p with
                 | :? IGameExtractorPlugin as gep -> true
                 | _ -> false) |> List.map(fun t -> t :?> IGameExtractorPlugin)
 
-            geps |> List.map(fun t -> t.SupportedGames) |> Array.concat
+            geps 
+            |> List.map(fun t -> t.SupportedGames) 
+            |> Array.concat

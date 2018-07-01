@@ -1,4 +1,9 @@
-#### 1.0.2 June 21 2018
+#### 1.0.2 June 30 2018
+* Region names in language tags are now normalized when adding cards to the database.
+* Added a new 'list-supported-languages' option, which shows all languages that are supported by at least one game.
+* 'list-supported-games' now lists the languages known to be supported by each game.
+* 'list-supported-games' now supports a '--languages' parameter, which allows you to filter based on particular 
+   languages. This lets you easily determine which games might be appropriate for the language you're trying to learn.
 * Added support for:
   * [The Witness](https://store.steampowered.com/app/210970/) \[ar, de, en, es-ES, es-LA, fr, hu, id, it, ja, ko, pl, pt-BR, pt-PT, ru, zh-CN, zh-TW\]
   * [Prison Architect](https://store.steampowered.com/app/233450/) \[bg, cs, da, de, el, en, es, fi, fr, hu, it, ja, ko, nl, no, pl, pt-PT, pt-BR, ro, ru, sv, th, tr, uk, zh-CN, zh-TW\]
@@ -54,9 +59,9 @@
     * [Braid](http://store.steampowered.com/app/26800/) \[cs, de, en, es, fr, it, ja, ka, ko, pl, pt, ru, zh\]
     * [Crusader Kings II](http://store.steampowered.com/app/203770/) \[de, en, es, fr\]
     * [Orcs Must Die! 2](http://store.steampowered.com/app/201790/) \[de, en, es, fr, it, ja, pl, pt, ru\]
-    * [Transistor](http://store.steampowered.com/app/237930/) \[de, en, es, fr, it, ja, pl, pt, ru, zh]
-    * [IHF Handball Challenge 12](http://store.steampowered.com/app/283490/) \[de, dk, en, es, hu, it, pt\]
-    * [IHF Handball Challenge 14](http://store.steampowered.com/app/279460/) \[de, dk, en, es, fr, pl, se\]
+    * [Transistor](http://store.steampowered.com/app/237930/) \[de, en, es, fr, it, ja, pl, pt, ru, zh\]
+    * [IHF Handball Challenge 12](http://store.steampowered.com/app/283490/) \[da, de, en, es, hu, it, pt\]
+    * [IHF Handball Challenge 14](http://store.steampowered.com/app/279460/) \[da, de, en, es, fr, pl, sv\]
 
 #### 0.12.0 - November 28 2016
 * Added support for:
@@ -69,7 +74,7 @@ random sampling) to be dumped to a tab-separated text file.
 
 #### 0.10.0 - June 30 2016
 * Added support for:
-  * [Age of Empires II HD](http://store.steampowered.com/app/221380/) \[cn, de, en, es, fr, it, ja, ko, nl, pt, ru\]
+  * [Age of Empires II HD](http://store.steampowered.com/app/221380/) \[de, en, es, fr, it, ja, ko, nl, pt, ru, zh\]
   * [Space Channel 5: Part 2](http://store.steampowered.com/app/71260/) \[en, jp, de, es, fr, it\]
   * [Puzzle Kingdoms](http://store.steampowered.com/app/23700/) \[de, en, es, fr, it\]
   * [Sid Meier's Civilization IV](http://store.steampowered.com/app/3900/) \[de, en, es, fr, it\]
@@ -88,10 +93,10 @@ random sampling) to be dumped to a tab-separated text file.
   * [Audiosurf](http://store.steampowered.com/app/12900/) \[en, ru\]
   * [Bastion](http://store.steampowered.com/app/107100/) \[de, en, es, fr, it\]
   * [Hatoful Boyfriend](http://store.steampowered.com/app/310080/) \[de, en, es, fr, it, ja, ru\]
-  * [Hatoful Boyfriend: Holiday Star](http://store.steampowered.com/app/377080/) \[de, fr\]
+  * [Hatoful Boyfriend: Holiday Star](http://store.steampowered.com/app/377080/) \[de, en, fr, ja\]
   * [Hell Yeah!](http://store.steampowered.com/app/205230/) \[en, de, es, fr, it, ja\]
   * [Jade Empire](http://store.steampowered.com/app/7110/) 
-  * [Jet Set Radio](http://store.steampowered.com/app/205950/) \[de, en, es, fr, it, ja, jp\]
+  * [Jet Set Radio](http://store.steampowered.com/app/205950/) \[de, en, es, fr, it, ja\]
   * [Madballs: Babo Invasion](http://store.steampowered.com/app/25700/) \[de, en, es, fr, it, ja, ko, pt, ru, zh\]
   * [Magical Drop V](http://store.steampowered.com/app/204960/) \[de, en, es, fr, it, ja\]
   * [Magicka](http://store.steampowered.com/app/42910/) \[de, en, es, fr, hu, it, pl, ru\]

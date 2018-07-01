@@ -163,9 +163,9 @@ type StarWarsGBSPlugin() =
             [|
             |]
     interface IGameExtractorPlugin with
-        member this.SupportedGames: string array = 
+        member this.SupportedGames: GameMetadata array = 
             [| 
-                "Star Wars Galactic Battlegrounds Saga"
+                { GameMetadata.name = "Star Wars Galactic Battlegrounds Saga"; supportedLanguages = [| "de"; "en"; "es"; "fr" |] }
             |]
 
         member this.ExtractAll(game: string, path: string, args: string[]): ExtractedContent = 
