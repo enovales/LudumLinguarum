@@ -1,4 +1,8 @@
-#### 1.0.2 June 21 2018
+#### 1.0.2 June 30 2018
+* Added a new 'list-supported-languages' option, which shows all languages that are supported by at least one game.
+* 'list-supported-games' now lists the languages known to be supported by each game.
+* 'list-supported-games' now supports a '--languages' parameter, which allows you to filter based on particular 
+   languages. This lets you easily determine which games might be appropriate for the language you're trying to learn.
 * Added support for:
   * [The Witness](https://store.steampowered.com/app/210970/) \[ar, de, en, es-ES, es-LA, fr, hu, id, it, ja, ko, pl, pt-BR, pt-PT, ru, zh-CN, zh-TW\]
   * [Prison Architect](https://store.steampowered.com/app/233450/) \[bg, cs, da, de, el, en, es, fi, fr, hu, it, ja, ko, nl, no, pl, pt-PT, pt-BR, ro, ru, sv, th, tr, uk, zh-CN, zh-TW\]
