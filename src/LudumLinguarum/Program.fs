@@ -184,7 +184,7 @@ let private makeLessonNameFilter(nameOpt: string option) =
 
 let private normalizeIETFLanguageTagRegion(languageTag: string) = 
     let splits = languageTag.Split([| '-' |])
-    if (splits.Length > 0) then
+    if (splits.Length > 1) then
         splits.[splits.Length - 1] <- splits.[splits.Length - 1].ToUpper()
         String.Join("-", splits)
     else
@@ -265,6 +265,9 @@ let runScanForTextAction(otw: TextWriter)(vc: ParseResults<ScanForTextArgs>) =
 
     results |> Array.iter writeFoundStrings
 
+let private outputForGameMetadata(gmd: GameMetadata) = 
+    gmd.name + " [" + (String.Join(", ", gmd.supportedLanguages)) + "]"
+
 /// <summary>
 /// Runs the 'list-games' action, using the optional filter regex.
 /// </summary>
@@ -307,7 +310,8 @@ let runListGamesAction(iPluginManager: IPluginManager, otw: TextWriter, dbRoot: 
 
     dbPaths
     |> Array.collect (listGamesForDb >> Option.toArray)
-    |> Array.iter otw.WriteLine
+    |> Array.sortBy(fun gmd -> gmd.name)
+    |> Array.iter (outputForGameMetadata >> otw.WriteLine)
 
 /// <summary>
 /// Runs the 'list-supported-games' action.
@@ -322,9 +326,6 @@ let runListSupportedGamesAction(iPluginManager: IPluginManager, otw: TextWriter)
             match languagesToSearch with
             | Some(languages) -> languages |> Set.exists(fun l -> gmd.supportedLanguages |> Array.contains(l))
             | _ -> true
-
-    let outputForGameMetadata(gmd: GameMetadata) = 
-        gmd.name + " [" + (String.Join(", ", gmd.supportedLanguages)) + "]"
 
     match languagesToSearch with
     | None -> otw.WriteLine("Supported games:")
