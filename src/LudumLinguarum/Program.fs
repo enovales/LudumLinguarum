@@ -158,8 +158,11 @@ let private multipleWhitespaceRegex = new Regex(@"\s\s+")
 let private sanitizeGameNameForFile(n: string) = 
     Path.GetInvalidFileNameChars() |> Array.fold (fun (s: string)(c: char) -> s.Replace(c, '_')) n
 
-let private makeDatabaseFilenameForGame(n: string) = 
+let private makeDatabaseFilenameForGameName(n: string) = 
     sanitizeGameNameForFile(n) + ".db3"
+
+
+let private makeDatabaseFilenameForGameMetadata(gmd: GameMetadata) = makeDatabaseFilenameForGameName(gmd.name)
 
 let private makeLessonRegexFilter(reOpt: string option) = 
     match reOpt with
@@ -185,7 +188,7 @@ let runImportAction(iPluginManager: IPluginManager,
             | Some(args) -> args.Split([| '\r'; '\n'; ' '; '\t' |], StringSplitOptions.RemoveEmptyEntries)
             | _ -> [||]
 
-        let llDatabase = new LLDatabase(Path.Combine(dbRoot, makeDatabaseFilenameForGame(gameName)))
+        let llDatabase = new LLDatabase(Path.Combine(dbRoot, makeDatabaseFilenameForGameName(gameName)))
         let extractedContent = plugin.ExtractAll(vc.GetResult(ImportArgs.Game), vc.GetResult(ImportArgs.Game_Dir), argv)
 
         // Now, add lessons to the database, and remap lesson IDs in the cards before adding them.
@@ -224,7 +227,7 @@ let runExportAnkiAction(iPluginManager: IPluginManager,
         }
 
     let gameName = args.GetResult(ExportAnkiArgs.Game)
-    let llDatabase = new LLDatabase(Path.Combine(dbRoot, makeDatabaseFilenameForGame(gameName)))
+    let llDatabase = new LLDatabase(Path.Combine(dbRoot, makeDatabaseFilenameForGameName(gameName)))
     let exporter = new CardExport.AnkiExporter(iPluginManager, outputTextWriter, llDatabase, vc)
     exporter.RunExportAction()
 
@@ -259,7 +262,7 @@ let runListGamesAction(iPluginManager: IPluginManager, otw: TextWriter, dbRoot: 
         match vc.TryGetResult(ListGamesArgs.Filter_Regex) with
         | Some(rs) ->
             let rx = new Regex(rs)
-            (fun s -> rx.IsMatch(s))
+            (fun gmd -> rx.IsMatch(gmd.name))
         | _ -> (fun _ -> true)
     let filteredGames = 
         iPluginManager.SupportedGames
@@ -267,7 +270,7 @@ let runListGamesAction(iPluginManager: IPluginManager, otw: TextWriter, dbRoot: 
 
     let databaseNamesToGameNames = 
         filteredGames
-        |> Array.zip (filteredGames |> Array.map makeDatabaseFilenameForGame)
+        |> Array.zip (filteredGames |> Array.map makeDatabaseFilenameForGameMetadata)
         |> Map.ofArray
 
     let languagesToSearch = vc.TryGetResult(ListGamesArgs.Languages) |> Option.map Set.ofList    
@@ -310,7 +313,7 @@ let runListLessonsAction(iPluginManager: IPluginManager, otw: TextWriter, dbRoot
         match vc.TryGetResult(ListLessonsArgs.Game_Regex) with
         | Some(rs) ->
             let rx = new Regex(rs)
-            (fun s -> rx.IsMatch(s))
+            (fun gmd -> rx.IsMatch(gmd.name))
         | _ -> (fun _ -> true)
     let filteredGames = 
         iPluginManager.SupportedGames
@@ -318,7 +321,7 @@ let runListLessonsAction(iPluginManager: IPluginManager, otw: TextWriter, dbRoot
 
     let databaseNamesToGameNames = 
         filteredGames
-        |> Array.zip (filteredGames |> Array.map makeDatabaseFilenameForGame)
+        |> Array.zip (filteredGames |> Array.map makeDatabaseFilenameForGameMetadata)
         |> Map.ofArray
 
     let lessonFilter = makeLessonRegexFilter(vc.TryGetResult(ListLessonsArgs.Filter_Regex))
@@ -340,7 +343,7 @@ let runListLessonsAction(iPluginManager: IPluginManager, otw: TextWriter, dbRoot
 
 let runDeleteGameAction(otw: TextWriter, dbRoot: string)(vc: ParseResults<DeleteGameArgs>) = 
     let gameName = vc.GetResult(DeleteGameArgs.Game)
-    let dbPath = Path.Combine(dbRoot, makeDatabaseFilenameForGame(gameName))
+    let dbPath = Path.Combine(dbRoot, makeDatabaseFilenameForGameName(gameName))
     try
         File.Delete(dbPath)
         otw.WriteLine("Deleted [" + gameName + "].")
@@ -349,7 +352,7 @@ let runDeleteGameAction(otw: TextWriter, dbRoot: string)(vc: ParseResults<Delete
             
 let runDeleteLessonsAction(otw: TextWriter, dbRoot: string)(vc: ParseResults<DeleteLessonsArgs>) = 
     let gameName = vc.GetResult(DeleteLessonsArgs.Game)
-    let dbPath = Path.Combine(dbRoot, makeDatabaseFilenameForGame(gameName))
+    let dbPath = Path.Combine(dbRoot, makeDatabaseFilenameForGameName(gameName))
 
     if File.Exists(dbPath) then
         let db = new LLDatabase(dbPath)
@@ -377,7 +380,7 @@ let runDeleteLessonsAction(otw: TextWriter, dbRoot: string)(vc: ParseResults<Del
 /// <param name="vc">configuration for the action</param>
 let runDumpTextAction(otw: TextWriter, dbRoot: string)(vc: ParseResults<DumpTextArgs>) = 
     let gameName = vc.GetResult(DumpTextArgs.Game)
-    let db = new LLDatabase(Path.Combine(dbRoot, makeDatabaseFilenameForGame(gameName)))
+    let db = new LLDatabase(Path.Combine(dbRoot, makeDatabaseFilenameForGameName(gameName)))
 
     let lessonNameFilter = makeLessonRegexFilter(vc.TryGetResult(DumpTextArgs.Lesson_Filter_Regex))
     let contentFilter = 
