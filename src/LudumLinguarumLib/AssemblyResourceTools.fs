@@ -21,10 +21,6 @@ let rec collectStringResources(e: IDictionaryEnumerator, acc: (string * string) 
         else
             acc
 
-
-let createResourceManagerForAssembly(a: Assembly, baseName: string): ResourceManager = 
-    new ResourceManager(baseName, a)
-
 let extractResourcesFromAssemblyViaResourceReader(a: Assembly, c: CultureInfo, resourcesName: string) = 
     use stream = a.GetManifestResourceStream(resourcesName)
     if (isNull stream) then
