@@ -1,6 +1,7 @@
 ﻿module AssemblyResourceTools
 
 open LLDatabase
+open Mono.Cecil
 open System.Collections
 open System.Globalization
 open System.Reflection
@@ -20,6 +21,10 @@ let rec collectStringResources(e: IDictionaryEnumerator, acc: (string * string) 
             collectStringResources(e, acc)
         else
             acc
+
+let extractResourcesFromAssemblyViaCecil(filename: string, c: CultureInfo, resourcesName: string) = 
+    let moduleDefinition = ModuleDefinition.ReadModule(filename)
+    ()
 
 let extractResourcesFromAssemblyViaResourceReader(a: Assembly, c: CultureInfo, resourcesName: string) = 
     use stream = a.GetManifestResourceStream(resourcesName)
