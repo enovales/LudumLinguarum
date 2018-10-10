@@ -237,7 +237,8 @@ let buildDocumentationTarget fsiargs target =
     ()
 
 Target "GenerateReferenceDocs" (fun _ ->
-    buildDocumentationTarget "-d:RELEASE -d:REFERENCE" "Default"
+    //buildDocumentationTarget "-d:RELEASE -d:REFERENCE" "Default"
+    ()
 )
 
 let generateHelp' fail debug =
