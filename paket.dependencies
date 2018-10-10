@@ -10,6 +10,7 @@ nuget Argu
 nuget FAKE
 nuget Fake.IO.Zip
 nuget FSharp.Formatting prerelease
+nuget System.Text.Encoding.CodePages
 
 github fsharp/FAKE modules/Octokit/Octokit.fsx
 

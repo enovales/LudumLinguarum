@@ -126,7 +126,7 @@ type TalkTableV3String private (md: TalkTableStringMetadataV3, stringData: strin
         member this.Metadata = md
         static member Build(metadata: TalkTableStringMetadataV3, stringStream: Stream, br: BinaryReader, offset: uint32, index: StrRef) = 
             ignore(stringStream.Seek(int64 (metadata.offsetToString + offset), SeekOrigin.Begin))
-            let ansiEncoding = Encoding.GetEncoding(1252)
+            let ansiEncoding = Encoding.GetEncoding("Windows-1252")
             let stringData = ansiEncoding.GetString(br.ReadBytes(int metadata.stringSize))
             new TalkTableV3String(metadata, stringData, index)
     end
