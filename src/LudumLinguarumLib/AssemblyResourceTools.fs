@@ -1,11 +1,11 @@
 ﻿module AssemblyResourceTools
 
 open LLDatabase
+open Mono.Cecil
 open System.Collections
 open System.Globalization
-open System.Reflection
+open System.IO
 open System.Resources
-open System.Threading
 
 // Tools for extracting localized resources from .NET assemblies and satellite assemblies.
 let rec collectStringResources(e: IDictionaryEnumerator, acc: (string * string) list) = 
@@ -21,20 +21,28 @@ let rec collectStringResources(e: IDictionaryEnumerator, acc: (string * string) 
         else
             acc
 
+let extractResourcesFromAssemblyViaCecil(filename: string, c: CultureInfo, resourcesName: string) = 
+    let moduleDefinition = ModuleDefinition.ReadModule(filename)
 
-let createResourceManagerForAssembly(a: Assembly, baseName: string): ResourceManager = 
-    new ResourceManager(baseName, a)
+    let isMatchingEmbeddedResource(r: Resource) = 
+        match r with
+        | :? EmbeddedResource as er when er.Name = resourcesName -> Some(er.GetResourceStream())
+        | _ -> None
 
-let extractResourcesFromAssemblyViaResourceReader(a: Assembly, c: CultureInfo, resourcesName: string) = 
-    use stream = a.GetManifestResourceStream(resourcesName)
-    if (isNull stream) then
-        Map.empty
-    else
-        let resReader = new ResourceReader(stream)
+    let getStringsForStream(s: Stream) = 
+        let resReader = new ResourceReader(s)
         let e = resReader.GetEnumerator()
         match e.MoveNext() with
         | true -> collectStringResources(e, []) |> Map.ofList
         | _ -> Map.empty
+
+    let resourceStreamOpt = 
+        moduleDefinition.Resources
+        |> Seq.tryPick isMatchingEmbeddedResource
+
+    resourceStreamOpt
+    |> Option.map getStringsForStream
+    |> Option.defaultValue(Map.empty)
 
 let createCardRecordForStrings(lid: int, keyRoot: string, language: string, gender: string)(strings: Map<string, string>) = 
     let createCardRecordForMapEntry (k, v) = 

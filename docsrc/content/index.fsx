@@ -20,16 +20,7 @@ Documentation
   <div class="span1"></div>
 </div>
 
-Example
--------
-
-This example demonstrates using a function defined in this sample library.
-
 *)
-#r "LudumLinguarum.dll"
-open LudumLinguarum
-
-printfn "hello = %i" <| Library.hello 0
 
 (**
 Some more info

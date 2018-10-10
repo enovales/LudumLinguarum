@@ -1,3 +1,7 @@
+#### 1.0.3 October 9 2018
+* Switched resource loading from assemblies to use Mono.Cecil, for compatibility.
+* Fixed support for codepage 1252 and Shift-JIS for netcoreapp.
+
 #### 1.0.2 June 30 2018
 * Region names in language tags are now normalized when adding cards to the database.
 * Added a new 'list-supported-languages' option, which shows all languages that are supported by at least one game.

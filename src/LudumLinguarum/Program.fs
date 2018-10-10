@@ -545,7 +545,9 @@ let main argv =
     let pluginManager = new PluginManager()
     let iPluginManager = pluginManager :> IPluginManager
     
+    // Set output encoding, and import codepages that are not included by default with netcore.
     Console.OutputEncoding <- Encoding.UTF8
+    Encoding.RegisterProvider(CodePagesEncodingProvider.Instance)
 
     let otw = 
         match results.TryGetResult(Log_File) with

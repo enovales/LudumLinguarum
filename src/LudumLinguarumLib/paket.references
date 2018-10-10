@@ -1,5 +1,6 @@
 ﻿Argu
 CsvHelper
+Mono.Cecil
 sqlite-net-pcl
 SQLitePCLRaw.core
 SQLitePCLRaw.provider.e_sqlite3.netstandard11

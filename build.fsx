@@ -237,7 +237,8 @@ let buildDocumentationTarget fsiargs target =
     ()
 
 Target "GenerateReferenceDocs" (fun _ ->
-    buildDocumentationTarget "-d:RELEASE -d:REFERENCE" "Default"
+    //buildDocumentationTarget "-d:RELEASE -d:REFERENCE" "Default"
+    ()
 )
 
 let generateHelp' fail debug =
@@ -263,7 +264,7 @@ Target "GenerateHelp" (fun _ ->
     CopyFile "docsrc/content/" "LICENSE.txt"
     Rename "docsrc/content/license.md" "docsrc/content/LICENSE.txt"
 
-    generateHelp true
+    //generateHelp true
 )
 
 Target "GenerateHelpDebug" (fun _ ->
@@ -275,7 +276,7 @@ Target "GenerateHelpDebug" (fun _ ->
     CopyFile "docsrc/content/" "LICENSE.txt"
     Rename "docsrc/content/license.md" "docsrc/content/LICENSE.txt"
 
-    generateHelp' true true
+    //generateHelp' true true
 )
 
 Target "KeepRunning" (fun _ ->

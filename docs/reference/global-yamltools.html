@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8"/>
-    <title>AuroraPluginArgs - LudumLinguarum</title>
+    <title>YamlTools - LudumLinguarum</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta name="description" content=""/>
     <meta name="author" content="Erik Novales"/>
@@ -35,35 +35,53 @@
 
 
 
-<h1>AuroraPluginArgs</h1>
+<h1>YamlTools</h1>
 <p>
-
-    <span>Namespace: InfinityAuroraEnginePlugins</span><br />
-    </p>
+  <span>Namespace: global</span><br />
+  </p>
 <div class="xmldoc">
 </div>
-  <h3>Union Cases</h3>
+
+<!-- Render nested types and modules, if there are any -->
+
+  <h3>Functions and values</h3>
   <table class="table table-bordered member-list">
     <thead>
-      <tr><td>Union Case</td><td>Description</td></tr>
+      <tr><td>Function or value</td><td>Description</td></tr>
     </thead>
     <tbody>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '256', 256)" onmouseover="showTip(event, '256', 256)">
-            Extract_2DAs(bool)
+          <code onmouseout="hideTip(event, '22', 22)" onmouseover="showTip(event, '22', 22)">
+            convertMappingNodeToStringPairs(n)
           </code>
-          <div class="tip" id="256">
-            <strong>Signature:</strong> bool<br />
-                                    <span>
-            <strong>Attributes:</strong><br />
-[&lt;EqualsAssignment&gt;]<br />
-          </span>
-          </div>
+          <div class="tip" id="22">
+            <strong>Signature:</strong> n:YamlMappingNode -&gt; seq&lt;string * string&gt;<br />
+                                  </div>
         </td>
         <td class="xmldoc">
-                      <a href="https://github.com/enovales/LudumLinguarum/tree/master/src/InfinityAuroraEnginePlugins/AuroraPlugin.fs#L22-22" class="github-link">
+                      <a href="https://github.com/enovales/LudumLinguarum/tree/master/src/LudumLinguarumLib/YamlTools.fs#L42-42" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>Converts a mapping node consisting of scalar keys on each side into a sequence of string-to-string pairs.</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '23', 23)" onmouseover="showTip(event, '23', 23)">
+            findMappingNodesWithName name n
+          </code>
+          <div class="tip" id="23">
+            <strong>Signature:</strong> name:string -&gt; n:YamlNode -&gt; seq&lt;YamlMappingNode&gt;<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                      <a href="https://github.com/enovales/LudumLinguarum/tree/master/src/LudumLinguarumLib/YamlTools.fs#L31-31" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -73,64 +91,55 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '257', 257)" onmouseover="showTip(event, '257', 257)">
-            Extract_All(bool)
+          <code onmouseout="hideTip(event, '24', 24)" onmouseover="showTip(event, '24', 24)">
+            isYamlNodeType(n)
           </code>
-          <div class="tip" id="257">
-            <strong>Signature:</strong> bool<br />
-                                    <span>
-            <strong>Attributes:</strong><br />
-[&lt;EqualsAssignment&gt;]<br />
-          </span>
-          </div>
+          <div class="tip" id="24">
+            <strong>Signature:</strong> n:YamlNode -&gt; bool<br />
+                          <strong>Type parameters:</strong> 'T                      </div>
         </td>
         <td class="xmldoc">
-                      <a href="https://github.com/enovales/LudumLinguarum/tree/master/src/InfinityAuroraEnginePlugins/AuroraPlugin.fs#L23-23" class="github-link">
+                      <a href="https://github.com/enovales/LudumLinguarum/tree/master/src/LudumLinguarumLib/YamlTools.fs#L9-9" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          
+          <p>Type test for YAML node types. Useful for filtering collections.</p>
+
+
         </td>
       </tr>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '258', 258)" onmouseover="showTip(event, '258', 258)">
-            Extract_Dialogues(bool)
+          <code onmouseout="hideTip(event, '25', 25)" onmouseover="showTip(event, '25', 25)">
+            mapOnlyYamlType(s)
           </code>
-          <div class="tip" id="258">
-            <strong>Signature:</strong> bool<br />
-                                    <span>
-            <strong>Attributes:</strong><br />
-[&lt;EqualsAssignment&gt;]<br />
-          </span>
-          </div>
+          <div class="tip" id="25">
+            <strong>Signature:</strong> s:seq&lt;&#39;U&gt; -&gt; seq&lt;&#39;T&gt;<br />
+                          <strong>Type parameters:</strong> 'T, 'U                      </div>
         </td>
         <td class="xmldoc">
-                      <a href="https://github.com/enovales/LudumLinguarum/tree/master/src/InfinityAuroraEnginePlugins/AuroraPlugin.fs#L21-21" class="github-link">
+                      <a href="https://github.com/enovales/LudumLinguarum/tree/master/src/LudumLinguarumLib/YamlTools.fs#L18-18" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          
+          <p>Filters a YAML node sequence on a particular type, and casts to that type.</p>
+
+
         </td>
       </tr>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '259', 259)" onmouseover="showTip(event, '259', 259)">
-            Language_Tag(string)
+          <code onmouseout="hideTip(event, '26', 26)" onmouseover="showTip(event, '26', 26)">
+            mappingNodeHasKey k n
           </code>
-          <div class="tip" id="259">
-            <strong>Signature:</strong> string<br />
-                                    <span>
-            <strong>Attributes:</strong><br />
-[&lt;Mandatory&gt;]<br />
-[&lt;EqualsAssignment&gt;]<br />
-          </span>
-          </div>
+          <div class="tip" id="26">
+            <strong>Signature:</strong> k:string -&gt; n:YamlMappingNode -&gt; bool<br />
+                                  </div>
         </td>
         <td class="xmldoc">
-                      <a href="https://github.com/enovales/LudumLinguarum/tree/master/src/InfinityAuroraEnginePlugins/AuroraPlugin.fs#L20-20" class="github-link">
+                      <a href="https://github.com/enovales/LudumLinguarum/tree/master/src/LudumLinguarumLib/YamlTools.fs#L26-26" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>

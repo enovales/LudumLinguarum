@@ -10,6 +10,7 @@ nuget Argu
 nuget FAKE
 nuget Fake.IO.Zip
 nuget FSharp.Formatting prerelease
+nuget System.Text.Encoding.CodePages
 
 github fsharp/FAKE modules/Octokit/Octokit.fsx
 
@@ -18,7 +19,8 @@ nuget Expecto.BenchmarkDotNet
 nuget Expecto.FsCheck
 nuget Expecto.VisualStudio.TestAdapter version_in_path: true
 
-//github praeclarum/sqlite-net
+nuget Mono.Cecil
+
 nuget sqlite-net-pcl
 nuget SQLitePCLRaw.core
 nuget SQLitePCLRaw.provider.e_sqlite3.netstandard11

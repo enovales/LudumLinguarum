@@ -2,10 +2,9 @@
 <html lang="en">
   <head>
     <meta charset="utf-8"/>
-    <title>Introducing your project
-</title>
+    <title>PInvokeStubs - LudumLinguarum</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <meta name="description" content="Tools for extracting localized content from games, and turning them into language learning content."/>
+    <meta name="description" content=""/>
     <meta name="author" content="Erik Novales"/>
 
     <script src="https://code.jquery.com/jquery-1.8.0.js"></script>
@@ -33,22 +32,65 @@
       <div class="row">
         <div class="span9" id="main">
           
-<h1><a name="Introducing-your-project" class="anchor" href="#Introducing-your-project">Introducing your project</a></h1>
-<p>Say more</p>
-<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
-<span class="l">2: </span>
-<span class="l">3: </span>
-<span class="l">4: </span>
-</pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="pp">#r</span> <span class="s">&quot;LudumLinguarum.dll&quot;</span>
-<span class="k">open</span> <span class="id">LudumLinguarum</span>
 
-<span class="id">Library</span><span class="pn">.</span><span class="id">hello</span> <span class="n">0</span>
-</code></pre></td>
-</tr>
-</table>
-<p>Some more info</p>
 
+
+<h1>PInvokeStubs</h1>
+<p>
+
+    <span>Namespace: PInvokeStubs</span><br />
+    </p>
+<div class="xmldoc">
+<p>Stubs for PInvoke wrappers that can't be invoked directly from F# due to
+use of void * (which cannot be replaced with nativeptr of unit).</p>
+
+</div>
+  <h3>Constructors</h3>
+  <table class="table table-bordered member-list">
+    <thead>
+      <tr><td>Constructor</td><td>Description</td></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '268', 268)" onmouseover="showTip(event, '268', 268)">
+            new()
+          </code>
+          <div class="tip" id="268">
+            <strong>Signature:</strong> unit -&gt; unit<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                    
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  <h3>Static members</h3>
+  <table class="table table-bordered member-list">
+    <thead>
+      <tr><td>Static member</td><td>Description</td></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '269', 269)" onmouseover="showTip(event, '269', 269)">
+            PInvokeStubs.EnumResourceLanguages(...)
+          </code>
+          <div class="tip" id="269">
+            <strong>Signature:</strong> (hModule:SafeLibraryHandle * lpType:nativeptr&lt;char&gt; * lpName:nativeptr&lt;char&gt; * lpEnumFunc:EnumResourceLanguagesCallback) -&gt; bool<br />
+                                  </div>
+        </td>
+        <td class="xmldoc">
+                    <p>Wrapper for PInvoke.Kernel32.EnumResourceLanguages.</p>
+
+
+        </td>
+      </tr>
+    </tbody>
+  </table>
 
         </div>
         <div class="span3">

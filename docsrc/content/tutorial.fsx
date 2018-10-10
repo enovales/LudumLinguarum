@@ -10,10 +10,6 @@ Introducing your project
 Say more
 
 *)
-#r "LudumLinguarum.dll"
-open LudumLinguarum
-
-Library.hello 0
 (**
 Some more info
 *)
