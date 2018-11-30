@@ -6,8 +6,13 @@ open System
 open System.IO
 open System.Text.RegularExpressions
 
-type AnkiExporterConfiguration =
+type AnkiSuperMemoExportTarget = 
+    | Anki
+    | SuperMemo
+
+type AnkiSuperMemoExporterConfiguration =
     {
+        Target: AnkiSuperMemoExportTarget
         LessonToExport: string option
         LessonRegexToExport: string option
         ExportPath: string
@@ -29,8 +34,54 @@ let internal mkWordCountFilter(lo: int option) =
     | Some(l) -> (fun (c: CardRecord) -> (c.Text.ToCharArray() |> Array.sumBy(fun c -> if Char.IsWhiteSpace(c) then 1 else 0)) <= (l - 1))
     | _ -> (fun (_: CardRecord) -> true)
 
-type AnkiExporter(iPluginManager: IPluginManager, outputTextWriter: TextWriter, 
-                  llDatabase: LLDatabase, config: AnkiExporterConfiguration) = 
+type ICardWriter = 
+    interface
+        abstract member WriteCard: string -> unit
+    end
+
+type private AnkiWriter(otw: TextWriter, exportBasePath: string) = 
+    let streamWriter = new StreamWriter(exportBasePath)
+
+    do otw.WriteLine("Writing to [" + exportBasePath + "]")
+    interface IDisposable with
+        member this.Dispose() = streamWriter.Dispose()
+
+    interface ICardWriter with
+        member this.WriteCard(line: String) = streamWriter.WriteLine(line)
+
+type private SuperMemoWriter(otw: TextWriter, exportBasePath: string) = 
+    let mutable lineCounter = 0
+    let mutable fileCounter = 1
+    let mutable streamWriter = new StreamWriter(exportBasePath)
+
+    do otw.WriteLine("Writing to [" + exportBasePath + "]")
+    interface IDisposable with
+        member this.Dispose() = streamWriter.Dispose()
+
+    interface ICardWriter with
+        member this.WriteCard(line: String) = 
+            if (lineCounter >= 99) then
+                streamWriter.Dispose()
+
+                let newFileName = 
+                    Path.GetDirectoryName(exportBasePath) + 
+                    new string([|Path.DirectorySeparatorChar|]) + 
+                    Path.GetFileNameWithoutExtension(exportBasePath) + 
+                    "_" + 
+                    fileCounter.ToString("000") + 
+                    Path.GetExtension(exportBasePath)
+
+                streamWriter <- new StreamWriter(newFileName)
+                otw.WriteLine("Writing to [" + newFileName + "]")
+
+                fileCounter <- fileCounter + 1
+                lineCounter <- 0
+
+            streamWriter.WriteLine(line)
+            lineCounter <- lineCounter + 1
+
+type AnkiSupermemoExporter(iPluginManager: IPluginManager, outputTextWriter: TextWriter, 
+                  llDatabase: LLDatabase, config: AnkiSuperMemoExporterConfiguration) = 
 
     let recognitionLengthFilter = mkLengthFilter(config.RecognitionLengthLimit)
     let productionLengthFilter = mkLengthFilter(config.ProductionLengthLimit)
@@ -63,16 +114,17 @@ type AnkiExporter(iPluginManager: IPluginManager, outputTextWriter: TextWriter,
         | (a, b) when a = b -> (recognitionCards, productionCards)
         | _ -> failwith "can't disambiguate m-to-n language pairs"
 
-    member private this.RunLessonExport(sw: StreamWriter)(lesson: LessonRecord) = 
+    member private this.RunLessonExport(cardWriter: ICardWriter, applicationTarget: AnkiSuperMemoExportTarget)(lesson: LessonRecord) = 
         let writeCard(r: CardRecord, p: CardRecord) = 
             let recogText = r.Text.Replace("\t", "    ").Replace("\r", "").Replace("\n", "")
             let prodText = p.Text.Replace("\t", "    ").Replace("\r", "").Replace("\n", "")
             let reverseText = 
-                if (r.Reversible && p.Reversible) then
-                    "\ty"
-                else
-                    "\t"
-            sw.WriteLine(recogText + "\t" + prodText + reverseText)
+                match (applicationTarget, r.Reversible, p.Reversible) with
+                | (AnkiSuperMemoExportTarget.Anki, true, true) -> "\ty"
+                | (AnkiSuperMemoExportTarget.Anki, _, _) -> "\t"
+                | (AnkiSuperMemoExportTarget.SuperMemo, _, _) -> ""
+
+            cardWriter.WriteCard(recogText + "\t" + prodText + reverseText)
 
         let (recognitionCards, productionCards) = 
             this.GenerateRecognitionAndProductionCardSets(lesson, config.RecognitionLanguage, config.ProductionLanguage)
@@ -127,9 +179,14 @@ type AnkiExporter(iPluginManager: IPluginManager, outputTextWriter: TextWriter,
             outputTextWriter.WriteLine("Exporting lesson [" + l.Name + "]")
             l
 
-        use outStream = new StreamWriter(config.ExportPath)
-        lessonsToExport |> Array.iter(reportLessonExport >> this.RunLessonExport(outStream))
-        ()
+        let cardWriter: ICardWriter = 
+            match config.Target with
+            | AnkiSuperMemoExportTarget.Anki -> new AnkiWriter(outputTextWriter, config.ExportPath) :> ICardWriter
+            | AnkiSuperMemoExportTarget.SuperMemo -> new SuperMemoWriter(outputTextWriter, config.ExportPath) :> ICardWriter
+        let disposableCardWriter = cardWriter :?> IDisposable
+
+        lessonsToExport |> Array.iter(reportLessonExport >> this.RunLessonExport(cardWriter, config.Target))
+        disposableCardWriter.Dispose() |> ignore
 
     member this.RunExportAction() = 
         this.RunGameExport(config.LessonToExport, config.LessonRegexToExport)

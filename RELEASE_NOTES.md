@@ -1,3 +1,6 @@
+#### 1.1.0 November 29 2018
+* Added support for exporting for use with SuperMemo. The text files are tab-delimited, and split into files of 99 entries each, to work with SuperMemo's importer tool.
+
 #### 1.0.3 October 9 2018
 * Switched resource loading from assemblies to use Mono.Cecil, for compatibility.
 * Fixed support for codepage 1252 and Shift-JIS for netcoreapp.
