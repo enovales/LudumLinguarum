@@ -3,20 +3,21 @@
 [![Build status](https://ci.appveyor.com/api/projects/status/v73o4eflpx781va3/branch/master?svg=true)](https://ci.appveyor.com/project/ErikNovales/ludumlinguarum/branch/master)
 [![Build stats](https://buildstats.info/appveyor/chart/ErikNovales/ludumlinguarum)](https://ci.appveyor.com/project/ErikNovales/ludumlinguarum/ci-buildstats/history)
 
-Ludum Linguarum is a set of tools and recipes to extract localized content (currently just text) from a set of known 
-games, which can then be turned into flash cards for use with [Anki](http://ankisrs.net/) (one of the most popular 
-[spaced repetition](https://en.wikipedia.org/wiki/Spaced_repetition) software programs, with clients for all major
-desktop and mobile platforms).
+Ludum Linguarum is a set of tools and recipes to extract localized content (currently just text) from a set of supported 
+games, which can then be turned into flash cards for use with the following [spaced repetition](https://en.wikipedia.org/wiki/Spaced_repetition) software:
 
-In other words, you can spice up your language learning regimen by drilling flash cards with text from video games!
+1. [Anki](https://apps.ankiweb.net/), one of the most popular spaced repetition software programs, with clients for all major desktop and mobile platforms.
+2. [SuperMemo](https://www.supermemo.com/)
+
+In other words, you can spice up your language learning regimen by drilling yourself with flash cards containing text from video games!
 
 [The list of currently supported games can be found here](http://enovales.github.io/LudumLinguarum/supported-games.html).
 Currently only PC games are supported, although there's no technical reason other platforms couldn't be supported -- 
 it's just simpler to work on PC versions of titles.
 
-Ludum Linguarum can run on Windows, Linux, and OS X! (Some titles may only be supported under Windows.) On Windows, the .NET Framework runtime is required to run (but should be part of any modern OS install, so you probably don't need to do anything special to run Ludum Linguarum). Linux and OS X builds are self-contained installations, and should have everything you need to run out-of-the-box.
+Ludum Linguarum can run on Windows, Linux, and OS X! (Some titles may only be supported under Windows.)
 
-# Quick Start
+# Anki Quick Start
 
 This walkthrough covers setting up Ludum Linguarum, the Anki desktop client, importing text from a game, exporting it to
 a format that Anki can recognize, and then importing it into Anki and using the flashcards to drill.
@@ -47,6 +48,36 @@ reading the [Anki documentation](http://ankisrs.net/docs/manual.html) to find mo
 I also recommend setting up an [AnkiWeb](http://ankiweb.net/) account, as this will let you sync your progress between
 the desktop and mobile clients. This makes it easy to practice on the go!
 
+# SuperMemo Quick Start
+
+This walkthrough covers setting up Ludum Linguarum, importing text from a game, exporting it to a format that will work with 
+SuperMemo's online importer, and then importing it and using the flashcards to drill.
+
+1. Download and extract the latest version of Ludum Linguarum, [from the list of releases above](https://github.com/enovales/LudumLinguarum/releases).
+2. Ensure that you have at least [one of the supported games](http://enovales.github.io/LudumLinguarum/supported-games.html) installed.
+3. Open up a command prompt window, in the directory to which you extracted Ludum Linguarum.
+4. Type `LudumLinguarum list-supported-games` to find the name of the game that you want to extract.
+5. Type `LudumLinguarum import --game="<game name>" --game-dir="<root directory of game>"` to import the game text. (Some games 
+that only support a single language with their installed data may require you to specify the language with `--language-tag=<language tag>`.)
+6. Type `LudumLinguarum export-supermemo --game="<game name>" --recognition-language="<first language>" 
+--production-language="<second language>" --export-path="<path to export file>" --production-word-limit=5`. The "recognition language" is the
+[two-letter language code](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes) for the language you are more familiar with, 
+and the "production language" is the language code for the one you're trying to learn. Examples are "en" for English, 
+"fr" for French, "de" for German, "ja" for Japanese, and so on. (Flash cards will be generated for translating in both directions.) 
+`export-path` specifies the output text file (or files -- your export will be split up into files of 99 cards each, which matches SuperMemo's limit
+of how many cards you can import at once), which will be imported into SuperMemo in the next step, and 'production-word-limit' restricts the length of
+text to 5 whitespace-separated words in the target language. This can be useful for limiting the flash cards to shorter phrases or vocabulary.
+7. Open up the SuperMemo website. Select the **Course Editor** from the drop-down menu.
+8. Click on the **+** button at the top (next to the list of courses) to create a new course, and give it a name.
+9. For each file generated in Step 6, do the following:
+  * Click the **Import** button at the bottom. Select **Tab** under "Question and Answer".
+  * Open up the file.
+  * Copy all of the text from the file.
+  * Paste it into the SuperMemo import dialog.
+  * Verify that the card contents are correct, and hit the **Import** button at the bottom.
+12. Exit, and select the new deck from SuperMemo's main menu. Now you're ready to practice! You can read more about how to most effectively use 
+SuperMemo [on their main web site](https://www.supermemo.com/).
+
 # Other notes
 
 * If you want to focus on particular types of cards (i.e. short vocabulary words, instead of translating dialogue), don't hesitate
@@ -61,8 +92,8 @@ meantime, you can always delete incorrect cards from your decks so you can conti
 
 ## Does this really work?
 
-**Yes!** Lots of free and commercial software and services are based around these ideas, including Duolingo, Course Hero, Memrise,
-and SuperMemo. I would strongly encourage you to try it out if you are skeptical -- you'll find it starts to improve your
+**Yes!** Lots of free and commercial software and services are based around these ideas, including Duolingo, Course Hero, and Memrise. 
+I would strongly encourage you to try it out if you are skeptical -- you'll find it starts to improve your
 recall almost immediately, and daily practice will build up your vocabulary quite quickly.
 
 ## How should I use this?

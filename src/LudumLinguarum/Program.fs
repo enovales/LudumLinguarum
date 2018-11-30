@@ -91,7 +91,7 @@ and DumpTextArgs =
                 | Include_Language _ -> "Optionally includes the language tag for each string in a tabbed column."
                 | Include_Lesson _ -> "Optionally includes the lesson name for each string in a tabbed column."
                 | Sample_Size _ -> "If set, only includes a random sample of the number of strings specified."
-and ExportAnkiArgs = 
+and ExportAnkiSuperMemoArgs = 
     | [<Mandatory; EqualsAssignment>] Game of string
     | [<EqualsAssignment>] Lesson of string
     | [<EqualsAssignment>] Lesson_Regex of string
@@ -109,7 +109,7 @@ and ExportAnkiArgs =
                 | Game _ -> "The name of the game whose content should be exported"
                 | Lesson _ -> "The name of a single lesson to export"
                 | Lesson_Regex _ -> "A regular expression defining which lesson should be exported"
-                | Export_Path _ -> "The path to which the text file containing importable Anki cards should be written"
+                | Export_Path _ -> "The path to which the text file containing importable cards should be written"
                 | Recognition_Language _ -> "The 'source' language for the flash card"
                 | Production_Language _ -> "The 'target' language for the flash card -- what you want to practice recalling"
                 | Recognition_Length_Limit _ -> "The character limit of cards to include, based on the string in the recognition language"
@@ -141,7 +141,8 @@ and [<RequireSubcommandAttribute>] BaseArgs =
     | [<CliPrefix(CliPrefix.None)>] Delete_Game of ParseResults<DeleteGameArgs>
     | [<CliPrefix(CliPrefix.None)>] Delete_Lessons of ParseResults<DeleteLessonsArgs>
     | [<CliPrefix(CliPrefix.None)>] Dump_Text of ParseResults<DumpTextArgs>
-    | [<CliPrefix(CliPrefix.None)>] Export_Anki of ParseResults<ExportAnkiArgs>
+    | [<CliPrefix(CliPrefix.None)>] Export_Anki of ParseResults<ExportAnkiSuperMemoArgs>
+    | [<CliPrefix(CliPrefix.None)>] Export_SuperMemo of ParseResults<ExportAnkiSuperMemoArgs>
     | [<CliPrefix(CliPrefix.None)>] Scan_For_Text of ParseResults<ScanForTextArgs>
     with
         interface IArgParserTemplate with
@@ -158,7 +159,8 @@ and [<RequireSubcommandAttribute>] BaseArgs =
                 | Delete_Game _ -> "Delete a single game"
                 | Delete_Lessons _ -> "Delete lessons for a game, filtered by name"
                 | Dump_Text _ -> "Dumps extracted strings for inspection."
-                | Export_Anki _ -> "Exports extracted text for use with the Anki spaced repetition program"
+                | Export_Anki _ -> "Exports extracted text for use with the Anki spaced repetition software"
+                | Export_SuperMemo _ -> "Exports extracted text for use with the SuperMemo spaced repetition software"
                 | Scan_For_Text _ -> "Used to scan arbitrary binary data for strings, to locate localized content"
 
 
@@ -226,24 +228,35 @@ let runImportAction(iPluginManager: IPluginManager,
     | _ ->
         failwith("Could not find installed plugin for '" + vc.GetResult(ImportArgs.Game) + "'")
 
-let runExportAnkiAction(iPluginManager: IPluginManager, 
-                        outputTextWriter: TextWriter, dbRoot: string)(args: ParseResults<ExportAnkiArgs>) = 
-    let vc = 
-        {
-            CardExport.AnkiExporterConfiguration.ExportPath = args.GetResult(ExportAnkiArgs.Export_Path)
-            CardExport.AnkiExporterConfiguration.LessonToExport = args.TryGetResult(ExportAnkiArgs.Lesson)
-            CardExport.AnkiExporterConfiguration.LessonRegexToExport = args.TryGetResult(ExportAnkiArgs.Lesson_Regex)
-            CardExport.AnkiExporterConfiguration.RecognitionLanguage = args.GetResult(ExportAnkiArgs.Recognition_Language)
-            CardExport.AnkiExporterConfiguration.ProductionLanguage = args.GetResult(ExportAnkiArgs.Production_Language)
-            CardExport.AnkiExporterConfiguration.RecognitionLengthLimit = args.TryGetResult(ExportAnkiArgs.Recognition_Length_Limit)
-            CardExport.AnkiExporterConfiguration.ProductionLengthLimit = args.TryGetResult(ExportAnkiArgs.Production_Length_Limit)
-            CardExport.AnkiExporterConfiguration.RecognitionWordLimit = args.TryGetResult(ExportAnkiArgs.Recognition_Word_Limit)
-            CardExport.AnkiExporterConfiguration.ProductionWordLimit = args.TryGetResult(ExportAnkiArgs.Production_Word_Limit)
-        }
+let private generateConfigForAnkiSuperMemoExport(target: CardExport.AnkiSuperMemoExportTarget, args: ParseResults<ExportAnkiSuperMemoArgs>) = 
+    {
+        CardExport.AnkiSuperMemoExporterConfiguration.Target = target
+        CardExport.AnkiSuperMemoExporterConfiguration.ExportPath = args.GetResult(ExportAnkiSuperMemoArgs.Export_Path)
+        CardExport.AnkiSuperMemoExporterConfiguration.LessonToExport = args.TryGetResult(ExportAnkiSuperMemoArgs.Lesson)
+        CardExport.AnkiSuperMemoExporterConfiguration.LessonRegexToExport = args.TryGetResult(ExportAnkiSuperMemoArgs.Lesson_Regex)
+        CardExport.AnkiSuperMemoExporterConfiguration.RecognitionLanguage = args.GetResult(ExportAnkiSuperMemoArgs.Recognition_Language)
+        CardExport.AnkiSuperMemoExporterConfiguration.ProductionLanguage = args.GetResult(ExportAnkiSuperMemoArgs.Production_Language)
+        CardExport.AnkiSuperMemoExporterConfiguration.RecognitionLengthLimit = args.TryGetResult(ExportAnkiSuperMemoArgs.Recognition_Length_Limit)
+        CardExport.AnkiSuperMemoExporterConfiguration.ProductionLengthLimit = args.TryGetResult(ExportAnkiSuperMemoArgs.Production_Length_Limit)
+        CardExport.AnkiSuperMemoExporterConfiguration.RecognitionWordLimit = args.TryGetResult(ExportAnkiSuperMemoArgs.Recognition_Word_Limit)
+        CardExport.AnkiSuperMemoExporterConfiguration.ProductionWordLimit = args.TryGetResult(ExportAnkiSuperMemoArgs.Production_Word_Limit)
+    }
+    
 
-    let gameName = args.GetResult(ExportAnkiArgs.Game)
+let runExportAnkiAction(iPluginManager: IPluginManager, 
+                        outputTextWriter: TextWriter, dbRoot: string)(args: ParseResults<ExportAnkiSuperMemoArgs>) = 
+    let vc = generateConfigForAnkiSuperMemoExport(CardExport.AnkiSuperMemoExportTarget.Anki, args)
+    let gameName = args.GetResult(ExportAnkiSuperMemoArgs.Game)
     let llDatabase = new LLDatabase(Path.Combine(dbRoot, makeDatabaseFilenameForGameName(gameName)))
-    let exporter = new CardExport.AnkiExporter(iPluginManager, outputTextWriter, llDatabase, vc)
+    let exporter = new CardExport.AnkiSupermemoExporter(iPluginManager, outputTextWriter, llDatabase, vc)
+    exporter.RunExportAction()
+
+let runExportSuperMemoAction(iPluginManager: IPluginManager, 
+                             outputTextWriter: TextWriter, dbRoot: string)(args: ParseResults<ExportAnkiSuperMemoArgs>) = 
+    let vc = generateConfigForAnkiSuperMemoExport(CardExport.AnkiSuperMemoExportTarget.SuperMemo, args)
+    let gameName = args.GetResult(ExportAnkiSuperMemoArgs.Game)
+    let llDatabase = new LLDatabase(Path.Combine(dbRoot, makeDatabaseFilenameForGameName(gameName)))
+    let exporter = new CardExport.AnkiSupermemoExporter(iPluginManager, outputTextWriter, llDatabase, vc)
     exporter.RunExportAction()
 
 let runScanForTextAction(otw: TextWriter)(vc: ParseResults<ScanForTextArgs>) = 
@@ -576,6 +589,7 @@ let main argv =
     | Some(Delete_Lessons dla) -> runDeleteLessonsAction(otw, fldbPath)(dla)
     | Some(Dump_Text dta) -> runDumpTextAction(otw, fldbPath)(dta)
     | Some(Export_Anki eaa) -> runExportAnkiAction(iPluginManager, otw, fldbPath)(eaa)
+    | Some(Export_SuperMemo esma) -> runExportSuperMemoAction(iPluginManager, otw, fldbPath)(esma)
     | Some(Scan_For_Text sfta) -> runScanForTextAction(otw)(sfta)
     | None -> ()
     | _ -> failwith "unrecognized subcommand"
