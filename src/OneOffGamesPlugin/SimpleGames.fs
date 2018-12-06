@@ -690,10 +690,10 @@ let ExtractTheEscapists(path: string) =
 
     let resourcesToLessons = 
         [|
-            (@"Data\data_{0}.dat", { LessonRecord.ID = 0; Name = "Game Data" })
-            (@"Data\items_{0}.dat", { LessonRecord.ID = 1; Name = "Items" })
-            (@"Data\speech_{0}.dat", { LessonRecord.ID = 2; Name = "Speech" })
-            (@"Editor\data\{0}.dat", { LessonRecord.ID = 3; Name = "Editor" })
+            (FixPathSeps @"Data\data_{0}.dat", { LessonRecord.ID = 0; Name = "Game Data" })
+            (FixPathSeps @"Data\items_{0}.dat", { LessonRecord.ID = 1; Name = "Items" })
+            (FixPathSeps @"Data\speech_{0}.dat", { LessonRecord.ID = 2; Name = "Speech" })
+            (FixPathSeps @"Editor\data\{0}.dat", { LessonRecord.ID = 3; Name = "Editor" })
         |]
 
     let cardsForResource(languagePath: string, language: string)(resourcePathAndLesson: string * LessonRecord) = 
