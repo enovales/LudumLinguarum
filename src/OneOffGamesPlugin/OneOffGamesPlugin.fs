@@ -64,6 +64,7 @@ type OneOffGamesPlugin() =
             ({ GameMetadata.name = "Multiwinia"; supportedLanguages = [| "de"; "en"; "es"; "fr"; "it" |] }, SimpleGames.ExtractMultiwinia)
             ({ GameMetadata.name = "The Witness"; supportedLanguages = [| "ar"; "de"; "en"; "es-ES"; "es-LA"; "fr"; "hu"; "id"; "it"; "ja"; "ko"; "pl"; "pt-BR"; "pt-PT"; "ru"; "zh-CN"; "zh-TW" |] }, SimpleGames.ExtractTheWitness)
             ({ GameMetadata.name = "Prison Architect"; supportedLanguages = [| "bg"; "cs"; "da"; "de"; "el"; "en"; "es"; "fi"; "fr"; "hu"; "it"; "ja"; "ko"; "nl"; "no"; "pl"; "pt-PT"; "pt-BR"; "ro"; "ru"; "sv"; "th"; "tr"; "uk"; "zh-CN"; "zh-TW" |] }, SimpleGames.ExtractPrisonArchitect)
+            ({ GameMetadata.name = "The Escapists"; supportedLanguages = [| "en"; "de"; "es"; "fr"; "it"; "pl"; "ru" |]}, SimpleGames.ExtractTheEscapists)
         |] |> Map.ofArray
 
     interface IPlugin with

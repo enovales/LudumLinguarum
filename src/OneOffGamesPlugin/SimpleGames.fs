@@ -2,6 +2,8 @@
 
 open CsvTools
 open FsGettextUtils.MoFile
+open IniParser
+open IniParser.Model
 open LLDatabase
 open LLUtils
 open SharpCompress.Archives.Rar
@@ -11,6 +13,7 @@ open System.IO
 open System.Text
 open System.Text.RegularExpressions
 open System.Xml.Linq
+open IniParser.Model.Configuration
 
 (***************************************************************************)
 (************************** Skulls of the Shogun ***************************)
@@ -676,3 +679,70 @@ let ExtractPrisonArchitect(path: string) =
     |> Map.ofArray
 
   extractIntroversionGame(path, "main.dat", languageMappings)
+
+(***************************************************************************)
+(****************************** The Escapists ******************************)
+(***************************************************************************)
+let ExtractTheEscapists(path: string) = 
+    let languageMap = 
+        [| ("eng", "en"); ("fre", "fr"); ("ger", "de"); ("ita", "it"); ("pol", "pl"); ("rus", "ru"); ("spa", "es") |]
+
+    let resourcesToLessons = 
+        [|
+            (@"Data\data_{0}.dat", { LessonRecord.ID = 0; Name = "Game Data" })
+            (@"Data\items_{0}.dat", { LessonRecord.ID = 1; Name = "Items" })
+            (@"Data\speech_{0}.dat", { LessonRecord.ID = 2; Name = "Speech" })
+            (@"Editor\data\{0}.dat", { LessonRecord.ID = 3; Name = "Editor" })
+        |]
+
+    let cardsForResource(languagePath: string, language: string)(resourcePathAndLesson: string * LessonRecord) = 
+        let (resourcePath, lesson) = resourcePathAndLesson
+        let filePath = Path.Combine(path, String.Format(resourcePath, languagePath))
+
+        let cardsForSection(sectionName: string, keys: KeyDataCollection) = 
+            keys
+            |> Seq.map (fun key -> (key.KeyName, key.Value))
+            |> Array.ofSeq
+            |> Map.ofArray
+            |> AssemblyResourceTools.createCardRecordForStrings(lesson.ID, "", language, "masculine")
+
+        try
+            let fileLines = 
+                File.ReadAllLines(filePath, Encoding.GetEncoding(1252))
+                |> Array.map(fun line -> line.Trim())
+                |> Array.filter(fun line -> not(String.IsNullOrWhiteSpace(line)))
+                |> Array.filter(fun line -> not(line.StartsWith("count=")))
+                |> Array.filter(fun line -> not(line.StartsWith("---") && line.Contains("DLC")))
+                |> Array.skipWhile(fun line -> not(line.StartsWith("[")))
+            let fileContents = String.Join(Environment.NewLine, fileLines)
+                
+            let parser = new StreamIniDataParser()
+            parser.Parser.Configuration.AllowDuplicateKeys <- true
+            parser.Parser.Configuration.SkipInvalidLines <- true
+
+            use memoryStream = new MemoryStream(Encoding.UTF8.GetBytes(fileContents))
+            use stream = new StreamReader(memoryStream)
+            let iniData = parser.ReadData(stream)
+
+            iniData.Sections
+            |> Seq.collect (fun section -> cardsForSection(section.SectionName, section.Keys))
+            |> Array.ofSeq
+        with
+            | ex -> [||]
+
+        
+
+    let cardsForLanguage languagePathAndLanguage = 
+        let (languagePath, language) = languagePathAndLanguage
+
+        resourcesToLessons
+        |> Array.collect(cardsForResource(languagePath, language))
+
+    let cards = 
+        languageMap
+        |> Array.collect cardsForLanguage
+
+    {
+        LudumLinguarumPlugins.ExtractedContent.lessons = resourcesToLessons |> Array.map snd
+        LudumLinguarumPlugins.ExtractedContent.cards = cards
+    }

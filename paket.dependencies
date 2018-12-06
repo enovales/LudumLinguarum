@@ -34,3 +34,5 @@ nuget PInvoke.Win32
 nuget LANGIDMappings
 nuget FsGettextUtils
 github enovales/SegaAFSTools src/SegaAFSTools/AFS.fs
+
+nuget ini-parser
