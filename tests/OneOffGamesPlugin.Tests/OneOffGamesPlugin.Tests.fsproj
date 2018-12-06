@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net471;netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>net471;netcoreapp2.1</TargetFrameworks>
     <RootNamespace>OneOffGamesPlugin.Tests</RootNamespace>
     <AssemblyName>OneOffGamesPlugin.Tests</AssemblyName>
     <Name>OneOffGamesPlugin.Tests</Name>
@@ -28,7 +28,7 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\LudumLinguarum\LudumLinguarum.fsproj"></ProjectReference>
+    <ProjectReference Include="..\..\src\OneOffGamesPlugin\OneOffGamesPlugin.fsproj" />
   </ItemGroup>
   <Import Project="..\..\.paket\Paket.Restore.targets" />
 </Project>

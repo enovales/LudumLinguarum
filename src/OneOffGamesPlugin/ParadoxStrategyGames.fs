@@ -254,7 +254,7 @@ let ExtractCrusaderKings2(path: string) =
             "z_proofreading_temp"
             "z_notranslate"
         |]
-    let isFileBlacklisted s = fileBlacklist |> Array.contains(Path.GetFileNameWithoutExtension(s))
+    let isFileBlacklisted(s: string) = fileBlacklist |> Array.contains(Path.GetFileNameWithoutExtension(s))
 
     let filesToProcess = 
         Directory.GetFiles(Path.Combine(path, "localisation"), "*.csv")

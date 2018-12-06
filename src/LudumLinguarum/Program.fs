@@ -560,7 +560,10 @@ let main argv =
     
     // Set output encoding, and import codepages that are not included by default with netcore.
     Console.OutputEncoding <- Encoding.UTF8
+
+#if NETCOREAPP2_1
     Encoding.RegisterProvider(CodePagesEncodingProvider.Instance)
+#endif
 
     let otw = 
         match results.TryGetResult(Log_File) with

@@ -14,6 +14,7 @@ open System.Text
 open System.Text.RegularExpressions
 open System.Xml.Linq
 open IniParser.Model.Configuration
+open IniParser.Parser
 
 (***************************************************************************)
 (************************** Skulls of the Shogun ***************************)
@@ -716,13 +717,11 @@ let ExtractTheEscapists(path: string) =
                 |> Array.skipWhile(fun line -> not(line.StartsWith("[")))
             let fileContents = String.Join(Environment.NewLine, fileLines)
                 
-            let parser = new StreamIniDataParser()
-            parser.Parser.Configuration.AllowDuplicateKeys <- true
-            parser.Parser.Configuration.SkipInvalidLines <- true
+            let parser = new IniDataParser()
+            parser.Configuration.AllowDuplicateKeys <- true
+            parser.Configuration.SkipInvalidLines <- true
 
-            use memoryStream = new MemoryStream(Encoding.UTF8.GetBytes(fileContents))
-            use stream = new StreamReader(memoryStream)
-            let iniData = parser.ReadData(stream)
+            let iniData = parser.Parse(fileContents)
 
             iniData.Sections
             |> Seq.collect (fun section -> cardsForSection(section.SectionName, section.Keys))
