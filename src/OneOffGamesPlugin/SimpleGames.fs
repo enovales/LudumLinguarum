@@ -2,6 +2,8 @@
 
 open CsvTools
 open FsGettextUtils.MoFile
+open IniParser
+open IniParser.Model
 open LLDatabase
 open LLUtils
 open SharpCompress.Archives.Rar
@@ -11,6 +13,8 @@ open System.IO
 open System.Text
 open System.Text.RegularExpressions
 open System.Xml.Linq
+open IniParser.Model.Configuration
+open IniParser.Parser
 
 (***************************************************************************)
 (************************** Skulls of the Shogun ***************************)
@@ -676,3 +680,80 @@ let ExtractPrisonArchitect(path: string) =
     |> Map.ofArray
 
   extractIntroversionGame(path, "main.dat", languageMappings)
+
+(***************************************************************************)
+(****************************** The Escapists ******************************)
+(***************************************************************************)
+let ExtractTheEscapists(path: string) = 
+    let languageMap = 
+        [| ("eng", "en"); ("fre", "fr"); ("ger", "de"); ("ita", "it"); ("pol", "pl"); ("rus", "ru"); ("spa", "es") |]
+
+    let resourcesToLessons = 
+        [|
+            (FixPathSeps @"Data\data_{0}.dat", { LessonRecord.ID = 0; Name = "Game Data" })
+            (FixPathSeps @"Data\items_{0}.dat", { LessonRecord.ID = 1; Name = "Items" })
+            (FixPathSeps @"Data\speech_{0}.dat", { LessonRecord.ID = 2; Name = "Speech" })
+            (FixPathSeps @"Editor\data\{0}.dat", { LessonRecord.ID = 3; Name = "Editor" })
+        |]
+
+    let cardsForResource(languagePath: string, language: string)(resourcePathAndLesson: string * LessonRecord) = 
+        let (resourcePath, lesson) = resourcePathAndLesson
+        let filePath = Path.Combine(path, String.Format(resourcePath, languagePath))
+
+        // Filter out the numeric value prefix for 'Craft' keys in the items file.
+        let itemCraftMap(key: KeyData) = 
+            if (lesson.Name = "Items") && (key.KeyName = "Craft") && (key.Value.Contains("_")) then
+                key.Value <- new String(key.Value.ToCharArray() |> Array.skipWhile(fun c -> c <> '_') |> Array.skip(1))
+                key
+            else
+                key
+
+        let cardsForSection(sectionName: string, keys: KeyDataCollection) = 
+            keys
+            |> Seq.map itemCraftMap
+            |> Seq.map (fun key -> (key.KeyName, key.Value))
+            |> Array.ofSeq
+            |> Map.ofArray
+            |> AssemblyResourceTools.createCardRecordForStrings(lesson.ID, sectionName, language, "masculine")
+
+        // We only want the 'Name' and 'Craft' entries out of the items file.
+        let filterItemLines(line: string) = 
+            (lesson.Name <> "Items") || line.StartsWith("[") || line.StartsWith("Name") || line.StartsWith("Craft")
+
+        try
+            let fileLines = 
+                File.ReadAllLines(filePath, Encoding.GetEncoding(1252))
+                |> Array.map(fun line -> line.Trim())
+                |> Array.filter(fun line -> not(String.IsNullOrWhiteSpace(line)))
+                |> Array.filter(fun line -> not(line.StartsWith("count=")))
+                |> Array.filter(fun line -> not(line.StartsWith("---") && line.Contains("DLC")))
+                |> Array.skipWhile(fun line -> not(line.StartsWith("[")))
+                |> Array.filter filterItemLines
+            let fileContents = String.Join(Environment.NewLine, fileLines)
+                
+            let parser = new IniDataParser()
+            parser.Configuration.AllowDuplicateKeys <- true
+            parser.Configuration.SkipInvalidLines <- true
+
+            let iniData = parser.Parse(fileContents)
+
+            iniData.Sections
+            |> Seq.collect (fun section -> cardsForSection(section.SectionName, section.Keys))
+            |> Array.ofSeq
+        with
+            | ex -> [||]
+
+    let cardsForLanguage languagePathAndLanguage = 
+        let (languagePath, language) = languagePathAndLanguage
+
+        resourcesToLessons
+        |> Array.collect(cardsForResource(languagePath, language))
+
+    let cards = 
+        languageMap
+        |> Array.collect cardsForLanguage
+
+    {
+        LudumLinguarumPlugins.ExtractedContent.lessons = resourcesToLessons |> Array.map snd
+        LudumLinguarumPlugins.ExtractedContent.cards = cards
+    }

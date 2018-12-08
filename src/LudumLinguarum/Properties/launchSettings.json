@@ -2,7 +2,7 @@
   "profiles": {
     "LudumLinguarum": {
       "commandName": "Project",
-      "commandLineArgs": "import --game=\"Jet Set Radio\" --game-dir=\"C:\\Program Files (x86)\\Steam\\steamapps\\common\\Jet Set Radio\""
+      "commandLineArgs": "import --game=\"The Escapists\" --game-dir=\"E:\\Users\\enova\\SteamLibrary\\steamapps\\common\\The Escapists\""
     }
   }
 }

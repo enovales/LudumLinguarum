@@ -1,7 +1,7 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net471</TargetFramework>
+    <TargetFrameworks>net471;netcoreapp2.1</TargetFrameworks>
     <RootNamespace>LudumLinguarum.Tests</RootNamespace>
     <AssemblyName>LudumLinguarum.Tests</AssemblyName>
     <Name>LudumLinguarum.Tests</Name>
@@ -23,7 +23,7 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\LudumLinguarum\LudumLinguarum.fsproj"></ProjectReference>
+    <ProjectReference Include="..\..\src\LudumLinguarumLib\LudumLinguarumLib.fsproj" />
   </ItemGroup>
   <Import Project="..\..\.paket\Paket.Restore.targets" />
 </Project>
