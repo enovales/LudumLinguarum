@@ -700,12 +700,25 @@ let ExtractTheEscapists(path: string) =
         let (resourcePath, lesson) = resourcePathAndLesson
         let filePath = Path.Combine(path, String.Format(resourcePath, languagePath))
 
+        // Filter out the numeric value prefix for 'Craft' keys in the items file.
+        let itemCraftMap(key: KeyData) = 
+            if (lesson.Name = "Items") && (key.KeyName = "Craft") && (key.Value.Contains("_")) then
+                key.Value <- new String(key.Value.ToCharArray() |> Array.skipWhile(fun c -> c <> '_') |> Array.skip(1))
+                key
+            else
+                key
+
         let cardsForSection(sectionName: string, keys: KeyDataCollection) = 
             keys
+            |> Seq.map itemCraftMap
             |> Seq.map (fun key -> (key.KeyName, key.Value))
             |> Array.ofSeq
             |> Map.ofArray
-            |> AssemblyResourceTools.createCardRecordForStrings(lesson.ID, "", language, "masculine")
+            |> AssemblyResourceTools.createCardRecordForStrings(lesson.ID, sectionName, language, "masculine")
+
+        // We only want the 'Name' and 'Craft' entries out of the items file.
+        let filterItemLines(line: string) = 
+            (lesson.Name <> "Items") || line.StartsWith("[") || line.StartsWith("Name") || line.StartsWith("Craft")
 
         try
             let fileLines = 
@@ -715,6 +728,7 @@ let ExtractTheEscapists(path: string) =
                 |> Array.filter(fun line -> not(line.StartsWith("count=")))
                 |> Array.filter(fun line -> not(line.StartsWith("---") && line.Contains("DLC")))
                 |> Array.skipWhile(fun line -> not(line.StartsWith("[")))
+                |> Array.filter filterItemLines
             let fileContents = String.Join(Environment.NewLine, fileLines)
                 
             let parser = new IniDataParser()
@@ -728,8 +742,6 @@ let ExtractTheEscapists(path: string) =
             |> Array.ofSeq
         with
             | ex -> [||]
-
-        
 
     let cardsForLanguage languagePathAndLanguage = 
         let (languagePath, language) = languagePathAndLanguage
