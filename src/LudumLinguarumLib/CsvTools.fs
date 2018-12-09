@@ -11,3 +11,9 @@ let extractFieldsForLine(delimiter: string)(line: string): string array =
     | null -> [||]
     | a -> a
 
+let extractCsv<'T>(delimiter: string)(contents: string): 'T array = 
+    use sr = new StringReader(contents)
+    let parser = new CsvHelper.CsvReader(sr)
+    parser.Configuration.Delimiter <- delimiter
+
+    parser.GetRecords<'T>() |> Array.ofSeq

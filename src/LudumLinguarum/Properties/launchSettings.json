@@ -2,7 +2,7 @@
   "profiles": {
     "LudumLinguarum": {
       "commandName": "Project",
-      "commandLineArgs": "import --game=\"The Escapists\" --game-dir=\"E:\\Users\\enova\\SteamLibrary\\steamapps\\common\\The Escapists\""
+      "commandLineArgs": "import --game=\"Super Meat Boy\" --game-dir=\"E:\\Users\\enova\\SteamLibrary\\steamapps\\common\\Super Meat Boy\""
     }
   }
 }

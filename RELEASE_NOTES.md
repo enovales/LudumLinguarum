@@ -1,6 +1,7 @@
 #### 1.1.1 December 7 2018
 * Added support for:
-	* [The Escapists](https://store.steampowered.com/app/298630/) \[en, de, es, fr, it, pl, ru\]
+	* [Super Meat Boy](https://store.steampowered.com/app/40800/) \[de, en, es, fr, it, ja, kr, pl, pt, ru, zh-CN, zh-TW\]
+	* [The Escapists](https://store.steampowered.com/app/298630/) \[de, en, es, fr, it, pl, ru\]
 
 #### 1.1.0 November 29 2018
 * Added support for exporting for use with SuperMemo. The text files are tab-delimited, and split into files of 99 entries each, to work with SuperMemo's importer tool.

@@ -757,3 +757,63 @@ let ExtractTheEscapists(path: string) =
         LudumLinguarumPlugins.ExtractedContent.lessons = resourcesToLessons |> Array.map snd
         LudumLinguarumPlugins.ExtractedContent.cards = cards
     }
+
+(***************************************************************************)
+(***************************** Super Meat Boy ******************************)
+(***************************************************************************)
+type MeatBoyStrings() = 
+    member val ``ref`` = "" with get, set
+    member val English = "" with get, set
+    member val Japanese = "" with get, set
+    member val German = "" with get, set
+    member val French = "" with get, set
+    member val Spanish = "" with get, set
+    member val Italian = "" with get, set
+    member val Korean = "" with get, set
+    member val Tchinese = "" with get, set
+    member val Portuguese = "" with get, set
+    member val Schinese = "" with get, set
+    member val Polish = "" with get, set
+    member val Russian = "" with get, set
+
+let ExtractSuperMeatBoy(path: string) = 
+    let cardForLanguage(key: string, text: string, language: string) = 
+        {
+            CardRecord.ID = 0
+            LessonID = 0
+            Text = text
+            Gender = "masculine"
+            Key = key
+            GenderlessKey = key
+            KeyHash = 0
+            GenderlessKeyHash = 0
+            SoundResource = ""
+            LanguageTag = language
+            Reversible = true
+        }
+
+    let cardsForMBS(mbs: MeatBoyStrings) = 
+        [|
+            cardForLanguage(mbs.``ref``, mbs.English, "en")
+            cardForLanguage(mbs.``ref``, mbs.Japanese, "ja")
+            cardForLanguage(mbs.``ref``, mbs.German, "de")
+            cardForLanguage(mbs.``ref``, mbs.French, "fr")
+            cardForLanguage(mbs.``ref``, mbs.Spanish, "es")
+            cardForLanguage(mbs.``ref``, mbs.Italian, "it")
+            cardForLanguage(mbs.``ref``, mbs.Korean, "kr")
+            cardForLanguage(mbs.``ref``, mbs.Tchinese, "zh-TW")
+            cardForLanguage(mbs.``ref``, mbs.Portuguese, "pt")
+            cardForLanguage(mbs.``ref``, mbs.Schinese, "zh-CN")
+            cardForLanguage(mbs.``ref``, mbs.Polish, "pl")
+            cardForLanguage(mbs.``ref``, mbs.Russian, "ru")
+        |]
+
+    let cards = 
+        File.ReadAllText(Path.Combine(path, @"locdb.txt"))
+        |> CsvTools.extractCsv<MeatBoyStrings>("\t")
+        |> Array.collect cardsForMBS
+
+    {
+        LudumLinguarumPlugins.ExtractedContent.lessons = [| { LessonRecord.ID = 0; Name = "Game Text" } |]
+        LudumLinguarumPlugins.ExtractedContent.cards = cards
+    }
