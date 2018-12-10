@@ -88,7 +88,7 @@ random sampling) to be dumped to a tab-separated text file.
 #### 0.10.0 - June 30 2016
 * Added support for:
   * [Age of Empires II HD](http://store.steampowered.com/app/221380/) \[de, en, es, fr, it, ja, ko, nl, pt, ru, zh\]
-  * [Space Channel 5: Part 2](http://store.steampowered.com/app/71260/) \[en, jp, de, es, fr, it\]
+  * [Space Channel 5: Part 2](http://store.steampowered.com/app/71260/) \[en, ja, de, es, fr, it\]
   * [Puzzle Kingdoms](http://store.steampowered.com/app/23700/) \[de, en, es, fr, it\]
   * [Sid Meier's Civilization IV](http://store.steampowered.com/app/3900/) \[de, en, es, fr, it\]
   * [Sid Meier's Civilization IV: Warlords](http://store.steampowered.com/app/3990/) \[de, en, es, fr, it\]

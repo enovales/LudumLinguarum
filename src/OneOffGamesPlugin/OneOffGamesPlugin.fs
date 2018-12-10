@@ -29,7 +29,7 @@ type OneOffGamesPlugin() =
             ({ GameMetadata.name = "Hatoful Boyfriend: Holiday Star"; supportedLanguages = [| "de"; "en"; "fr"; "ja" |] }, SimpleGames.ExtractHatofulBoyfriendHolidayStar)
             ({ GameMetadata.name = "Hell Yeah!"; supportedLanguages = [| "en"; "de"; "es"; "fr"; "it"; "ja" |] }, SimpleGames.ExtractHellYeah)
             ({ GameMetadata.name = "Madballs: Babo Invasion"; supportedLanguages = [| "de"; "en"; "es"; "fr"; "it"; "ja"; "ko"; "pt"; "ru"; "zh" |] }, MadballsBaboInvasion.ExtractMadballsBaboInvasion)
-            ({ GameMetadata.name = "Space Channel 5: Part 2"; supportedLanguages = [| "en"; "de"; "es"; "fr"; "it"; "jp" |] }, SpaceChannel5.ExtractSpaceChannel5Part2)
+            ({ GameMetadata.name = "Space Channel 5: Part 2"; supportedLanguages = [| "en"; "de"; "es"; "fr"; "it"; "ja" |] }, SpaceChannel5.ExtractSpaceChannel5Part2)
             ({ GameMetadata.name = "Sid Meier's Civilization IV"; supportedLanguages = [| "de"; "en"; "es"; "fr"; "it" |] }, CivilizationGames.ExtractCiv4)
             ({ GameMetadata.name = "Sid Meier's Civilization IV: Warlords"; supportedLanguages = [| "de"; "en"; "es"; "fr"; "it" |] }, CivilizationGames.ExtractCiv4Warlords)
             ({ GameMetadata.name = "Sid Meier's Civilization IV: Beyond the Sword"; supportedLanguages = [| "de"; "en"; "es"; "fr"; "it" |] }, CivilizationGames.ExtractCiv4BeyondTheSword)
@@ -66,7 +66,7 @@ type OneOffGamesPlugin() =
             ({ GameMetadata.name = "Prison Architect"; supportedLanguages = [| "bg"; "cs"; "da"; "de"; "el"; "en"; "es"; "fi"; "fr"; "hu"; "it"; "ja"; "ko"; "nl"; "no"; "pl"; "pt-PT"; "pt-BR"; "ro"; "ru"; "sv"; "th"; "tr"; "uk"; "zh-CN"; "zh-TW" |] }, SimpleGames.ExtractPrisonArchitect)
             ({ GameMetadata.name = "The Escapists"; supportedLanguages = [| "de"; "en"; "es"; "fr"; "it"; "pl"; "ru" |]}, SimpleGames.ExtractTheEscapists)
             ({ GameMetadata.name = "Super Meat Boy"; supportedLanguages = [| "de"; "en"; "es"; "fr"; "it"; "ja"; "kr"; "pl"; "pt"; "ru"; "zh-CN"; "zh-TW" |]}, SimpleGames.ExtractSuperMeatBoy)
-            ({ GameMetadata.name = "Mega Man Legacy Collection"; supportedLanguages = [| "de"; "en"; "es"; "fr"; "it"; "ja"; "pt-br"; "ru" |]}, SimpleGames.ExtractMegaManLegacyCollection)
+            ({ GameMetadata.name = "Mega Man Legacy Collection"; supportedLanguages = [| "de"; "en"; "es"; "fr"; "it"; "ja"; "pt-BR"; "ru" |]}, SimpleGames.ExtractMegaManLegacyCollection)
         |] |> Map.ofArray
 
     interface IPlugin with
