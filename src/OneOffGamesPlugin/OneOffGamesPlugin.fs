@@ -66,6 +66,7 @@ type OneOffGamesPlugin() =
             ({ GameMetadata.name = "Prison Architect"; supportedLanguages = [| "bg"; "cs"; "da"; "de"; "el"; "en"; "es"; "fi"; "fr"; "hu"; "it"; "ja"; "ko"; "nl"; "no"; "pl"; "pt-PT"; "pt-BR"; "ro"; "ru"; "sv"; "th"; "tr"; "uk"; "zh-CN"; "zh-TW" |] }, SimpleGames.ExtractPrisonArchitect)
             ({ GameMetadata.name = "The Escapists"; supportedLanguages = [| "de"; "en"; "es"; "fr"; "it"; "pl"; "ru" |]}, SimpleGames.ExtractTheEscapists)
             ({ GameMetadata.name = "Super Meat Boy"; supportedLanguages = [| "de"; "en"; "es"; "fr"; "it"; "ja"; "kr"; "pl"; "pt"; "ru"; "zh-CN"; "zh-TW" |]}, SimpleGames.ExtractSuperMeatBoy)
+            ({ GameMetadata.name = "Mega Man Legacy Collection"; supportedLanguages = [| "de"; "en"; "es"; "fr"; "it"; "ja"; "pt-br"; "ru" |]}, SimpleGames.ExtractMegaManLegacyCollection)
         |] |> Map.ofArray
 
     interface IPlugin with

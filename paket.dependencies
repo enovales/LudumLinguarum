@@ -30,6 +30,7 @@ nuget sqlite
 nuget SQLite.Native
 nuget YamlDotNet
 nuget sharpcompress
+nuget DotNetZip
 nuget PInvoke.Win32
 nuget LANGIDMappings
 nuget FsGettextUtils

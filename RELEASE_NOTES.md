@@ -1,5 +1,6 @@
 #### 1.1.1 December 7 2018
 * Added support for:
+	* [Mega Man Legacy Collection](https://store.steampowered.com/app/363440/) \[de, en, es, fr, it, ja, pt-br, ru\]
 	* [Super Meat Boy](https://store.steampowered.com/app/40800/) \[de, en, es, fr, it, ja, kr, pl, pt, ru, zh-CN, zh-TW\]
 	* [The Escapists](https://store.steampowered.com/app/298630/) \[de, en, es, fr, it, pl, ru\]
 

@@ -3,6 +3,7 @@ FsGettextUtils
 LANGIDMappings
 Mono.Cecil
 sharpcompress
+DotNetZip
 YamlDotNet
 
 File: AFS.fs
