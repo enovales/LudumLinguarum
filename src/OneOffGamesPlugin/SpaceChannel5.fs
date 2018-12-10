@@ -7,7 +7,7 @@ open System.Text
 
 let private suffixesAndLanguages = 
     [|
-        ("", "jp", Encoding.GetEncoding("shift_jis"))
+        ("", "ja", Encoding.GetEncoding("shift_jis"))
         ("_e", "en", Encoding.GetEncoding("Windows-1252"))
         ("_f", "fr", Encoding.GetEncoding("Windows-1252"))
         ("_g", "de", Encoding.GetEncoding("Windows-1252"))

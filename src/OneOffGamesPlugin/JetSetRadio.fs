@@ -433,7 +433,7 @@ type JetSetRadio =
                         | LanguageType.English2 -> None
                         | LanguageType.French -> Some("fr")
                         | LanguageType.German -> Some("de")
-                        | LanguageType.Japanese -> Some("jp")
+                        | LanguageType.Japanese -> Some("ja")
                         | LanguageType.Japanese2 -> None
                         | LanguageType.Spanish -> Some("es")
                         | LanguageType.Unknown -> None

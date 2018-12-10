@@ -25,7 +25,14 @@ let private sanitizePipeline =
 /////////////////////////////////////////////////////////////////////////////
 // Age of Empires II HD
 
+// language directories need to be remapped to actual language codes
 let private aoe2HDLanguages = [| "br"; "de"; "en"; "es"; "fr"; "it"; "jp"; "ko"; "nl"; "ru"; "zh" |]
+let private aoe2HDLanguagesToIso = 
+    [|
+        ("br", "br"); ("de", "de"); ("en", "en"); ("es", "es"); ("fr", "fr"); ("it", "it")
+        ("jp", "ja"); ("ko", "ko"); ("nl", "nl"); ("ru", "ru"); ("zh", "zh-CN")
+    |]
+    |> Map.ofArray
 
 let internal createLesson(i: int)(title: string): LessonRecord = 
     {
@@ -49,7 +56,7 @@ let private getHistoryLessonName(fn: string) =
 let private extractAOE2HDHistoryFiles(path: string) = 
     let languagesAndPathsByLessonNames = 
         aoe2HDLanguages
-        |> Array.collect (fun l -> Directory.GetFiles(Path.Combine(path, FixPathSeps(@"resources\" + l + @"\strings\history"))) |> Array.map (fun p -> (l, p)))
+        |> Array.collect (fun l -> Directory.GetFiles(Path.Combine(path, FixPathSeps(@"resources\" + l + @"\strings\history"))) |> Array.map (fun p -> (aoe2HDLanguagesToIso.[l], p)))
         |> Array.groupBy (fun (_, p) -> getHistoryLessonName(p))
 
     let (lessonNames, languagesAndPaths) = languagesAndPathsByLessonNames |> Array.unzip
@@ -90,7 +97,7 @@ let private extractAOE2HDCampaignStrings(path: string) =
         lines
         |> Array.collect kvPairForLine
         |> Map.ofArray
-        |> AssemblyResourceTools.createCardRecordForStrings(lesson.ID, "", lang, "masculine")
+        |> AssemblyResourceTools.createCardRecordForStrings(lesson.ID, "", aoe2HDLanguagesToIso.[lang], "masculine")
 
 
     [| (lesson, aoe2HDLanguages |> Array.collect cardsForLanguage) |]

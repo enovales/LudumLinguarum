@@ -822,7 +822,7 @@ let ExtractSuperMeatBoy(path: string) =
 (*********************** Mega Man Legacy Collection ************************)
 (***************************************************************************)
 let ExtractMegaManLegacyCollection(path: string) = 
-    let languages = [| "de"; "en"; "es"; "fr"; "it"; "ja"; "pt-br"; "ru" |]
+    let languages = [| "de"; "en"; "es"; "fr"; "it"; "ja"; "pt-BR"; "ru" |]
 
     use archive = new Ionic.Zip.ZipFile(Path.Combine(path, "data.pie"))
     archive.set_Password("P091uWEdwe4lI6StDNMNlkodPGvJ38bL3HW6t3BCMYdFi83FXKu7k0NsHP8caDKS")
@@ -849,8 +849,8 @@ let ExtractMegaManLegacyCollection(path: string) =
             let decodedString = Encoding.UTF8.GetString(ba, pos, endString - pos)
             Some((decodedString, endPos + 1))
 
-    let cardsForLanguage language = 
-        let stringsFilePath = Path.Combine(tempPath, FixPathSeps(@"locale\Strings-" + language + ".bin"))
+    let cardsForLanguage(language: string) = 
+        let stringsFilePath = Path.Combine(tempPath, FixPathSeps(@"locale\Strings-" + language.ToLowerInvariant() + ".bin"))
         let stringsFileBytes = File.ReadAllBytes(stringsFilePath)
 
         // Read null-terminated strings until the end of the file
