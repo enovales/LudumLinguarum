@@ -2,7 +2,7 @@
   "profiles": {
     "LudumLinguarum": {
       "commandName": "Project",
-      "commandLineArgs": "import --game=\"Super Meat Boy\" --game-dir=\"E:\\Users\\enova\\SteamLibrary\\steamapps\\common\\Super Meat Boy\""
+      "commandLineArgs": "import --game=\"Mega Man Legacy Collection\" --game-dir=\"E:\\Users\\enova\\SteamLibrary\\steamapps\\common\\Suzy\""
     }
   }
 }

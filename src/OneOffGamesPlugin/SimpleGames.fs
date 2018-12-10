@@ -817,3 +817,59 @@ let ExtractSuperMeatBoy(path: string) =
         LudumLinguarumPlugins.ExtractedContent.lessons = [| { LessonRecord.ID = 0; Name = "Game Text" } |]
         LudumLinguarumPlugins.ExtractedContent.cards = cards
     }
+
+(***************************************************************************)
+(*********************** Mega Man Legacy Collection ************************)
+(***************************************************************************)
+let ExtractMegaManLegacyCollection(path: string) = 
+    let languages = [| "de"; "en"; "es"; "fr"; "it"; "ja"; "pt-br"; "ru" |]
+
+    use archive = new Ionic.Zip.ZipFile(Path.Combine(path, "data.pie"))
+    archive.set_Password("P091uWEdwe4lI6StDNMNlkodPGvJ38bL3HW6t3BCMYdFi83FXKu7k0NsHP8caDKS")
+    archive.Encryption <- Ionic.Zip.EncryptionAlgorithm.WinZipAes256
+
+    // Extract game files to a temporary path, but try cleaning it first.
+    let tempPath = Path.Combine(Path.GetTempPath(), @"LudumLinguarumMMLC")
+    try Directory.Delete(tempPath) with | _ -> ()
+
+    let readNextStringUnfold(ba: byte array)(pos: int): (string * int) option = 
+        if (pos >= ba.Length) then
+            None
+        else
+            let mutable endPos = pos + 1
+            while (endPos < ba.Length) && (ba.[endPos] <> 0uy) do
+                endPos <- endPos + 1
+
+            let endString = 
+                if (endPos >= ba.Length) then
+                    endPos - 1
+                else
+                    endPos
+
+            let decodedString = Encoding.UTF8.GetString(ba, pos, endString - pos)
+            Some((decodedString, endPos + 1))
+
+    let cardsForLanguage language = 
+        let stringsFilePath = Path.Combine(tempPath, FixPathSeps(@"locale\Strings-" + language + ".bin"))
+        let stringsFileBytes = File.ReadAllBytes(stringsFilePath)
+
+        // Read null-terminated strings until the end of the file
+        Seq.unfold (readNextStringUnfold(stringsFileBytes)) 0x1FF4
+        |> Array.ofSeq
+        |> Array.mapi(fun i s -> (i.ToString(), s))
+        |> Map.ofArray
+        |> AssemblyResourceTools.createCardRecordForStrings(0, "", language, "masculine")
+
+    let cardsPerLanguage = 
+        try
+            archive.ExtractSelectedEntries("*.*", "locale", tempPath)
+            languages |> Array.map cardsForLanguage
+        with
+        | ex -> 
+            try Directory.Delete(tempPath, true) with | _ -> ()
+            [||]
+
+    {
+        LudumLinguarumPlugins.ExtractedContent.lessons = [| { LessonRecord.ID = 0; Name = "Game Text" } |]
+        LudumLinguarumPlugins.ExtractedContent.cards = cardsPerLanguage |> Array.collect id
+    }

@@ -38,6 +38,7 @@ NUGET
       Microsoft.CSharp (>= 4.4) - restriction: || (&& (== net471) (< net45)) (== netcoreapp2.1)
       System.Reflection.TypeExtensions (>= 4.4) - restriction: || (&& (== net471) (< net45)) (== netcoreapp2.1)
       System.ValueTuple (>= 4.4) - restriction: || (== net471) (&& (== netcoreapp2.1) (>= net45))
+    DotNetZip (1.12)
     Expecto (8.6)
       Argu (>= 5.1)
       Mono.Cecil (>= 0.10)
@@ -838,7 +839,7 @@ NUGET
       System.ValueTuple (>= 4.5 < 5.0)
 GITHUB
   remote: fsharp/FAKE
-    modules/Octokit/Octokit.fsx (3101b20adca44d2ce08e7e3345ee7d45ac159fe4)
+    modules/Octokit/Octokit.fsx (457ae4cfb9bb4a39f0eb1352140584d7d04ebe5d)
       Octokit (>= 0.20)
   remote: enovales/SegaAFSTools
     src/SegaAFSTools/AFS.fs (745ab3beae6770558d8caa4f106a751924adfb1c)
