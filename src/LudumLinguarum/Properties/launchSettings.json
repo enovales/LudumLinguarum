@@ -2,7 +2,7 @@
   "profiles": {
     "LudumLinguarum": {
       "commandName": "Project",
-      "commandLineArgs": "import --game=\"Age of Empires II: HD Edition\" --game-dir=\"E:\\Users\\enova\\SteamLibrary\\steamapps\\common\\Age2HD\""
+      "commandLineArgs": "import --game=\"Worms Crazy Golf\" --game-dir=\"E:\\Users\\enova\\SteamLibrary\\steamapps\\common\\WormsGolf2010\""
     }
   }
 }

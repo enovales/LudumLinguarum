@@ -19,7 +19,7 @@
     <Compile Include="JetSetRadio.fs" />
     <Compile Include="SpaceChannel5.fs" />
     <Compile Include="Magicka.fs" />
-    <Compile Include="WormsArmageddon.fs" />
+    <Compile Include="WormsGames.fs" />
     <Compile Include="PuzzleQuestGames.fs" />
     <Compile Include="PillarsOfEternity.fs" />
     <Compile Include="OrcsMustDie.fs" />

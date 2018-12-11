@@ -13,7 +13,7 @@ type LngtChunk =
     size: uint32
   }
   with
-    static member FromReader(rw: ReaderWrapper) = 
+    static member FromReader(rw: EndianReaderWrapper) = 
       {
         LngtChunk.size = rw.ReadUInt32()
       }
@@ -26,7 +26,7 @@ type HshsChunk =
     multiplier: uint32
   }
   with
-    static member FromReader(rw: ReaderWrapper) = 
+    static member FromReader(rw: EndianReaderWrapper) = 
      {
        HshsChunk.size = rw.ReadUInt32()
        buckets = rw.ReadUInt32()
@@ -40,7 +40,7 @@ type HshtChunk =
     HashEntries: (uint32 * uint32) array
   }
   with
-    static member FromReader(rw: ReaderWrapper) = 
+    static member FromReader(rw: EndianReaderWrapper) = 
       let n = rw.ReadUInt32()
 
       {
@@ -54,7 +54,7 @@ type SidaChunk =
     KeyValueOffsets: (uint32 * uint32) array
   }
   with
-    static member FromReader(rw: ReaderWrapper) = 
+    static member FromReader(rw: EndianReaderWrapper) = 
       let chunkSize = rw.ReadUInt32()
       let recordCount = rw.ReadUInt32()
 
@@ -69,7 +69,7 @@ type SidbChunk =
     data: byte array
   }
   with
-    static member FromReader(rw: ReaderWrapper) = 
+    static member FromReader(rw: EndianReaderWrapper) = 
       let size = rw.ReadUInt32()
       {
         SidbChunk.size = size
@@ -82,7 +82,7 @@ type LngbChunk =
     data: byte array
   }
   with
-    static member FromReader(rw: ReaderWrapper) = 
+    static member FromReader(rw: EndianReaderWrapper) = 
       let size = rw.ReadUInt32()
       {
         LngbChunk.size = size
@@ -99,7 +99,7 @@ type LngFile =
     lngb: LngbChunk option
   }
   with
-    static member FromReader(rw: ReaderWrapper) = 
+    static member FromReader(rw: EndianReaderWrapper) = 
       let mutable r = {
           LngFile.lngt = None
           hshs = None
@@ -114,7 +114,7 @@ type LngFile =
 
       r
 
-    member private this.ReadNextChunk(rw: ReaderWrapper) = 
+    member private this.ReadNextChunk(rw: EndianReaderWrapper) = 
       match Encoding.ASCII.GetString(rw.ReadBytes(4)) with
       | "LNGT" ->
         {
@@ -167,7 +167,7 @@ let getStringsForLngFile(lf: LngFile, encoding: Encoding) =
   |> Option.map(fun sida -> sida.KeyValueOffsets |> Array.map stringPairForKVPair |> Map.ofArray)
 
 let internal readStringsFromReader(br: BinaryReader, encoding: Encoding) = 
-    let wrapper = ReaderWrapper(br)
+    let wrapper = BigEndianReaderWrapper(br)
     let lngFile = LngFile.FromReader(wrapper)
     match getStringsForLngFile(lngFile, encoding) with
     | Some(strings) -> strings

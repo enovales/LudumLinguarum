@@ -3,6 +3,7 @@
 	* [Mega Man Legacy Collection](https://store.steampowered.com/app/363440/) \[de, en, es, fr, it, ja, pt-br, ru\]
 	* [Super Meat Boy](https://store.steampowered.com/app/40800/) \[de, en, es, fr, it, ja, kr, pl, pt, ru, zh-CN, zh-TW\]
 	* [The Escapists](https://store.steampowered.com/app/298630/) \[de, en, es, fr, it, pl, ru\]
+	* [Worms Crazy Golf](https://store.steampowered.com/app/70620/) \[cs, de, en-GB, en-US, es, fr, it, pl\]
 
 #### 1.1.0 November 29 2018
 * Added support for exporting for use with SuperMemo. The text files are tab-delimited, and split into files of 99 entries each, to work with SuperMemo's importer tool.

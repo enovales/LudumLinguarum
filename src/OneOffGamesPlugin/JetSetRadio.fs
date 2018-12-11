@@ -362,7 +362,7 @@ type JSRStringsHeader =
         languageCount: uint8;
         stringCount: uint16;
     }
-    static member FromBinaryReader(br: StreamTools.ReaderWrapper) = 
+    static member FromBinaryReader(br: StreamTools.EndianReaderWrapper) = 
         {
             JSRStringsHeader.languageCount = br.ReadByte();
             stringCount = br.ReadUInt16()
@@ -373,7 +373,7 @@ type JSRStringTableEntry =
         offset: uint32;
         substringLengths: uint16 array
     }
-    static member FromBinaryReader(br: StreamTools.ReaderWrapper) = 
+    static member FromBinaryReader(br: StreamTools.EndianReaderWrapper) = 
         let offset = br.ReadUInt32()
         let languageCount = Enum.GetValues(typeof<LanguageType>).Length
 
@@ -389,7 +389,7 @@ type JSRString =
     {
         substrings: string array
     }
-    static member FromBinaryReader(br: StreamTools.ReaderWrapper, ste: JSRStringTableEntry) = 
+    static member FromBinaryReader(br: StreamTools.EndianReaderWrapper, ste: JSRStringTableEntry) = 
         let encoding = new UnicodeEncoding(true, false, false)
         br.Seek(int64 ste.offset) |> ignore
         {
@@ -405,7 +405,7 @@ type JSRStringsBinary(stringsByLanguage: JSRString array) =
     static member FromFile(path: string) = 
         use fs = new MemoryStream(File.ReadAllBytes(path))
         use br = new BinaryReader(fs)
-        let rw = new StreamTools.ReaderWrapper(br)
+        let rw = StreamTools.BigEndianReaderWrapper(br)
 
         // read the header, then each string table entry, followed by all of the strings.
         let header = JSRStringsHeader.FromBinaryReader(rw)

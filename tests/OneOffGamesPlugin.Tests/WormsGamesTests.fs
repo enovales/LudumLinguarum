@@ -1,7 +1,7 @@
 ﻿module WormsArmageddonTests
 
 open Expecto
-open WormsArmageddon
+open WormsGames.Armageddon
 
 let private emptyState = 
   {
@@ -14,7 +14,7 @@ let private emptyState =
 let tests =     
   testList "Worms Armageddon tests" [
     testCase "Calling getAccumulatedString if there is no accumulating key returns an empty list" <|
-      fun () -> Expect.equal [] (WormsArmageddon.getAccumulatedString emptyState) ""
+      fun () -> Expect.equal [] (getAccumulatedString emptyState) ""
 
     testCase "Calling getAccumulatedString returns a tuple of the accumulating key and the reversed accumulated strings" <|
       fun () -> 
@@ -25,7 +25,7 @@ let tests =
                 Complete = []
             }            
         let expected = [("key", "foo bar baz")]
-        Expect.equal expected (WormsArmageddon.getAccumulatedString populated) ""
+        Expect.equal expected (getAccumulatedString populated) ""
 
     testCase "Calling foldStringLines reads one single-line string mapping" <|
       fun () -> 

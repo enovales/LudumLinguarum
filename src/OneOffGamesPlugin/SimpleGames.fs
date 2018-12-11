@@ -832,44 +832,28 @@ let ExtractMegaManLegacyCollection(path: string) =
     let tempPath = Path.Combine(Path.GetTempPath(), @"LudumLinguarumMMLC")
     try Directory.Delete(tempPath) with | _ -> ()
 
-    let readNextStringUnfold(ba: byte array)(pos: int): (string * int) option = 
-        if (pos >= ba.Length) then
-            None
-        else
-            let mutable endPos = pos + 1
-            while (endPos < ba.Length) && (ba.[endPos] <> 0uy) do
-                endPos <- endPos + 1
-
-            let endString = 
-                if (endPos >= ba.Length) then
-                    endPos - 1
-                else
-                    endPos
-
-            let decodedString = Encoding.UTF8.GetString(ba, pos, endString - pos)
-            Some((decodedString, endPos + 1))
-
     let cardsForLanguage(language: string) = 
         let stringsFilePath = Path.Combine(tempPath, FixPathSeps(@"locale\Strings-" + language.ToLowerInvariant() + ".bin"))
         let stringsFileBytes = File.ReadAllBytes(stringsFilePath)
 
         // Read null-terminated strings until the end of the file
-        Seq.unfold (readNextStringUnfold(stringsFileBytes)) 0x1FF4
+        Seq.unfold (readNextStringUnfold(stringsFileBytes, Encoding.UTF8)) 0x1FF4
         |> Array.ofSeq
         |> Array.mapi(fun i s -> (i.ToString(), s))
         |> Map.ofArray
         |> AssemblyResourceTools.createCardRecordForStrings(0, "", language, "masculine")
 
-    let cardsPerLanguage = 
+    let cards = 
         try
-            archive.ExtractSelectedEntries("*.*", "locale", tempPath)
-            languages |> Array.map cardsForLanguage
-        with
-        | ex -> 
+            try
+                archive.ExtractSelectedEntries("*.*", "locale", tempPath)
+                languages |> Array.collect cardsForLanguage
+            with
+            | _ -> [||]
+         finally
             try Directory.Delete(tempPath, true) with | _ -> ()
-            [||]
 
     {
         LudumLinguarumPlugins.ExtractedContent.lessons = [| { LessonRecord.ID = 0; Name = "Game Text" } |]
-        LudumLinguarumPlugins.ExtractedContent.cards = cardsPerLanguage |> Array.collect id
+        LudumLinguarumPlugins.ExtractedContent.cards = cards
     }
