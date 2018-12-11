@@ -12,7 +12,7 @@ open System.Text.RegularExpressions
 /// </summary>
 /// <param name="br"></param>
 let internal readOffsetsFromSimpleBin(br: BinaryReader) = 
-    let rw = new StreamTools.ReaderWrapper(br)
+    let rw = StreamTools.BigEndianReaderWrapper(br)
     let rec readOffsets(prev: uint32 list) = 
         match rw.ReadUInt32() with
         | n when n = 0xFFFFFFFFu -> prev

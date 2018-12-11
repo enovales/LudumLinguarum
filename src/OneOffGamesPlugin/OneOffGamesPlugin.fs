@@ -17,7 +17,7 @@ type OneOffGamesPlugin() =
             ({ GameMetadata.name = "Audiosurf"; supportedLanguages = [| "en"; "ru" |] }, SimpleGames.ExtractAudiosurf)
             ({ GameMetadata.name = "Bastion"; supportedLanguages = [| "de"; "en"; "es"; "fr"; "it" |] }, SimpleGames.ExtractBastion)
             ({ GameMetadata.name = "Magicka"; supportedLanguages = [| "de"; "en"; "es"; "fr"; "hu"; "it"; "pl"; "ru" |] }, Magicka.ExtractMagicka)
-            ({ GameMetadata.name = "Worms Armageddon"; supportedLanguages = [| "de"; "en"; "es"; "fr"; "it"; "nl"; "pt"; "ru"; "sv" |] }, WormsArmageddon.ExtractWormsArmageddon)
+            ({ GameMetadata.name = "Worms Armageddon"; supportedLanguages = [| "de"; "en"; "es"; "fr"; "it"; "nl"; "pt"; "ru"; "sv" |] }, WormsGames.Armageddon.ExtractWormsArmageddon)
             ({ GameMetadata.name = "Puzzle Chronicles"; supportedLanguages = [| "de"; "en"; "en-GB"; "es"; "es-MX"; "fr"; "fr-CA"; "it" |] }, PuzzleQuestGames.ExtractPuzzleChronicles)
             ({ GameMetadata.name = "Puzzle Kingdoms"; supportedLanguages = [| "de"; "en"; "es"; "fr"; "it" |] }, PuzzleQuestGames.ExtractPuzzleKingdoms)
             ({ GameMetadata.name = "Puzzle Quest 2"; supportedLanguages = [| "de"; "en"; "es"; "fr"; "it" |] }, PuzzleQuestGames.ExtractPuzzleQuest2)
@@ -67,6 +67,7 @@ type OneOffGamesPlugin() =
             ({ GameMetadata.name = "The Escapists"; supportedLanguages = [| "de"; "en"; "es"; "fr"; "it"; "pl"; "ru" |]}, SimpleGames.ExtractTheEscapists)
             ({ GameMetadata.name = "Super Meat Boy"; supportedLanguages = [| "de"; "en"; "es"; "fr"; "it"; "ja"; "kr"; "pl"; "pt"; "ru"; "zh-CN"; "zh-TW" |]}, SimpleGames.ExtractSuperMeatBoy)
             ({ GameMetadata.name = "Mega Man Legacy Collection"; supportedLanguages = [| "de"; "en"; "es"; "fr"; "it"; "ja"; "pt-BR"; "ru" |]}, SimpleGames.ExtractMegaManLegacyCollection)
+            ({ GameMetadata.name = "Worms Crazy Golf"; supportedLanguages = [| "cs"; "de"; "en-GB"; "en-US"; "es"; "fr"; "it"; "pl" |]}, WormsGames.CrazyGolf.ExtractWormsCrazyGolf)
         |] |> Map.ofArray
 
     interface IPlugin with
