@@ -67,7 +67,8 @@ type OneOffGamesPlugin() =
             ({ GameMetadata.name = "The Escapists"; supportedLanguages = [| "de"; "en"; "es"; "fr"; "it"; "pl"; "ru" |]}, SimpleGames.ExtractTheEscapists)
             ({ GameMetadata.name = "Super Meat Boy"; supportedLanguages = [| "de"; "en"; "es"; "fr"; "it"; "ja"; "kr"; "pl"; "pt"; "ru"; "zh-CN"; "zh-TW" |]}, SimpleGames.ExtractSuperMeatBoy)
             ({ GameMetadata.name = "Mega Man Legacy Collection"; supportedLanguages = [| "de"; "en"; "es"; "fr"; "it"; "ja"; "pt-BR"; "ru" |]}, SimpleGames.ExtractMegaManLegacyCollection)
-            ({ GameMetadata.name = "Worms Crazy Golf"; supportedLanguages = [| "cs"; "de"; "en-GB"; "en-US"; "es"; "fr"; "it"; "pl" |]}, WormsGames.CrazyGolf.ExtractWormsCrazyGolf)
+            ({ GameMetadata.name = "Worms Crazy Golf"; supportedLanguages = [| "cs"; "de"; "en-GB"; "en-US"; "es"; "fr"; "it"; "pl" |]}, WormsGames.Common.ExtractWormsCrazyGolf)
+            ({ GameMetadata.name = "Worms W.M.D"; supportedLanguages = [| "cs"; "de"; "en-GB"; "en-US"; "es"; "fr"; "it"; "pl"; "pt-BR"; "ru"; "zh-CN" |]}, WormsGames.Common.ExtractWormsWMD)
         |] |> Map.ofArray
 
     interface IPlugin with
