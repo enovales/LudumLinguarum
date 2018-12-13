@@ -119,7 +119,7 @@ module Armageddon =
             LudumLinguarumPlugins.ExtractedContent.cards = cards
         }
 
-module CrazyGolf = 
+module Common = 
     type Header =
         {
             magic: uint32
@@ -152,6 +152,35 @@ module CrazyGolf =
                     position = br.ReadUInt32()
                 }
 
+    let cardsForLanguage(basePath: string)(fileName: string, language: string) = 
+        let stringsFilePath = Path.Combine(FixPathSeps(basePath), FixPathSeps(fileName))
+        let stringsFileBytes = File.ReadAllBytes(stringsFilePath)
+        use stringsMemoryStream = new MemoryStream(stringsFileBytes)
+        use stringsBinaryReader = new BinaryReader(stringsMemoryStream)
+        let endianReader = StreamTools.LittleEndianReaderWrapper(stringsBinaryReader)
+
+        // Read the header, then the string table.
+        let header = Header.Read(endianReader)
+        let stringTableEntries = Array.init(int header.numEntries)(fun _ -> StringEntry.Read(endianReader))
+        let stripNulls(i: int, s: string) = 
+            (i, s.Replace("\0", ""))
+                
+        let filterOutEmpties(_: int, s: string) = 
+            let nonZeroLength = (s.Length > 0)
+            let notNullOrWhiteSpace = not(String.IsNullOrWhiteSpace(s))
+            nonZeroLength && notNullOrWhiteSpace
+
+        // For each entry, move to its position, and then read the null-terminated string.
+        stringTableEntries
+        |> Array.mapi(fun i e -> (i, e))
+        |> Array.collect(fun (i: int, entry: StringEntry) -> readNullTerminatedString(stringsFileBytes, Encoding.UTF8)(int entry.position + 8) |> Option.map (fun entry -> (i, entry)) |> Option.toArray)
+        |> Array.map stripNulls
+        |> Array.filter filterOutEmpties
+        |> Array.map(fun (i, s) -> (i.ToString(), s.Replace(@"\n", "")))
+        |> Map.ofArray
+        |> AssemblyResourceTools.createCardRecordForStrings(0, "", language, "masculine")
+
+
     let ExtractWormsCrazyGolf(path: string) = 
         // Extract game files to a temporary path, but try cleaning it first.
         let tempPath = Path.Combine(Path.GetTempPath(), @"LudumLinguarumWCG")
@@ -160,60 +189,58 @@ module CrazyGolf =
         use archive = new Ionic.Zip.ZipFile(Path.Combine(path, "zip.zip"))
         let languagesAndFileNames = 
             [|
-                ("AllTextCze.bin", "cs")
-                //("AllTextDan.bin", "da")          // empty localization file
-                ("AllTextEng.bin", "en-GB")
-                //("AllTextFin.bin", "fi")          // empty localization file
-                ("AllTextFra.bin", "fr")
-                ("AllTextGer.bin", "de")
-                ("AllTextIta.bin", "it")
-                //("AllTextJap.bin", "ja")          // empty localization file
-                //("AllTextNed.bin", "nl")          // empty localization file
-                //("AllTextNor.bin", "no")          // empty localization file
-                ("AllTextPol.bin", "pl")
-                //("AllTextRus.bin", "ru")          // empty localization file
-                ("AllTextSpa.bin", "es")
-                //("AllTextSwe.bin", "sv")          // empty localization file
-                ("AllTextUsa.bin", "en-US")
+                (@"language\AllTextCze.bin", "cs")
+                //(@"language\AllTextDan.bin", "da")          // empty localization file
+                (@"language\AllTextEng.bin", "en-GB")
+                //(@"language\AllTextFin.bin", "fi")          // empty localization file
+                (@"language\AllTextFra.bin", "fr")
+                (@"language\AllTextGer.bin", "de")
+                (@"language\AllTextIta.bin", "it")
+                //(@"language\AllTextJap.bin", "ja")          // empty localization file
+                //(@"language\AllTextNed.bin", "nl")          // empty localization file
+                //(@"language\AllTextNor.bin", "no")          // empty localization file
+                (@"language\AllTextPol.bin", "pl")
+                //(@"language\AllTextRus.bin", "ru")          // empty localization file
+                (@"language\AllTextSpa.bin", "es")
+                //(@"language\AllTextSwe.bin", "sv")          // empty localization file
+                (@"language\AllTextUsa.bin", "en-US")
             |]
-
-        let cardsForLanguage(fileName: string, language: string) = 
-            let stringsFilePath = Path.Combine(tempPath, FixPathSeps(@"language\" + fileName))
-            let stringsFileBytes = File.ReadAllBytes(stringsFilePath)
-            use stringsMemoryStream = new MemoryStream(stringsFileBytes)
-            use stringsBinaryReader = new BinaryReader(stringsMemoryStream)
-            let endianReader = StreamTools.LittleEndianReaderWrapper(stringsBinaryReader)
-
-            // Read the header, then the string table.
-            let header = Header.Read(endianReader)
-            let stringTableEntries = Array.init(int header.numEntries)(fun _ -> StringEntry.Read(endianReader))
-            let stripNulls(i: int, s: string) = 
-                (i, s.Replace("\0", ""))
-                
-            let filterOutEmpties(_: int, s: string) = 
-                let nonZeroLength = (s.Length > 0)
-                let notNullOrWhiteSpace = not(String.IsNullOrWhiteSpace(s))
-                nonZeroLength && notNullOrWhiteSpace
-
-            // For each entry, move to its position, and then read the null-terminated string.
-            stringTableEntries
-            |> Array.mapi(fun i e -> (i, e))
-            |> Array.collect(fun (i: int, entry: StringEntry) -> readNullTerminatedString(stringsFileBytes, Encoding.UTF8)(int entry.position + 8) |> Option.map (fun entry -> (i, entry)) |> Option.toArray)
-            |> Array.map stripNulls
-            |> Array.filter filterOutEmpties
-            |> Array.map(fun (i, s) -> (i.ToString(), s.Replace(@"\n", "")))
-            |> Map.ofArray
-            |> AssemblyResourceTools.createCardRecordForStrings(0, "", language, "masculine")
 
         let cards = 
             try
                 try
                     archive.ExtractSelectedEntries("*.*", "language", tempPath)
-                    languagesAndFileNames |> Array.collect cardsForLanguage
+                    languagesAndFileNames |> Array.collect(cardsForLanguage(tempPath))
                 with
                 | _ -> [||]
              finally
                 try Directory.Delete(tempPath, true) with | _ -> ()
+
+        {
+            LudumLinguarumPlugins.ExtractedContent.lessons = [| { LessonRecord.ID = 0; Name = "Game Text" } |]
+            LudumLinguarumPlugins.ExtractedContent.cards = cards
+        }
+
+    let ExtractWormsWMD(path: string) = 
+        let languagesAndFileNames = 
+            [|
+                (@"DataPC\language\AllTextBra.bin", "pt-BR")
+                (@"DataPC\language\AllTextChs.bin", "zh-CN")
+                (@"DataPC\language\AllTextCze.bin", "cs")
+                (@"DataPC\language\AllTextEng.bin", "en-GB")
+                (@"DataPC\language\AllTextFra.bin", "fr")
+                (@"DataPC\language\AllTextGer.bin", "de")
+                (@"DataPC\language\AllTextIta.bin", "it")
+                //(@"DataPC\language\AllTextJpn.bin", "ja")
+                (@"DataPC\language\AllTextPol.bin", "pl")
+                (@"DataPC\language\AllTextRus.bin", "ru")
+                (@"DataPC\language\AllTextSpa.bin", "es")
+                (@"DataPC\language\AllTextUsa.bin", "en-US")
+            |]
+
+        let cards = 
+            languagesAndFileNames 
+            |> Array.collect(fun languageAndFileName -> try cardsForLanguage(path)(languageAndFileName) with | _ -> [||])
 
         {
             LudumLinguarumPlugins.ExtractedContent.lessons = [| { LessonRecord.ID = 0; Name = "Game Text" } |]

@@ -4,6 +4,7 @@
 	* [Super Meat Boy](https://store.steampowered.com/app/40800/) \[de, en, es, fr, it, ja, kr, pl, pt, ru, zh-CN, zh-TW\]
 	* [The Escapists](https://store.steampowered.com/app/298630/) \[de, en, es, fr, it, pl, ru\]
 	* [Worms Crazy Golf](https://store.steampowered.com/app/70620/) \[cs, de, en-GB, en-US, es, fr, it, pl\]
+	* [Worms W.M.D](https://store.steampowered.com/app/327030/) \[cs, de, en-GB, en-US, es, fr, it, pl, pt-BR, ru, zh-CN\]
 
 #### 1.1.0 November 29 2018
 * Added support for exporting for use with SuperMemo. The text files are tab-delimited, and split into files of 99 entries each, to work with SuperMemo's importer tool.

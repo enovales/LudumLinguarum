@@ -340,14 +340,19 @@ let runListSupportedGamesAction(iPluginManager: IPluginManager, otw: TextWriter)
             | Some(languages) -> languages |> Set.exists(fun l -> gmd.supportedLanguages |> Array.contains(l))
             | _ -> true
 
+    let results = 
+        iPluginManager.SupportedGames
+        |> Array.filter languageFilterFunc
+        |> Array.sortBy(fun gmd -> gmd.name)
+
     match languagesToSearch with
     | None -> otw.WriteLine("Supported games:")
     | Some(languages) -> otw.WriteLine("Games that support [" + String.Join(", ", languages) + "]:")
 
-    iPluginManager.SupportedGames
-    |> Array.filter languageFilterFunc
-    |> Array.sortBy(fun gmd -> gmd.name)
+    results
     |> Array.iter (outputForGameMetadata >> otw.WriteLine)
+
+    otw.WriteLine(results.Length.ToString() + " results shown.")
 
 /// <summary>
 /// Runs the 'list-supported-languages' action.
