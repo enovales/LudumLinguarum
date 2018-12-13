@@ -11,7 +11,7 @@ games, which can then be turned into flash cards for use with the following [spa
 
 In other words, you can spice up your language learning regimen by drilling yourself with flash cards containing text from video games!
 
-[The list of currently supported games can be found here](http://enovales.github.io/LudumLinguarum/supported-games.html).
+[The list of 64 currently supported games can be found here](https://github.com/enovales/LudumLinguarum/blob/master/docsrc/content/supported-games.md).
 Currently only PC games are supported, although there's no technical reason other platforms couldn't be supported -- 
 it's just simpler to work on PC versions of titles.
 
