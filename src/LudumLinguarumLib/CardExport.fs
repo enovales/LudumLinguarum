@@ -125,6 +125,8 @@ type CommonExporter(iPluginManager: IPluginManager, outputTextWriter: TextWriter
                 | (CommonExportTarget.Anki, true, true) -> "\ty"
                 | (CommonExportTarget.Anki, _, _) -> "\t"
                 | (CommonExportTarget.SuperMemo, _, _) -> ""
+                | (CommonExportTarget.Mnemosyne, _, _) -> "\t"
+                | (CommonExportTarget.AnyMemo, _, _) -> "\t"
 
             cardWriter.WriteCard(recogText + "\t" + prodText + reverseText)
 
