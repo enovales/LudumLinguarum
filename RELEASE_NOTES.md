@@ -1,3 +1,6 @@
+#### 1.1.2 December 28 2018
+* Added support for exporting for use with [Mnemosyne](https://mnemosyne-proj.org/) and [AnyMemo](https://anymemo.org/). The text files are tab-delimited. (These exporters may get more specific support in the future, so they are not grouped together as a generic TSV export.)
+
 #### 1.1.1 December 7 2018
 * Added support for:
 	* [Mega Man Legacy Collection](https://store.steampowered.com/app/363440/) \[de, en, es, fr, it, ja, pt-br, ru\]
@@ -7,7 +10,7 @@
 	* [Worms W.M.D](https://store.steampowered.com/app/327030/) \[cs, de, en-GB, en-US, es, fr, it, pl, pt-BR, ru, zh-CN\]
 
 #### 1.1.0 November 29 2018
-* Added support for exporting for use with SuperMemo. The text files are tab-delimited, and split into files of 99 entries each, to work with SuperMemo's importer tool.
+* Added support for exporting for use with [SuperMemo](https://www.supermemo.com/). The text files are tab-delimited, and split into files of 99 entries each, to work with SuperMemo's importer tool.
 
 #### 1.0.3 October 9 2018
 * Switched resource loading from assemblies to use Mono.Cecil, for compatibility.

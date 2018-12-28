@@ -6,13 +6,15 @@ open System
 open System.IO
 open System.Text.RegularExpressions
 
-type AnkiSuperMemoExportTarget = 
+type CommonExportTarget = 
     | Anki
     | SuperMemo
+    | Mnemosyne
+    | AnyMemo
 
-type AnkiSuperMemoExporterConfiguration =
+type CommonExporterConfiguration =
     {
-        Target: AnkiSuperMemoExportTarget
+        Target: CommonExportTarget
         LessonToExport: string option
         LessonRegexToExport: string option
         ExportPath: string
@@ -39,7 +41,7 @@ type ICardWriter =
         abstract member WriteCard: string -> unit
     end
 
-type private AnkiWriter(otw: TextWriter, exportBasePath: string) = 
+type private NonPaginatingWriter(otw: TextWriter, exportBasePath: string) = 
     let streamWriter = new StreamWriter(exportBasePath)
 
     do otw.WriteLine("Writing to [" + exportBasePath + "]")
@@ -49,7 +51,7 @@ type private AnkiWriter(otw: TextWriter, exportBasePath: string) =
     interface ICardWriter with
         member this.WriteCard(line: String) = streamWriter.WriteLine(line)
 
-type private SuperMemoWriter(otw: TextWriter, exportBasePath: string) = 
+type private SuperMemoPaginatingWriter(otw: TextWriter, exportBasePath: string) = 
     let mutable lineCounter = 0
     let mutable fileCounter = 1
     let mutable streamWriter = new StreamWriter(exportBasePath)
@@ -80,8 +82,8 @@ type private SuperMemoWriter(otw: TextWriter, exportBasePath: string) =
             streamWriter.WriteLine(line)
             lineCounter <- lineCounter + 1
 
-type AnkiSupermemoExporter(iPluginManager: IPluginManager, outputTextWriter: TextWriter, 
-                  llDatabase: LLDatabase, config: AnkiSuperMemoExporterConfiguration) = 
+type CommonExporter(iPluginManager: IPluginManager, outputTextWriter: TextWriter, 
+                    llDatabase: LLDatabase, config: CommonExporterConfiguration) = 
 
     let recognitionLengthFilter = mkLengthFilter(config.RecognitionLengthLimit)
     let productionLengthFilter = mkLengthFilter(config.ProductionLengthLimit)
@@ -114,15 +116,17 @@ type AnkiSupermemoExporter(iPluginManager: IPluginManager, outputTextWriter: Tex
         | (a, b) when a = b -> (recognitionCards, productionCards)
         | _ -> failwith "can't disambiguate m-to-n language pairs"
 
-    member private this.RunLessonExport(cardWriter: ICardWriter, applicationTarget: AnkiSuperMemoExportTarget)(lesson: LessonRecord) = 
+    member private this.RunLessonExport(cardWriter: ICardWriter, applicationTarget: CommonExportTarget)(lesson: LessonRecord) = 
         let writeCard(r: CardRecord, p: CardRecord) = 
             let recogText = r.Text.Replace("\t", "    ").Replace("\r", "").Replace("\n", "")
             let prodText = p.Text.Replace("\t", "    ").Replace("\r", "").Replace("\n", "")
             let reverseText = 
                 match (applicationTarget, r.Reversible, p.Reversible) with
-                | (AnkiSuperMemoExportTarget.Anki, true, true) -> "\ty"
-                | (AnkiSuperMemoExportTarget.Anki, _, _) -> "\t"
-                | (AnkiSuperMemoExportTarget.SuperMemo, _, _) -> ""
+                | (CommonExportTarget.Anki, true, true) -> "\ty"
+                | (CommonExportTarget.Anki, _, _) -> "\t"
+                | (CommonExportTarget.SuperMemo, _, _) -> ""
+                | (CommonExportTarget.Mnemosyne, _, _) -> "\t"
+                | (CommonExportTarget.AnyMemo, _, _) -> "\t"
 
             cardWriter.WriteCard(recogText + "\t" + prodText + reverseText)
 
@@ -181,8 +185,10 @@ type AnkiSupermemoExporter(iPluginManager: IPluginManager, outputTextWriter: Tex
 
         let cardWriter: ICardWriter = 
             match config.Target with
-            | AnkiSuperMemoExportTarget.Anki -> new AnkiWriter(outputTextWriter, config.ExportPath) :> ICardWriter
-            | AnkiSuperMemoExportTarget.SuperMemo -> new SuperMemoWriter(outputTextWriter, config.ExportPath) :> ICardWriter
+            | CommonExportTarget.SuperMemo -> new SuperMemoPaginatingWriter(outputTextWriter, config.ExportPath) :> ICardWriter
+            | CommonExportTarget.Anki 
+            | CommonExportTarget.Mnemosyne 
+            | CommonExportTarget.AnyMemo -> new NonPaginatingWriter(outputTextWriter, config.ExportPath) :> ICardWriter
         let disposableCardWriter = cardWriter :?> IDisposable
 
         lessonsToExport |> Array.iter(reportLessonExport >> this.RunLessonExport(cardWriter, config.Target))
