@@ -5,8 +5,8 @@ open System.Reflection
 [<assembly: AssemblyTitleAttribute("OneOffGamesPlugin")>]
 [<assembly: AssemblyProductAttribute("LudumLinguarum")>]
 [<assembly: AssemblyDescriptionAttribute("Tools for extracting localized content from games, and turning them into language learning content.")>]
-[<assembly: AssemblyVersionAttribute("1.1.1")>]
-[<assembly: AssemblyFileVersionAttribute("1.1.1")>]
+[<assembly: AssemblyVersionAttribute("1.1.2")>]
+[<assembly: AssemblyFileVersionAttribute("1.1.2")>]
 [<assembly: AssemblyConfigurationAttribute("Release")>]
 do ()
 
@@ -14,6 +14,6 @@ module internal AssemblyVersionInformation =
     let [<Literal>] AssemblyTitle = "OneOffGamesPlugin"
     let [<Literal>] AssemblyProduct = "LudumLinguarum"
     let [<Literal>] AssemblyDescription = "Tools for extracting localized content from games, and turning them into language learning content."
-    let [<Literal>] AssemblyVersion = "1.1.1"
-    let [<Literal>] AssemblyFileVersion = "1.1.1"
+    let [<Literal>] AssemblyVersion = "1.1.2"
+    let [<Literal>] AssemblyFileVersion = "1.1.2"
     let [<Literal>] AssemblyConfiguration = "Release"
