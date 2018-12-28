@@ -1,5 +1,5 @@
 #### 1.1.2 December 28 2018
-* Added support for exporting for use with [Mnemosyne](https://mnemosyne-proj.org/) and [AnyMemo](https://anymemo.org/). The text files are tab-delimited.
+* Added support for exporting for use with [Mnemosyne](https://mnemosyne-proj.org/) and [AnyMemo](https://anymemo.org/). The text files are tab-delimited. (These exporters may get more specific support in the future, so they are not grouped together as a generic TSV export.)
 
 #### 1.1.1 December 7 2018
 * Added support for:
