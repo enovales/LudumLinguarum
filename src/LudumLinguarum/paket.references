@@ -1,0 +1,17 @@
+FSharp.Core
+Argu
+Packaging.Targets
+System.Text.Encoding.CodePages
+
+FsGettextUtils
+LANGIDMappings
+Mono.Cecil
+sharpcompress
+DotNetZip
+YamlDotNet
+
+File: AFS.fs
+ini-parser
+
+CsvHelper
+sqlite-net-pcl
