@@ -1,4 +1,4 @@
-﻿module LudumLinguarumConsole
+module LudumLinguarumConsole
 
 open Argu
 open LLDatabase
@@ -521,35 +521,6 @@ let rec parseCommands(cs: string array) =
             parseCommands(newArgs)
         | _ -> results
     
-let private instantiatePluginType(iPluginManager: IPluginManager, otw: TextWriter, otherArgs: string array)(t: Type) = 
-    try
-        iPluginManager.Instantiate(otw, t, otherArgs)
-    with
-    | ex -> 
-        otw.WriteLine("Failed to load plugin " + t.AssemblyQualifiedName + ":" + Environment.NewLine + ex.ToString())
-        ()
-
-let private loadAndInstantiatePlugin(iPluginManager: IPluginManager, otw: TextWriter, otherArgs: string array)(pluginFilename: string) = 
-    try
-        let loadedAssembly = Assembly.LoadFile(pluginFilename)
-        iPluginManager.Discover(loadedAssembly) 
-        |> Array.ofList 
-        |> Array.iter(instantiatePluginType(iPluginManager, otw, otherArgs))
-    with
-        | _ -> ()
-
-let private loadAllPlugins(iPluginManager: IPluginManager, otw: TextWriter) = 
-    // try and load all plugins that are alongside this executable
-    let bundledPluginsPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
-    let bundledPlugins = Directory.GetFiles(bundledPluginsPath, "*.dll", SearchOption.AllDirectories)
-    try
-        bundledPlugins |> Array.iter(loadAndInstantiatePlugin(iPluginManager, otw, [||]))
-    with
-    | ex ->
-        otw.WriteLine("Failed to load plugins: " + Environment.NewLine + ex.ToString())
-        ()
-
-
 [<EntryPoint>]
 let main argv = 
     let results = parseCommands(argv)
@@ -560,9 +531,7 @@ let main argv =
     // Set output encoding, and import codepages that are not included by default with netcore.
     Console.OutputEncoding <- Encoding.UTF8
 
-#if NETCOREAPP2_1
     Encoding.RegisterProvider(CodePagesEncodingProvider.Instance)
-#endif
 
     let otw = 
         match results.TryGetResult(Log_File) with
@@ -579,7 +548,8 @@ let main argv =
                 Directory.CreateDirectory(defaultPath) |> ignore
             defaultPath
 
-    loadAllPlugins(iPluginManager, otw)
+    iPluginManager.Instantiate(otw, typeof<OneOffGames.OneOffGamesPlugin>, [||])
+    iPluginManager.Instantiate(otw, typeof<InfinityAuroraEngine.AuroraPlugin>, [||])
 
     match results.TryGetSubCommand() with
     | Some(Import ia) -> runImportAction(iPluginManager, otw, fldbPath)(ia)
