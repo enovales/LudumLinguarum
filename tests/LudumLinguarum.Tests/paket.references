@@ -4,3 +4,4 @@ FSharp.Core
 Microsoft.NET.Test.Sdk
 YoloDev.Expecto.TestSdk
 altcover
+System.Text.RegularExpressions

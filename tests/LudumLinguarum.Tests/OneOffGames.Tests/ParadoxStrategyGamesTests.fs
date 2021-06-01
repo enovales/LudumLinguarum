@@ -1,4 +1,4 @@
-﻿module ParadoxStrategyGamesTests
+module ParadoxStrategyGamesTests
 
 open Expecto
 open ParadoxStrategyGames

@@ -1,4 +1,4 @@
-﻿module ParadoxStrategyGames
+module ParadoxStrategyGames
 
 open LLDatabase
 open System
@@ -148,9 +148,9 @@ let ExtractVictoria2(path: string) =
 
 /////////////////////////////////////////////////////////////////////////////
 // Europa Universalis IV
-let internal eu4NumericKeyAnnotationRegex = new Regex(@"^(?:\s*\S+:)([0-9]+)(?:.*)", RegexOptions.None)
+let internal mkEu4NumericKeyAnnotationRegex() = new Regex(@"^(?:\s*\S+:)([0-9]+)(?:.*)", RegexOptions.None)
 let rec internal eu4StripNumericKeyAnnotations(s: string) = 
-    let m = eu4NumericKeyAnnotationRegex.Match(s)
+    let m = mkEu4NumericKeyAnnotationRegex().Match(s)
     if (m.Success) then
         eu4StripNumericKeyAnnotations(s.Remove(m.Groups.[1].Index, m.Groups.[1].Length))
     else

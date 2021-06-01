@@ -3,6 +3,7 @@ Argu
 Packaging.Targets
 System.Reflection
 System.Text.Encoding.CodePages
+System.Text.RegularExpressions
 
 FsGettextUtils
 LANGIDMappings
