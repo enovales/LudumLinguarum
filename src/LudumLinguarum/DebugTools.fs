@@ -1,8 +1,9 @@
-﻿module DebugTools
+module DebugTools
 
 open System
 open System.Text
 open System.IO
+open System.Reflection
 open Trie
 
 // Tools useful for development of new plugins.
@@ -15,7 +16,7 @@ type TextScannerConfiguration =
         Path: string
         MinimumLength: int
         MaximumLength: int
-        DictionaryFile: string
+        DictionaryFile: string option
     }
     with
         static member Empty  = 
@@ -23,7 +24,7 @@ type TextScannerConfiguration =
                     Path = ""
                     MinimumLength = 0
                     MaximumLength = 0
-                    DictionaryFile = ""
+                    DictionaryFile = None
                 }
 
 type StringHasher = 
@@ -181,10 +182,19 @@ type FoundString = {
     with 
         override this.ToString() = this.offset.ToString("X8") + ": " + this.value
 
+let internal linesOfDictionary(dictionaryFileOpt: string option) =
+    use stream =
+        match dictionaryFileOpt with
+        | Some dictionaryFile -> new FileStream(dictionaryFile, FileMode.Open, FileAccess.Read, FileShare.Read) :> Stream
+        | None -> Assembly.GetExecutingAssembly().GetManifestResourceStream(@"LudumLinguarum.dictionary.txt")
+
+    use reader = new StreamReader(stream)
+    reader.ReadToEnd().Split(Environment.NewLine)
+
 type StringScanner(path: string, dictionary: string array) = 
-    new(config: TextScannerConfiguration) = 
+    new(config: TextScannerConfiguration) =
         let validWords = 
-            File.ReadAllLines(config.DictionaryFile) |> 
+            linesOfDictionary(config.DictionaryFile) |> 
             Array.map(fun t -> t.Trim()) |> 
             Array.filter(fun t -> not(String.IsNullOrWhiteSpace(t)) && (t.Length >= config.MinimumLength) && (t.Length <= config.MaximumLength))
         new StringScanner(config.Path, validWords)
@@ -213,7 +223,7 @@ type StringScanner(path: string, dictionary: string array) =
 type NaiveTextScanner(config: TextScannerConfiguration, dictionary: Trie) = 
     new(config: TextScannerConfiguration) = 
         // load the dictionary from the disk, and build the trie
-        let d = Trie.Build(File.ReadAllLines(config.DictionaryFile))
+        let d = Trie.Build(linesOfDictionary(config.DictionaryFile))
         new NaiveTextScanner(config, d)
 
     member this.ScanBytes(fileContents: byte array): FoundString array =

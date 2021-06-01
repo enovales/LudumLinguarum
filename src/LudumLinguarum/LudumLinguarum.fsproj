@@ -14,6 +14,7 @@
         <Tailcalls>true</Tailcalls>
     </PropertyGroup>
     <ItemGroup>
+        <EmbeddedResource Include="dictionary.txt" />
         <Compile Include="AssemblyInfo.fs" />
         <Compile Include="LLUtils.fs" />
         <Compile Include="BaseResources.fs" />
@@ -63,5 +64,6 @@
         <Compile Include="OneOffGames\OneOffGamesPlugin.fs" />
         <Compile Include="Main.fs" />
     </ItemGroup>
+    <ItemGroup />
     <Import Project="..\..\.paket\Paket.Restore.targets" />
 </Project>

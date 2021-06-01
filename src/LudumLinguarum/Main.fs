@@ -259,7 +259,7 @@ let runScanForTextAction(otw: TextWriter)(vc: ParseResults<ScanForTextArgs>) =
             DebugTools.TextScannerConfiguration.Path = vc.GetResult(ScanForTextArgs.Path)
             DebugTools.TextScannerConfiguration.MinimumLength = vc.GetResult(ScanForTextArgs.Minimum_Length, defaultValue = 1)
             DebugTools.TextScannerConfiguration.MaximumLength = vc.GetResult(ScanForTextArgs.Maximum_Length, defaultValue = 10)
-            DebugTools.TextScannerConfiguration.DictionaryFile = vc.GetResult(ScanForTextArgs.Dictionary_File, defaultValue = "dictionary.txt")
+            DebugTools.TextScannerConfiguration.DictionaryFile = vc.TryGetResult(ScanForTextArgs.Dictionary_File)
         }
     let scanner = new DebugTools.StringScanner(config)
     let results = scanner.Scan()
