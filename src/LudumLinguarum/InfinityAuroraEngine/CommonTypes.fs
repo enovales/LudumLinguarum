@@ -1,4 +1,4 @@
-﻿module InfinityAuroraEnginePlugins.CommonTypes
+﻿module InfinityAuroraEngine.CommonTypes
 
 open System.IO
 open System.Text

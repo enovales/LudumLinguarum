@@ -1,7 +1,7 @@
-﻿module InfinityAuroraEnginePlugins.KOTOR2Context
+﻿module InfinityAuroraEngine.KOTOR2Context
 
-open InfinityAuroraEnginePlugins.ArchiveFiles
-open InfinityAuroraEnginePlugins.IAResourceManager
+open InfinityAuroraEngine.ArchiveFiles
+open InfinityAuroraEngine.IAResourceManager
 
 open System.IO
 

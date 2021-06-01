@@ -1,7 +1,7 @@
 ﻿module ArchiveFilesTests
 
-open InfinityAuroraEnginePlugins.ArchiveFiles
-open InfinityAuroraEnginePlugins.CommonTypes
+open InfinityAuroraEngine.ArchiveFiles
+open InfinityAuroraEngine.CommonTypes
 open Expecto
 open System.IO
 

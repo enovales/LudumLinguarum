@@ -1,6 +1,6 @@
-﻿module InfinityAuroraEnginePlugins.TalkTable
+﻿module InfinityAuroraEngine.TalkTable
 
-open InfinityAuroraEnginePlugins.CommonTypes
+open InfinityAuroraEngine.CommonTypes
 open System.IO
 open System.Text
 

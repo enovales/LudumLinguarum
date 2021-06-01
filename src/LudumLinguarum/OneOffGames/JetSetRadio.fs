@@ -471,7 +471,7 @@ type JetSetRadio =
 
         let formatCharFilter(e: StringBlockExtractedEntry) = 
             { e with StringBlockExtractedEntry.Text = (Array.fold regexReplaceFold e.Text replacements).Trim() }
-        let extractor = new StringBlockExtractor(path, Assembly.GetManifestResourceStream(@"OneOffGamesData.JetSetRadio.StringBlockExtraction.csv"))
+        let extractor = new StringBlockExtractor(path, Assembly.GetExecutingAssembly().GetManifestResourceStream(@"OneOffGamesData.JetSetRadio.StringBlockExtraction.csv"))
         extractor.Extract()
             |> Seq.map formatCharFilter
             |> convertStringBlockExtractedEntriesToCardRecords(lessonId)
@@ -486,7 +486,7 @@ type JetSetRadio =
         let extractor = 
             new SrtBlockExtractor(
                 path,
-                Assembly.GetManifestResourceStream(@"OneOffGamesData.JetSetRadio.SrtExtraction.csv"), 
+                Assembly.GetExecutingAssembly().GetManifestResourceStream(@"OneOffGamesData.JetSetRadio.SrtExtraction.csv"), 
                 languageToEncoding)
         extractor.Extract()
             |> convertSrtBlockExtractedEntriesToCardRecords(lessonId)

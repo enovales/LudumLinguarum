@@ -1,7 +1,8 @@
-﻿module PillarsOfEternity
+module PillarsOfEternity
 
 open LLDatabase
 open LLUtils
+open LudumLinguarumPlugins
 open System
 open System.IO
 open System.Text.RegularExpressions

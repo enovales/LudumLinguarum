@@ -7,7 +7,30 @@
     </PropertyGroup>
     <ItemGroup>
         <Compile Include="AssemblyInfo.fs" />
-        <Compile Include="Tests.fs" />
+        <Compile Include="CardExportTests.fs" />
+        <Compile Include="CsvToolsTests.fs" />
+        <Compile Include="DebugToolsTests.fs" />
+        <Compile Include="Generators.fs" />
+        <Compile Include="LLDatabaseTests.fs" />
+        <Compile Include="PluginManagerTests.fs" />
+        <Compile Include="SrtToolsTests.fs" />
+        <Compile Include="StringExtractorsTests.fs" />
+        <Compile Include="TrieTests.fs" />
+        <Compile Include="OneOffGames.Tests\JetSetRadioTests.fs" />
+        <Compile Include="OneOffGames.Tests\MadballsBaboInvasionTests.fs" />
+        <Compile Include="OneOffGames.Tests\MagickaTests.fs" />
+        <Compile Include="OneOffGames.Tests\OrcsMustDieTests.fs" />
+        <Compile Include="OneOffGames.Tests\ParadoxStrategyGamesTests.fs" />
+        <Compile Include="OneOffGames.Tests\PillarsOfEternityTests.fs" />
+        <Compile Include="OneOffGames.Tests\PuzzleQuestGamesTests.fs" />
+        <Compile Include="OneOffGames.Tests\SimpleGamesTests.fs" />
+        <Compile Include="OneOffGames.Tests\SonicAdventureDXTests.fs" />
+        <Compile Include="OneOffGames.Tests\SpaceChannel5Tests.fs" />
+        <Compile Include="OneOffGames.Tests\WormsGamesTests.fs" />
+        <Compile Include="OneOffGames.Tests\XUIGamesTests.fs" />
+        <Compile Include="InfinityAuroraEngine.Tests\ArchiveFilesTests.fs" />
+        <Compile Include="InfinityAuroraEngine.Tests\GFFFileTypesTests.fs" />
+        <Compile Include="InfinityAuroraEngine.Tests\TwoDATests.fs" />
         <Compile Include="Main.fs" />
     </ItemGroup>
     <ItemGroup>

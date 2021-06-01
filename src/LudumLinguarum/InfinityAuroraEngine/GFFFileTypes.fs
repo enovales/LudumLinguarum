@@ -1,9 +1,9 @@
-﻿module InfinityAuroraEnginePlugins.GFFFileTypes
+﻿module InfinityAuroraEngine.GFFFileTypes
 
-open InfinityAuroraEnginePlugins.CommonTypes
-open InfinityAuroraEnginePlugins.GFF
-open InfinityAuroraEnginePlugins.SerializedGFF
-open InfinityAuroraEnginePlugins.TalkTable
+open InfinityAuroraEngine.CommonTypes
+open InfinityAuroraEngine.GFF
+open InfinityAuroraEngine.SerializedGFF
+open InfinityAuroraEngine.TalkTable
 
 type SerializedSyncStruct = {
         Active: ResRef option

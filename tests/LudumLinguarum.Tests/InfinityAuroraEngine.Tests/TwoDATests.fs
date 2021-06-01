@@ -1,7 +1,7 @@
 ﻿module TwoDATests
 
 open Expecto
-open InfinityAuroraEnginePlugins.TwoDA
+open InfinityAuroraEngine.TwoDA
 open System.IO
 
 let private sample2DAText = 

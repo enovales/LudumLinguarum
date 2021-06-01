@@ -10,6 +10,7 @@ nuget Microsoft.NET.Test.Sdk 16.8.0
 nuget altcover ~> 7
 nuget Packaging.Targets 0.1.189
 
+nuget System.Reflection
 nuget System.Text.Encoding.CodePages
 nuget Mono.Cecil
 nuget sqlite-net-pcl

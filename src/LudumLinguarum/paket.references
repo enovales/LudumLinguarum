@@ -1,6 +1,7 @@
 FSharp.Core
 Argu
 Packaging.Targets
+System.Reflection
 System.Text.Encoding.CodePages
 
 FsGettextUtils

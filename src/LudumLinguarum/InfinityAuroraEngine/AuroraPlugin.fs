@@ -1,17 +1,17 @@
-﻿namespace InfinityAuroraEnginePlugins
+namespace InfinityAuroraEngine
 
 open Argu
 open LLDatabase
+open InfinityAuroraEngine.CommonTypes
+open InfinityAuroraEngine.GFFFileTypes
+open InfinityAuroraEngine.IAResourceManager
+open InfinityAuroraEngine.JadeEmpireContext
+open InfinityAuroraEngine.KOTOR1Context
+open InfinityAuroraEngine.KOTOR2Context
+open InfinityAuroraEngine.NWN1Context
+open InfinityAuroraEngine.TalkTable
+open InfinityAuroraEngine.TwoDA
 open LudumLinguarumPlugins
-open InfinityAuroraEnginePlugins.CommonTypes
-open InfinityAuroraEnginePlugins.GFFFileTypes
-open InfinityAuroraEnginePlugins.IAResourceManager
-open InfinityAuroraEnginePlugins.JadeEmpireContext
-open InfinityAuroraEnginePlugins.KOTOR1Context
-open InfinityAuroraEnginePlugins.KOTOR2Context
-open InfinityAuroraEnginePlugins.NWN1Context
-open InfinityAuroraEnginePlugins.TalkTable
-open InfinityAuroraEnginePlugins.TwoDA
 open System
 open System.IO
 open System.Text.RegularExpressions

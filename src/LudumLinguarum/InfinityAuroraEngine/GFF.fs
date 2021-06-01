@@ -1,7 +1,7 @@
-﻿module InfinityAuroraEnginePlugins.GFF
+﻿module InfinityAuroraEngine.GFF
 
-open InfinityAuroraEnginePlugins.CommonTypes
-open InfinityAuroraEnginePlugins.SerializedGFF
+open InfinityAuroraEngine.CommonTypes
+open InfinityAuroraEngine.SerializedGFF
 open System.IO
 open System.Text
 

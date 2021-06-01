@@ -1,4 +1,4 @@
-﻿module InfinityAuroraEnginePlugins.TwoDA
+﻿module InfinityAuroraEngine.TwoDA
 
 open System
 open System.IO

@@ -1,7 +1,7 @@
 ﻿module GFFFileTypesTests
 
-open InfinityAuroraEnginePlugins.GFFFileTypes
-open InfinityAuroraEnginePlugins.SerializedGFF
+open InfinityAuroraEngine.GFFFileTypes
+open InfinityAuroraEngine.SerializedGFF
 open Expecto
 
 let private testStrings = 

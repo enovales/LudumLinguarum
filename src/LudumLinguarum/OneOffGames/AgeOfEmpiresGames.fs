@@ -1,4 +1,4 @@
-﻿module AgeOfEmpiresGames
+module AgeOfEmpiresGames
 
 open LLDatabase
 open LLUtils

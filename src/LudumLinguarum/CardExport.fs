@@ -1,4 +1,4 @@
-﻿module CardExport
+module CardExport
 
 open LLDatabase
 open LudumLinguarumPlugins

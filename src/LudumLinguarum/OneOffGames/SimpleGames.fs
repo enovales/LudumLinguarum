@@ -1,7 +1,7 @@
-﻿module SimpleGames
+module SimpleGames
 
 open CsvTools
-open FsGettextUtils.MoFile
+open FsGettextUtils
 open IniParser
 open IniParser.Model
 open LLDatabase

@@ -1,11 +1,11 @@
-﻿module InfinityAuroraEnginePlugins.IAResourceManager
+﻿module InfinityAuroraEngine.IAResourceManager
 
-open InfinityAuroraEnginePlugins.ArchiveFiles
-open InfinityAuroraEnginePlugins.CommonTypes
-open InfinityAuroraEnginePlugins.GFF
-open InfinityAuroraEnginePlugins.GFFFileTypes
-open InfinityAuroraEnginePlugins.SerializedGFF
-open InfinityAuroraEnginePlugins.TalkTable
+open InfinityAuroraEngine.ArchiveFiles
+open InfinityAuroraEngine.CommonTypes
+open InfinityAuroraEngine.GFF
+open InfinityAuroraEngine.GFFFileTypes
+open InfinityAuroraEngine.SerializedGFF
+open InfinityAuroraEngine.TalkTable
 open System.IO
 
 type IGenericResource =

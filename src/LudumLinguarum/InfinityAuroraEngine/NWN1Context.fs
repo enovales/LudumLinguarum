@@ -1,7 +1,7 @@
-﻿module InfinityAuroraEnginePlugins.NWN1Context
+﻿module InfinityAuroraEngine.NWN1Context
 
-open InfinityAuroraEnginePlugins.ArchiveFiles
-open InfinityAuroraEnginePlugins.IAResourceManager
+open InfinityAuroraEngine.ArchiveFiles
+open InfinityAuroraEngine.IAResourceManager
 open LLUtils
 
 open System.IO

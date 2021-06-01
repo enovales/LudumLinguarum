@@ -1,7 +1,7 @@
-﻿module InfinityAuroraEnginePlugins.SerializedGFF
+﻿module InfinityAuroraEngine.SerializedGFF
 
-open InfinityAuroraEnginePlugins.CommonTypes
-open InfinityAuroraEnginePlugins.TalkTable
+open InfinityAuroraEngine.CommonTypes
+open InfinityAuroraEngine.TalkTable
 open System
 open System.IO
 open System.Text

@@ -1,7 +1,7 @@
-﻿module InfinityAuroraEnginePlugins.JadeEmpireContext
+﻿module InfinityAuroraEngine.JadeEmpireContext
 
-open InfinityAuroraEnginePlugins.ArchiveFiles
-open InfinityAuroraEnginePlugins.IAResourceManager
+open InfinityAuroraEngine.ArchiveFiles
+open InfinityAuroraEngine.IAResourceManager
 open LLUtils
 
 open System.IO

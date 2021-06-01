@@ -1,7 +1,7 @@
-﻿module InfinityAuroraEnginePlugins.ArchiveFiles
+module InfinityAuroraEngine.ArchiveFiles
 
-open InfinityAuroraEnginePlugins.CommonTypes
-open InfinityAuroraEnginePlugins.TalkTable
+open InfinityAuroraEngine.CommonTypes
+open InfinityAuroraEngine.TalkTable
 open System.IO
 open System.Text
 
@@ -428,4 +428,3 @@ type RIMFile private (fileName: string, header: RIMHeader,
             let fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)
             RIMFile.FromStream(Path.GetFileName(path).ToLowerInvariant(), fs, true)
     end
-    
