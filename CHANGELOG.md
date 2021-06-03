@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [2.0.0-alpha.2] - 2021-06-02
 
 ### Changed
 
@@ -162,5 +162,6 @@ random sampling) to be dumped to a tab-separated text file.
   * [The King of Fighters '98 Ultimate Match](http://store.steampowered.com/app/222420/) \[en, ja\]
   * [The King of Fighters 2002 Unlimited Match](http://store.steampowered.com/app/222440/) \[en, ja\]
   * [Worms Armageddon](http://store.steampowered.com/app/217200/) \[de, en, es, fr, it, nl, pt, ru, sv\]
-[Unreleased]: https://github.com/enovales/LudumLinguarum/compare/v2.0.0-alpha.1...HEAD
+[Unreleased]: https://github.com/enovales/LudumLinguarum/compare/v2.0.0-alpha.2...HEAD
+[2.0.0-alpha.2]: https://github.com/enovales/LudumLinguarum/compare/v1.1.2...v2.0.0-alpha.2
 [2.0.0-alpha.1]: https://github.com/enovales/LudumLinguarum/compare/v1.1.2...v2.0.0-alpha.1

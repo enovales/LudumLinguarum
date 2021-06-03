@@ -10,7 +10,7 @@ open System.Runtime.CompilerServices
 [<assembly: AssemblyFileVersionAttribute("2.0.0")>]
 [<assembly: AssemblyInformationalVersionAttribute("2.0.0")>]
 [<assembly: AssemblyMetadataAttribute("ReleaseChannel","alpha")>]
-[<assembly: AssemblyMetadataAttribute("GitHash","be71735795958fb72573dbcc400d4deee8402988")>]
+[<assembly: AssemblyMetadataAttribute("GitHash","33cc5045589e44a9b42cad1fdb3cdb3e4d78f579")>]
 [<assembly: InternalsVisibleToAttribute("LudumLinguarum.Tests")>]
 do ()
 
@@ -22,5 +22,5 @@ module internal AssemblyVersionInformation =
     let [<Literal>] AssemblyFileVersion = "2.0.0"
     let [<Literal>] AssemblyInformationalVersion = "2.0.0"
     let [<Literal>] AssemblyMetadata_ReleaseChannel = "alpha"
-    let [<Literal>] AssemblyMetadata_GitHash = "be71735795958fb72573dbcc400d4deee8402988"
+    let [<Literal>] AssemblyMetadata_GitHash = "33cc5045589e44a9b42cad1fdb3cdb3e4d78f579"
     let [<Literal>] InternalsVisibleTo = "LudumLinguarum.Tests"
