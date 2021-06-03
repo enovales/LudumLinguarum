@@ -1,4 +1,4 @@
-﻿module SrtTools
+module SrtTools
 
 open LLDatabase
 open LLUtils

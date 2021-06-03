@@ -1,4 +1,4 @@
-﻿module SrtToolsTests
+module SrtToolsTests
 
 open System
 open System.Text
@@ -42,7 +42,7 @@ Test Single Line Subtitle""".Split([| Environment.NewLine; "\r"; "\n" |], String
             }
         |]
 
-        Expect.equal expected results "unexpected parse result"
+        Expect.equal results expected "unexpected parse result"
 
     testCase "Parsing multiple .srt entries" <|
       fun () -> 
@@ -68,7 +68,7 @@ Test Single Line Subtitle 2""".Split([| Environment.NewLine; "\r"; "\n" |], Stri
             }
         |]
 
-        Expect.equal expected results "unexpected parse result"
+        Expect.equal results expected "unexpected parse result"
 
     testCase "Parsing an .srt entry that has more than one line in the subtitle" <|
       fun () ->
@@ -86,7 +86,7 @@ which is a subtitle that has two parts""".Split([| Environment.NewLine; "\r"; "\
             }
         |]
 
-        Expect.equal expected results "unexpected parse result"
+        Expect.equal results expected "unexpected parse result"
 
     testCase "Parsing an incomplete .srt entry" <|
       fun () ->
@@ -105,7 +105,7 @@ Test Single Line Subtitle
             }
         |]
 
-        Expect.equal expected results "unexpected parse result"
+        Expect.equal results expected "unexpected parse result"
 
     testCase "Parsing a single blank subtitle" <|
       fun () ->
@@ -123,7 +123,7 @@ Test Single Line Subtitle
             }
         |]
 
-        Expect.equal expected results "unexpected parse result"
+        Expect.equal results expected "unexpected parse result"
 
     testCase "Parsing multiple .srt entries with a malformed first entry" <|
       fun () ->
@@ -148,7 +148,7 @@ Test Single Line Subtitle 2""".Split([| Environment.NewLine; "\r"; "\n" |], Stri
             }
         |]
 
-        Expect.equal expected results "unexpected parse result"
+        Expect.equal results expected "unexpected parse result"
 
     testCase "Extracting a .csv file containing a single .srt entry" <|
       fun () ->
@@ -168,13 +168,13 @@ DATA\VIDEOS\blah_en.srt,DATA\VIDEOS\blah.srt,1,en,1,1,comment
             SrtBlockExtractorEntry.Id = int64 1
             SrtBlockExtractorEntry.Languages = "en"
             SrtBlockExtractorEntry.OverrideBaseKey = @"DATA\VIDEOS\blah.srt"
-            SrtBlockExtractorEntry.RelativePath = @"DATA\VIDEOS\blah_en.srt"
+            SrtBlockExtractorEntry.RelativePath = LLUtils.FixPathSeps @"DATA\VIDEOS\blah_en.srt"
             SrtBlockExtractorEntry.SubtitleIdStart = 1
             SrtBlockExtractorEntry.SubtitleIdEnd = 1
         }
 
-        Expect.equal 1 (entries |> Seq.length) "unexpected extracted entries length"
-        Expect.equal expected entries.[0] "error during extraction"
+        Expect.equal (entries |> Seq.length) 1 "unexpected extracted entries length"
+        Expect.equal entries.[0] expected  "error during extraction"
 
     testCase "Parsing a single entry .csv file with an empty 'SubtitleIdEnd' field, which should default to the 'SubtitleIdStart' field" <|
       fun () ->
@@ -188,13 +188,13 @@ DATA\VIDEOS\blah_en.srt,DATA\VIDEOS\blah.srt,1,en,1,,comment
             SrtBlockExtractorEntry.Id = int64 1
             SrtBlockExtractorEntry.Languages = "en"
             SrtBlockExtractorEntry.OverrideBaseKey = @"DATA\VIDEOS\blah.srt"
-            SrtBlockExtractorEntry.RelativePath = @"DATA\VIDEOS\blah_en.srt"
+            SrtBlockExtractorEntry.RelativePath = LLUtils.FixPathSeps @"DATA\VIDEOS\blah_en.srt"
             SrtBlockExtractorEntry.SubtitleIdStart = 1
             SrtBlockExtractorEntry.SubtitleIdEnd = 1
         }
 
-        Expect.equal 1 (entries |> Seq.length) "unexpected extracted entries length"
-        Expect.equal expected entries.[0] "error during extraction"
+        Expect.equal (entries |> Seq.length) 1 "unexpected extracted entries length"
+        Expect.equal entries.[0] expected "error during extraction"
 
     testCase "Parsing a .csv file with multiple .srt entries, including carry-over of previous values" <|
       fun () ->
@@ -209,7 +209,7 @@ DATA\VIDEOS\blah_en.srt,DATA\VIDEOS\blah.srt,1,en,1,1,comment
             SrtBlockExtractorEntry.Id = int64 1
             SrtBlockExtractorEntry.Languages = "en"
             SrtBlockExtractorEntry.OverrideBaseKey = @"DATA\VIDEOS\blah.srt"
-            SrtBlockExtractorEntry.RelativePath = @"DATA\VIDEOS\blah_en.srt"
+            SrtBlockExtractorEntry.RelativePath = LLUtils.FixPathSeps @"DATA\VIDEOS\blah_en.srt"
             SrtBlockExtractorEntry.SubtitleIdStart = 1
             SrtBlockExtractorEntry.SubtitleIdEnd = 1
         }
@@ -218,12 +218,12 @@ DATA\VIDEOS\blah_en.srt,DATA\VIDEOS\blah.srt,1,en,1,1,comment
             SrtBlockExtractorEntry.Id = int64 2
             SrtBlockExtractorEntry.Languages = "en"
             SrtBlockExtractorEntry.OverrideBaseKey = @"DATA\VIDEOS\blah.srt"
-            SrtBlockExtractorEntry.RelativePath = @"DATA\VIDEOS\blah_en.srt"
+            SrtBlockExtractorEntry.RelativePath = LLUtils.FixPathSeps @"DATA\VIDEOS\blah_en.srt"
             SrtBlockExtractorEntry.SubtitleIdStart = 2
             SrtBlockExtractorEntry.SubtitleIdEnd = 2
         }
 
         Expect.equal 2 (entries |> Seq.length) "unexpected extracted entries length"
-        Expect.equal expected1 entries.[0] "first entry not extracted correctly"
-        Expect.equal expected2 entries.[1] "second entry not extracted correctly"
+        Expect.equal entries.[0] expected1 "first entry not extracted correctly"
+        Expect.equal entries.[1] expected2 "second entry not extracted correctly"
   ]
