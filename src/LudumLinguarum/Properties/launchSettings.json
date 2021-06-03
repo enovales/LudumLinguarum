@@ -1,8 +1,0 @@
-{
-  "profiles": {
-    "LudumLinguarum": {
-      "commandName": "Project",
-      "commandLineArgs": "import --game=\"Worms W.M.D\" --game-dir=\"E:\\Users\\enova\\SteamLibrary\\steamapps\\common\\WormsWMD\""
-    }
-  }
-}

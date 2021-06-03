@@ -1,26 +1,69 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <TargetFrameworks>net471;netcoreapp2.1</TargetFrameworks>
-    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <RuntimeIdentifiers>win-x64;linux-x64;osx-x64</RuntimeIdentifiers>
-  </PropertyGroup>
-  <ItemGroup>
-    <None Include="paket.references" />
-    <Compile Include="AssemblyInfoStatic.fs" />
-    <Compile Include="AssemblyInfo.fs" />
-    <Compile Include="Program.fs" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\InfinityAuroraEnginePlugins\InfinityAuroraEnginePlugins.fsproj" />
-    <ProjectReference Include="..\LudumLinguarumLib\LudumLinguarumLib.fsproj" />
-    <ProjectReference Include="..\OneOffGamesPlugin\OneOffGamesPlugin.fsproj" />
-  </ItemGroup>
-  <ItemGroup Condition="'$(TargetFramework)' == 'net471'">
-    <ProjectReference Include="..\WindowsOnlyPlugin\WindowsOnlyPlugin.fsproj" />
-  </ItemGroup>
-  <Import Project="..\..\.paket\Paket.Restore.targets" />
+    <PropertyGroup>
+        <TargetFramework>net5.0</TargetFramework>
+        <OutputType>Exe</OutputType>
+        <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    </PropertyGroup>
+    <PropertyGroup>
+        <Title>LudumLinguarum</Title>
+        <Description>LudumLinguarum does the thing!</Description>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Configuration)'=='Release'">
+        <Optimize>true</Optimize>
+        <Tailcalls>true</Tailcalls>
+    </PropertyGroup>
+    <ItemGroup>
+        <EmbeddedResource Include="dictionary.txt" />
+        <Compile Include="AssemblyInfo.fs" />
+        <Compile Include="LLUtils.fs" />
+        <Compile Include="BaseResources.fs" />
+        <Compile Include="LLDatabase.fs" />
+        <Compile Include="Plugins.fs" />
+        <Compile Include="CardExport.fs" />
+        <Compile Include="Trie.fs" />
+        <Compile Include="DebugTools.fs" />
+        <Compile Include="StringExtractors.fs" />
+        <Compile Include="SrtTools.fs" />
+        <Compile Include="AssemblyResourceTools.fs" />
+        <Compile Include="CsvTools.fs" />
+        <Compile Include="YamlTools.fs" />
+        <Compile Include="StreamTools.fs" />
+        <None Include="App.config" />
+        <Compile Include="InfinityAuroraEngine\CommonTypes.fs" />
+        <Compile Include="InfinityAuroraEngine\TalkTable.fs" />
+        <Compile Include="InfinityAuroraEngine\ArchiveFiles.fs" />
+        <Compile Include="InfinityAuroraEngine\SerializedGFF.fs" />
+        <Compile Include="InfinityAuroraEngine\GFF.fs" />
+        <Compile Include="InfinityAuroraEngine\GFFFileTypes.fs" />
+        <Compile Include="InfinityAuroraEngine\IAResourceManager.fs" />
+        <Compile Include="InfinityAuroraEngine\TwoDA.fs" />
+        <Compile Include="InfinityAuroraEngine\NWN1Context.fs" />
+        <Compile Include="InfinityAuroraEngine\JadeEmpireContext.fs" />
+        <Compile Include="InfinityAuroraEngine\KOTOR1Context.fs" />
+        <Compile Include="InfinityAuroraEngine\KOTOR2Context.fs" />
+        <Compile Include="InfinityAuroraEngine\AuroraPlugin.fs" />
+        <EmbeddedResource Include="OneOffGames\JetSetRadio\SrtExtraction.csv" />
+        <EmbeddedResource Include="OneOffGames\JetSetRadio\StringBlockExtraction.csv" />
+        <Compile Include="OneOffGames\Utils.fs" />
+        <Compile Include="OneOffGames\CivilizationGames.fs" />
+        <Compile Include="OneOffGames\CodemastersGames.fs" />
+        <Compile Include="OneOffGames\JetSetRadio.fs" />
+        <Compile Include="OneOffGames\MadballsBaboInvasion.fs" />
+        <Compile Include="OneOffGames\Magicka.fs" />
+        <Compile Include="OneOffGames\OrcsMustDie.fs" />
+        <Compile Include="OneOffGames\AgeOfEmpiresGames.fs" />
+        <Compile Include="OneOffGames\ParadoxStrategyGames.fs" />
+        <Compile Include="OneOffGames\PillarsOfEternity.fs" />
+        <Compile Include="OneOffGames\PuzzleQuestGames.fs" />
+        <Compile Include="OneOffGames\SimpleGames.fs" />
+        <Compile Include="OneOffGames\SonicAdventureDX.fs" />
+        <Compile Include="OneOffGames\SpaceChannel5.fs" />
+        <Compile Include="OneOffGames\WormsGames.fs" />
+        <Compile Include="OneOffGames\XUIGames.fs" />
+        <Compile Include="OneOffGames\OneOffGamesPlugin.fs" />
+        <Compile Include="Main.fs" />
+    </ItemGroup>
+    <ItemGroup />
+    <Import Project="..\..\.paket\Paket.Restore.targets" />
 </Project>

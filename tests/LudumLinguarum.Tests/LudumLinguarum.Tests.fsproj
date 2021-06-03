@@ -1,29 +1,40 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <TargetFrameworks>net471;netcoreapp2.1</TargetFrameworks>
-    <RootNamespace>LudumLinguarum.Tests</RootNamespace>
-    <AssemblyName>LudumLinguarum.Tests</AssemblyName>
-    <Name>LudumLinguarum.Tests</Name>
-    <OutputType>Exe</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-  </PropertyGroup>
-  <ItemGroup>
-    <Compile Include="DebugToolsTests.fs" />
-    <Compile Include="LLDatabaseTests.fs" />
-    <Compile Include="PluginManagerTests.fs" />
-    <Compile Include="StringExtractorsTests.fs" />
-    <Compile Include="TrieTests.fs" />
-    <Compile Include="SrtToolsTests.fs" />
-    <Compile Include="CsvToolsTests.fs" />
-    <Compile Include="CardExportTests.fs" />
-    <Compile Include="RunTests.fs" />
-    <None Include="paket.references" />
-    <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\src\LudumLinguarumLib\LudumLinguarumLib.fsproj" />
-  </ItemGroup>
-  <Import Project="..\..\.paket\Paket.Restore.targets" />
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net5.0</TargetFramework>
+        <GenerateProgramFile>false</GenerateProgramFile>
+    </PropertyGroup>
+    <ItemGroup>
+        <Compile Include="AssemblyInfo.fs" />
+        <Compile Include="CardExportTests.fs" />
+        <Compile Include="CsvToolsTests.fs" />
+        <Compile Include="DebugToolsTests.fs" />
+        <Compile Include="Generators.fs" />
+        <Compile Include="LLDatabaseTests.fs" />
+        <Compile Include="PluginManagerTests.fs" />
+        <Compile Include="SrtToolsTests.fs" />
+        <Compile Include="StringExtractorsTests.fs" />
+        <Compile Include="TrieTests.fs" />
+        <Compile Include="OneOffGames.Tests\JetSetRadioTests.fs" />
+        <Compile Include="OneOffGames.Tests\MadballsBaboInvasionTests.fs" />
+        <Compile Include="OneOffGames.Tests\MagickaTests.fs" />
+        <Compile Include="OneOffGames.Tests\OrcsMustDieTests.fs" />
+        <Compile Include="OneOffGames.Tests\ParadoxStrategyGamesTests.fs" />
+        <Compile Include="OneOffGames.Tests\PillarsOfEternityTests.fs" />
+        <Compile Include="OneOffGames.Tests\PuzzleQuestGamesTests.fs" />
+        <Compile Include="OneOffGames.Tests\SimpleGamesTests.fs" />
+        <Compile Include="OneOffGames.Tests\SonicAdventureDXTests.fs" />
+        <Compile Include="OneOffGames.Tests\SpaceChannel5Tests.fs" />
+        <Compile Include="OneOffGames.Tests\WormsGamesTests.fs" />
+        <Compile Include="OneOffGames.Tests\XUIGamesTests.fs" />
+        <Compile Include="InfinityAuroraEngine.Tests\ArchiveFilesTests.fs" />
+        <Compile Include="InfinityAuroraEngine.Tests\GFFFileTypesTests.fs" />
+        <Compile Include="InfinityAuroraEngine.Tests\TwoDATests.fs" />
+        <Compile Include="Main.fs" />
+    </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="../../src/LudumLinguarum/LudumLinguarum.fsproj" />
+    </ItemGroup>
+    <Import Project="..\..\.paket\Paket.Restore.targets" />
 </Project>
