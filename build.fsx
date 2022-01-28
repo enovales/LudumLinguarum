@@ -470,7 +470,7 @@ let generateAssemblyInfo _ =
           AssemblyInfo.InternalsVisibleTo("LudumLinguarum.Tests")
         ]
 
-    let getProjectDetails projectPath =
+    let getProjectDetails(projectPath: string) =
         let projectName = IO.Path.GetFileNameWithoutExtension(projectPath)
         (
             projectPath,
