@@ -68,7 +68,7 @@ let distGlob =
     ++ (distDir @@ "*.tgz")
     ++ (distDir @@ "*.tar.gz")
 
-let coverageThresholdPercent = 1
+let coverageThresholdPercent = 0
 let coverageReportDir =  __SOURCE_DIRECTORY__  @@ "docs" @@ "coverage"
 
 let gitOwner = "enovales"
@@ -89,7 +89,7 @@ let mutable latestEntry =
 let mutable linkReferenceForLatestEntry = ""
 let mutable changelogBackupFilename = ""
 
-let targetFramework =  "net5.0"
+let targetFramework =  "net6.0"
 
 // RuntimeIdentifiers: https://docs.microsoft.com/en-us/dotnet/core/rid-catalog
 // dotnet-packaging Tasks: https://github.com/qmfrederik/dotnet-packaging/blob/0c8e063ada5ba0de2b194cd3fad8308671b48092/Packaging.Targets/build/Packaging.Targets.targets
@@ -470,7 +470,7 @@ let generateAssemblyInfo _ =
           AssemblyInfo.InternalsVisibleTo("LudumLinguarum.Tests")
         ]
 
-    let getProjectDetails projectPath =
+    let getProjectDetails(projectPath: string) =
         let projectName = IO.Path.GetFileNameWithoutExtension(projectPath)
         (
             projectPath,
