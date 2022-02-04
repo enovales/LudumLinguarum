@@ -1,4 +1,4 @@
-﻿module CsvToolsTests
+module CsvToolsTests
 
 open CsvTools
 open Expecto
@@ -7,11 +7,20 @@ open System
 type ExtractorType = string -> string array
 type TestFunction = string * string array -> unit
 
-let private tsvExtractor = extractFieldsForLine("\t")
-let private ssvExtractor = extractFieldsForLine(";")
-let private csvExtractor = extractFieldsForLine(",")
+let private tsvExtractor = extractFieldsForLine(Some("\t"))
+let private ssvExtractor = extractFieldsForLine(Some(";"))
+let private csvExtractor = extractFieldsForLine(Some(","))
+let private autodetectingExtractor = extractFieldsForLine(None)
 
-let private extractorMap = [| (tsvExtractor, "\t"); (ssvExtractor, ";"); (csvExtractor, ",") |]
+let private extractorMap = [|
+    (tsvExtractor, "\t")
+    (ssvExtractor, ";")
+    (csvExtractor, ",")
+    (autodetectingExtractor, "\t")
+    (autodetectingExtractor, ";")
+    (autodetectingExtractor, ",")
+|]
+
 let private runExtractorTest(ts: string, testFunction: TestFunction)(extractor: ExtractorType, delimiter: string) = 
     testFunction(delimiter, extractor(String.Format(ts, delimiter)))
 

@@ -1,4 +1,4 @@
-﻿module OneOffGames
+module OneOffGames
 
 open LLDatabase
 open LudumLinguarumPlugins
@@ -69,6 +69,7 @@ type OneOffGamesPlugin() =
             ({ GameMetadata.name = "Mega Man Legacy Collection"; supportedLanguages = [| "de"; "en"; "es"; "fr"; "it"; "ja"; "pt-BR"; "ru" |]}, SimpleGames.ExtractMegaManLegacyCollection)
             ({ GameMetadata.name = "Worms Crazy Golf"; supportedLanguages = [| "cs"; "de"; "en-GB"; "en-US"; "es"; "fr"; "it"; "pl" |]}, WormsGames.Common.ExtractWormsCrazyGolf)
             ({ GameMetadata.name = "Worms W.M.D"; supportedLanguages = [| "cs"; "de"; "en-GB"; "en-US"; "es"; "fr"; "it"; "pl"; "pt-BR"; "ru"; "zh-CN" |]}, WormsGames.Common.ExtractWormsWMD)
+            ({ GameMetadata.name = "Dicey Dungeons"; supportedLanguages = [| "ar"; "br"; "ca"; "cy"; "de"; "en"; "es"; "fr"; "ie"; "it"; "ja"; "ko"; "nl"; "pl"; "pt"; "ru"; "sc"; "sz"; "tc"; "tr" |]}, DiceyDungeons.ExtractDiceyDungeons)
         |] |> Map.ofArray
 
     interface IPlugin with

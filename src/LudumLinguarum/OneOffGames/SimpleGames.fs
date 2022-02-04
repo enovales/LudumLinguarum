@@ -309,7 +309,7 @@ let internal stripHbFormattingTokens(s: string) =
     |> Seq.fold stripHbRegex s
 
 let hbGenerateCardsForLine(languages: string seq, lid: int)(l: string): CardRecord array = 
-    let fields = extractFieldsForLine("\\t")(l)
+    let fields = extractFieldsForLine(Some("\\t"))(l)
 
     let cardId = fields |> Array.head
     let generateCardForIdAndText(language: string, text: string) = 
@@ -810,7 +810,7 @@ let ExtractSuperMeatBoy(path: string) =
 
     let cards = 
         File.ReadAllText(Path.Combine(path, @"locdb.txt"))
-        |> CsvTools.extractCsv<MeatBoyStrings>("\t")
+        |> CsvTools.extractCsv<MeatBoyStrings>(Some("\t"))
         |> Array.collect cardsForMBS
 
     {
