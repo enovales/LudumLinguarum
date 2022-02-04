@@ -4,11 +4,15 @@ open System
 open System.Globalization
 open System.IO
 
-let extractFieldsForLine(delimiter: string)(line: string): string array = 
+let extractFieldsForLine(delimiterOpt: string option)(line: string): string array = 
     use sr = new StringReader(line + Environment.NewLine + line)
     
     let config = CsvHelper.Configuration.CsvConfiguration(CultureInfo.CurrentCulture)
-    config.Delimiter <- delimiter
+    config.BadDataFound <- (fun a -> ())
+
+    match delimiterOpt with
+    | Some(delimiter) -> config.Delimiter <- delimiter
+    | _ -> config.DetectDelimiter <- true
 
     let parser = new CsvHelper.CsvParser(sr, config)
     if parser.Read() then
@@ -16,10 +20,15 @@ let extractFieldsForLine(delimiter: string)(line: string): string array =
     else
         [||]
 
-let extractCsv<'T>(delimiter: string)(contents: string): 'T array = 
+let extractCsv<'T>(delimiterOpt: string option)(contents: string): 'T array = 
     use sr = new StringReader(contents)
     let config = CsvHelper.Configuration.CsvConfiguration(CultureInfo.CurrentCulture)
-    config.Delimiter <- delimiter
+    config.BadDataFound <- (fun a -> ())
+
+    match delimiterOpt with
+    | Some(delimiter) -> config.Delimiter <- delimiter
+    | _ -> config.DetectDelimiter <- true
+
     let parser = new CsvHelper.CsvReader(sr, config)
 
     parser.GetRecords<'T>() |> Array.ofSeq

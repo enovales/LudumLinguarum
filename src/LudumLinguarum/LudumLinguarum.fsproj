@@ -43,6 +43,7 @@
     <Compile Include="InfinityAuroraEngine\KOTOR1Context.fs" />
     <Compile Include="InfinityAuroraEngine\KOTOR2Context.fs" />
     <Compile Include="InfinityAuroraEngine\AuroraPlugin.fs" />
+    <Compile Include="OneOffGames\DiceyDungeons.fs" />
     <EmbeddedResource Include="OneOffGames\JetSetRadio\SrtExtraction.csv" />
     <EmbeddedResource Include="OneOffGames\JetSetRadio\StringBlockExtraction.csv" />
     <Compile Include="OneOffGames\Utils.fs" />

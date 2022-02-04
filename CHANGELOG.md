@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 * Built against .NET 6.
+* Added support for:
+    * [Dicey Dungeons](https://store.steampowered.com/app/861540/) \[ar, br, ca, cy, de, en, es, fr, ie, it, ja, ko, nl, pl, pt, ru, sc, sz, tc, tr\]
 
 ## [2.0.0-alpha.2] - 2021-06-02
 
