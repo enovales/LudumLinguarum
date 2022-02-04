@@ -8,6 +8,7 @@ The following games and [language tags](https://en.wikipedia.org/wiki/IETF_langu
 * Crusader Kings II \[de, en, es, fr\]
 * Darwinia \[de, en, es, fr, it\]
 * Defcon \[de, en, es, fr, it\]
+* Dicey Dungeons \[ar, br, ca, cy, de, en, es, fr, ie, it, ja, ko, nl, pl, pt, ru, sc, sz, tc, tr\]
 * DiRT \[de, en-GB, en-US, es, fr, it\]
 * DiRT 2 \[de, en-GB, en-US, es, fr, it, ja, pl, ru\]
 * Europa Universalis III \[de, en\]
