@@ -15,7 +15,7 @@ type OneOffGamesPlugin() =
             ({ GameMetadata.name = "Skulls of the Shogun"; supportedLanguages = [| "de"; "en"; "es"; "fr"; "it"; "ja"; "ko"; "pt"; "ru"; "zh" |] }, SimpleGames.ExtractSkullsOfTheShogun)
             ({ GameMetadata.name = "Magical Drop V"; supportedLanguages = [| "de"; "en"; "es"; "fr"; "it"; "ja" |] }, SimpleGames.ExtractMagicalDropV)
             ({ GameMetadata.name = "Audiosurf"; supportedLanguages = [| "en"; "ru" |] }, SimpleGames.ExtractAudiosurf)
-            ({ GameMetadata.name = "Bastion"; supportedLanguages = [| "de"; "en"; "es"; "fr"; "it" |] }, SimpleGames.ExtractBastion)
+            ({ GameMetadata.name = "Bastion"; supportedLanguages = [| "de"; "en"; "es"; "fr"; "it" |] }, SupergiantGames.ExtractBastion)
             ({ GameMetadata.name = "Magicka"; supportedLanguages = [| "de"; "en"; "es"; "fr"; "hu"; "it"; "pl"; "ru" |] }, Magicka.ExtractMagicka)
             ({ GameMetadata.name = "Worms Armageddon"; supportedLanguages = [| "de"; "en"; "es"; "fr"; "it"; "nl"; "pt"; "ru"; "sv" |] }, WormsGames.Armageddon.ExtractWormsArmageddon)
             ({ GameMetadata.name = "Puzzle Chronicles"; supportedLanguages = [| "de"; "en"; "en-GB"; "es"; "es-MX"; "fr"; "fr-CA"; "it" |] }, PuzzleQuestGames.ExtractPuzzleChronicles)
@@ -43,7 +43,7 @@ type OneOffGamesPlugin() =
             ({ GameMetadata.name = "Age of Empires III"; supportedLanguages = [| "de"; "en"; "es"; "fr"; "it" |] }, AgeOfEmpiresGames.ExtractAOE3)
             ({ GameMetadata.name = "Sonic Adventure DX"; supportedLanguages = [| "de"; "en"; "es"; "fr"; "it"; "ja" |] }, SonicAdventureDX.ExtractSonicAdventureDX)
             ({ GameMetadata.name = "Braid"; supportedLanguages = [| "cs"; "de"; "en"; "es"; "fr"; "it"; "ja"; "ka"; "ko"; "pl"; "pt"; "ru"; "zh" |] }, SimpleGames.ExtractBraid)
-            ({ GameMetadata.name = "Transistor"; supportedLanguages = [| "de"; "en"; "es"; "fr"; "it"; "ja"; "pl"; "pt"; "ru"; "zh" |] }, SimpleGames.ExtractTransistor)
+            ({ GameMetadata.name = "Transistor"; supportedLanguages = [| "de"; "en"; "es"; "fr"; "it"; "ja"; "pl"; "pt"; "ru"; "zh" |] }, SupergiantGames.ExtractTransistor)
             ({ GameMetadata.name = "IHF Handball Challenge 12"; supportedLanguages = [| "da"; "de"; "en"; "es"; "hu"; "it"; "pt" |] }, SimpleGames.ExtractIHFHandballChallenge12)
             ({ GameMetadata.name = "IHF Handball Challenge 14"; supportedLanguages = [| "da"; "de"; "en"; "es"; "fr"; "pl"; "sv" |] }, SimpleGames.ExtractIHFHandballChallenge14)
             ({ GameMetadata.name = "Torment: Tides of Numenera"; supportedLanguages = [| "de"; "en"; "es"; "fr"; "it"; "pl"; "ru" |] }, PillarsOfEternity.ExtractTormentTidesOfNumenera)
@@ -70,6 +70,8 @@ type OneOffGamesPlugin() =
             ({ GameMetadata.name = "Worms Crazy Golf"; supportedLanguages = [| "cs"; "de"; "en-GB"; "en-US"; "es"; "fr"; "it"; "pl" |]}, WormsGames.Common.ExtractWormsCrazyGolf)
             ({ GameMetadata.name = "Worms W.M.D"; supportedLanguages = [| "cs"; "de"; "en-GB"; "en-US"; "es"; "fr"; "it"; "pl"; "pt-BR"; "ru"; "zh-CN" |]}, WormsGames.Common.ExtractWormsWMD)
             ({ GameMetadata.name = "Dicey Dungeons"; supportedLanguages = [| "ar"; "br"; "ca"; "cy"; "de"; "en"; "es"; "fr"; "ie"; "it"; "ja"; "ko"; "nl"; "pl"; "pt"; "ru"; "sc"; "sz"; "tc"; "tr" |]}, DiceyDungeons.ExtractDiceyDungeons)
+            ({ GameMetadata.name = "Pyre"; supportedLanguages = [| "de"; "en"; "es"; "fr"; "ru"; "zh-CN" |]}, SupergiantGames.ExtractPyre)
+            ({ GameMetadata.name = "Hades"; supportedLanguages = [| "de"; "en"; "es"; "fr"; "it"; "ja"; "ko"; "pl"; "pt-BR"; "ru"; "zh-CN" |]}, SupergiantGames.ExtractHades)
         |] |> Map.ofArray
 
     interface IPlugin with
