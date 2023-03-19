@@ -16,6 +16,7 @@
         <Compile Include="SrtToolsTests.fs" />
         <Compile Include="StringExtractorsTests.fs" />
         <Compile Include="TrieTests.fs" />
+        <Compile Include="SjsonToolsTests.fs" />
         <Compile Include="OneOffGames.Tests\JetSetRadioTests.fs" />
         <Compile Include="OneOffGames.Tests\MadballsBaboInvasionTests.fs" />
         <Compile Include="OneOffGames.Tests\MagickaTests.fs" />

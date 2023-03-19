@@ -30,6 +30,7 @@
     <Compile Include="CsvTools.fs" />
     <Compile Include="YamlTools.fs" />
     <Compile Include="StreamTools.fs" />
+    <Compile Include="SjsonTools.fs" />
     <None Include="App.config" />
     <Compile Include="InfinityAuroraEngine\CommonTypes.fs" />
     <Compile Include="InfinityAuroraEngine\TalkTable.fs" />
