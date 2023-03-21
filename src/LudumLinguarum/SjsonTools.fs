@@ -89,7 +89,7 @@ module SjsonGrammar =
 
     let private sjsonNode, private sjsonNodeRef = createParserForwardedToRef<SjsonNode, Unit>()
 
-    let private manyContained popen pclose psep p = between popen pclose <| sepBy p psep
+    let private manyContained popen pclose psep p = between popen pclose <| sepEndBy p psep
 
     let private optionalCommaSeparator: Parser<_, Unit> =
         choice [
@@ -181,6 +181,3 @@ let sjsonToJSON(sjson: string): string =
         use sw = new StringWriter()
         SjsonGrammar.printJson(result, sw)
         sw.ToString()
-    
-// Attempt to convert a file containing Lua data declarations into a simplified JSON file, which can then
-// be converted into standard JSON.

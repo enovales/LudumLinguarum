@@ -8,6 +8,68 @@ open System.IO
 open System.Text.RegularExpressions
 open System.Xml.Linq
 
+module Lua =
+    open FParsec
+
+    open System.IO
+
+    // Minimal tools to deal with parsing the Lua data declaration files, so that we can extract text from them for
+    // English-language cues in Hades which are not present in the subtitle files.
+
+    // Trace operator, for debugging parsers. https://www.quanttec.com/fparsec/users-guide/debugging-a-parser.html#tracing-a-parser
+    let private (<!>) (p: Parser<_,_>) label : Parser<_,_> =
+        fun stream ->
+            printfn "%A: Entering %s" stream.Position label
+            let reply = p stream
+            match box reply.Result with
+            | null ->
+                printfn "%A: Leaving %s (%A)" stream.Position label reply.Status
+            | _ ->
+                printfn "%A: Leaving %s (%A) (%A)" stream.Position label reply.Status reply.Result
+
+            reply
+
+    // Module for the parser which is used to replace multi-line and single-line comments with a single space.
+    module LuaCommentStrippingGrammar =
+        type internal CommentPreprocessorNode =
+            | NonCommentBlock of string
+            | Comment
+
+        let private longBracketOpen: Parser<_, Unit> = between (skipChar '[') (skipChar '[') (many(skipChar '='))
+        let private longBracketClose: Parser<_, Unit> = between (skipChar ']') (skipChar ']') (many(skipChar '='))
+        let private multiLineComment: Parser<_, Unit> = attempt (skipChar '-' .>> skipChar '-' .>> longBracketOpen .>> (manyCharsTill anyChar longBracketClose))
+        let private lineComment: Parser<_, Unit> = attempt (skipChar '-' .>> skipChar '-' .>> skipRestOfLine false)
+        let private comment =
+            choice [
+                multiLineComment
+                lineComment
+            ] >>% Comment
+
+        let private nonComment =
+            // Note that we have to use `lookAhead` for the comment/end-of-file check, because
+            // we don't want to actually consume those characters right now. (We want to
+            // parse the comment block on its own, so we can accurately replace it with a single
+            // space.)
+            manyCharsTill anyChar (choice [lookAhead comment >>% (); eof]) |>> NonCommentBlock
+
+        let internal commentPreprocessorParser: Parser<_, Unit> =
+            manyTill (choice [comment; nonComment]) eof
+
+
+    let stripComments(luaSource: string): string =
+        let parsedLua = run LuaCommentStrippingGrammar.commentPreprocessorParser luaSource
+        match parsedLua with
+        | ParserResult.Failure (s, e, us) -> failwith "failed to remove comments from Lua successfully"
+        | ParserResult.Success (result, _, _) ->
+            result
+            |> List.map (fun b ->
+                match b with
+                | LuaCommentStrippingGrammar.NonCommentBlock s -> s
+                | LuaCommentStrippingGrammar.Comment -> " "
+            )
+            |> String.concat ""
+
+
 let private stripLanguageRegion(l: string) = 
     if l.Contains("-") then
         l.Substring(0, l.IndexOf("-"))

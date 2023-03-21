@@ -53,6 +53,13 @@ let tests =
                 let result = sjsonToJSON input
                 Expect.equal result expected "unexpected parse result"
 
+        testCase "Parse a SJSON file with trailing commas in an array into equivalent JSON" <|
+            fun () ->
+                let input = "test_array = [1, 2, 3, 4, 5,]"
+                let expected = "{\n\"test_array\": [\n1,\n2,\n3,\n4,\n5\n]\n\n}\n".ReplaceLineEndings()
+                let result = sjsonToJSON input
+                Expect.equal result expected "unexpected parse result"
+
         testCase "Replace comments with a single space" <|
             fun () ->
                 let input = "foo = /* c-style comment */ 123\nbar = 456 // line comment\nbaz = 789".ReplaceLineEndings()

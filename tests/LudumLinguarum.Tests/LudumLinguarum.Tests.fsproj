@@ -27,6 +27,7 @@
         <Compile Include="OneOffGames.Tests\SimpleGamesTests.fs" />
         <Compile Include="OneOffGames.Tests\SonicAdventureDXTests.fs" />
         <Compile Include="OneOffGames.Tests\SpaceChannel5Tests.fs" />
+        <Compile Include="OneOffGames.Tests\SupergiantGamesTests.fs" />
         <Compile Include="OneOffGames.Tests\WormsGamesTests.fs" />
         <Compile Include="OneOffGames.Tests\XUIGamesTests.fs" />
         <Compile Include="InfinityAuroraEngine.Tests\ArchiveFilesTests.fs" />
