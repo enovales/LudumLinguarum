@@ -55,6 +55,9 @@ module Lua =
         let internal commentPreprocessorParser: Parser<_, Unit> =
             manyTill (choice [comment; nonComment]) eof
 
+    let private hadesCueAndTextRegexPattern = @"\{[^{}]*\bCue\s*=\s*""(.*?)"".*Text\s*=\s*""(.*?)"""
+    let internal hadesCueAndTextRegex = new Regex(hadesCueAndTextRegexPattern, RegexOptions.Singleline)
+
 
     let stripComments(luaSource: string): string =
         let parsedLua = run LuaCommentStrippingGrammar.commentPreprocessorParser luaSource
