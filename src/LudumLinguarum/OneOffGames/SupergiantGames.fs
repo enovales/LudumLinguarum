@@ -3,8 +3,11 @@ module SupergiantGames
 open LLDatabase
 open LLUtils
 
+open Json.Path
+
 open System
 open System.IO
+open System.Text.Json.Nodes
 open System.Text.RegularExpressions
 open System.Xml.Linq
 
@@ -30,6 +33,7 @@ module Lua =
             reply
 
     // Module for the parser which is used to replace multi-line and single-line comments with a single space.
+    // Note that this currently doesn't correctly deal with comment strings within quotes.
     module LuaCommentStrippingGrammar =
         type internal CommentPreprocessorNode =
             | NonCommentBlock of string
@@ -55,7 +59,7 @@ module Lua =
         let internal commentPreprocessorParser: Parser<_, Unit> =
             manyTill (choice [comment; nonComment]) eof
 
-    let private hadesCueAndTextRegexPattern = @"\{[^{}]*\bCue\s*=\s*""(.*?)"".*Text\s*=\s*""(.*?)"""
+    let private hadesCueAndTextRegexPattern = @"\{[^{}]*\bCue\s*=\s*""(?<Cue>.*?)"".*Text\s*=\s*""(?<Text>.*?)"""
     let internal hadesCueAndTextRegex = new Regex(hadesCueAndTextRegexPattern, RegexOptions.Singleline)
 
 
@@ -173,34 +177,6 @@ let private generateCardsForLaunchTextXml(path: string, lessonId: int) =
     else
         [||]
 
-// Handling for the simplified JSON files used by Hades for localization of text included in the game's
-// Lua scripts.
-let private generateCardsForLanguageSjson(path: string, lessonId: int)(language: string) =
-    let gameTextFiles = Directory.GetFiles(Path.Combine(path, FixPathSeps(@"Content\Game\Text\" + language)), "*.sjson")
-    let generateCardsForGameText(filePath: string) =
-        // Transform the simplified JSON into proper JSON, so we can query it via JSONPath queries.
-        // If this SJSON file is an override (file name starts with an underscore), then try and load the
-        // original file as well, to generate the English language cards.
-
-        let fileName = Path.GetFileName(filePath)
-        let cardKeyToCardValues =
-            if (fileName.StartsWith('_')) then
-                Map.empty
-            else
-                Map.empty
-
-        cardKeyToCardValues
-        |> AssemblyResourceTools.createCardRecordForStrings(lessonId, "gametext", language, "masculine")
-
-    gameTextFiles
-    |> Array.collect generateCardsForGameText
-
-let private generateCardsForSjson(path: string, lessonId: int) =
-    let languageDirectories = Directory.GetDirectories(Path.Combine(path, FixPathSeps @"Content\Game\Text"))
-    languageDirectories
-    |> Array.collect(generateCardsForLanguageSjson(path, lessonId))
-
-    
 let private extractSupergiantGame(path: string) = 
     let lessonGameTextEntry = {
         LessonRecord.ID = 0;
@@ -218,7 +194,6 @@ let private extractSupergiantGame(path: string) =
             generateCardsForFormattedXml(path, "1_Keywords", "1_Keywords*.xml", lessonGameTextEntry.ID)
             generateCardsForFormattedXml(path, "Events", "Events*.xml", lessonGameTextEntry.ID)
             generateCardsForLaunchTextXml(path, lessonGameTextEntry.ID)
-            generateCardsForSjson(path, lessonGameTextEntry.ID)
         |]
         |> Array.collect id
 
@@ -230,5 +205,142 @@ let private extractSupergiantGame(path: string) =
 let ExtractBastion(path: string) = extractSupergiantGame(path)
 let ExtractTransistor(path: string) = extractSupergiantGame(path)
 let ExtractPyre(path: string) = extractSupergiantGame(path)
-let ExtractHades(path: string) = extractSupergiantGame(path)
 
+module Hades = 
+    // Hades isn't structured the same way as the other Supergiant games, and requires some bespoke 
+    // mapping to allow us to match up English text that is stored in some of the Lua scripts, 
+    // with the localized versions, which are in the subtitle or game text files.
+    let internal generateCardsForLuaScript(lessonId: int)(path: string) =
+        let fileText = File.ReadAllText(path)
+        let commentStrippedText = Lua.stripComments(fileText)
+        let matchResults = Lua.hadesCueAndTextRegex.Matches(commentStrippedText) |> Array.ofSeq
+        let fileRootName = Path.GetFileNameWithoutExtension(path)
+
+        matchResults
+        |> Array.map (fun r -> (r.Groups.Item("Cue").Value, r.Groups.Item("Text").Value))
+        |> Map.ofArray
+        |> AssemblyResourceTools.createCardRecordForStrings(lessonId, fileRootName, "en", "masculine")
+
+    let internal normalizeQuotesToDoubleQuotes(sjson: string) =
+        let pattern = "=[\s]+(?<!\")'(?:(?>[^'\"]+)|\"\"|''|'(?!\"'))*'$"
+        let replacement = "\"${0:1,-2}\""
+
+        let replaceMatch (m: Match) =
+            let matchedString = m.Value.Substring(1, m.Value.Length - 2)
+            let replaced = matchedString.Replace("\"", "'")
+            "\"" + replaced + "\""
+
+        Regex.Replace(sjson, pattern, MatchEvaluator(replaceMatch), RegexOptions.Multiline)
+
+    // Handling for the simplified JSON files used by Hades for localization of text included in the game's
+    // Lua scripts.
+    let private sjsonFileNameRegex = new Regex(@"(?<name>[^\.]+)[\.](?<lang>..(-..)?)[\.]sjson")
+    let private sjsonIdAndDisplayNameJSONPath = JsonPath.Parse("$..[?(@.Id && @.DisplayName)]")
+    let private sjsonNonStandardCharacterEscapingRegex1 = new Regex(@"\\Column [0-9]+")
+    let private sjsonNonStandardQuotingRegex1 = new Regex("=\s(?<open>'\\\")(?<contents>.*)(?<close>\\\"')$")
+
+    let private generateCardsForLanguageSjson(path: string, lessonId: int)(language: string) =
+        let gameTextFiles = Directory.GetFiles(Path.Combine(path, FixPathSeps(@"Content\Game\Text\" + language)), "*.sjson")
+        let generateCardsForGameText(filePath: string) =
+            // Transform the simplified JSON into proper JSON, so we can query it via JSONPath queries.
+            // If this SJSON file is an override (file name starts with an underscore), then try and load the
+            // original file as well, to generate the English language cards.
+
+            let fileName = Path.GetFileName(filePath)
+            let filePartsResults = sjsonFileNameRegex.Match(fileName)
+            let fileRootName = filePartsResults.Groups.Item("name").Value
+            let fileLanguage = filePartsResults.Groups.Item("lang").Value
+
+            // There are some issues with the files that come with the game, where it doesn't seem to conform to the
+            // published SJSON spec. We'll perform some ad-hoc fixups to try and get things working, without
+            // going too deep into trying to understand if there have been further changes to the SJSON grammar.
+            // 1) remove leading/trailing whitespace
+            // 2) remove braces wrapping the files
+            // 3) sanitize quadruple quotes
+            // 4) remove unnecessary quadruple/triple quotes
+            // 5) fix text errors with quoting
+            // 6) formatting metadata of the form \Column xxx, which violates the character escaping parts of the SJSON grammar
+            // 7) remove non-breaking spaces
+            let sjsonText =
+                File
+                    .ReadAllText(filePath)
+                    .Trim()
+                    .Trim([|'{'; '}'|])
+                    .Replace("\\[", "[")
+                    .Replace("\\]", "]")
+                    .Replace("\t", "    ")
+                    .Replace(char(0xA0), ' ')
+
+            let sjsonText2 = sjsonNonStandardCharacterEscapingRegex1.Replace(sjsonText, "")
+            let jsonText = SjsonTools.sjsonToJSON(sjsonText2)
+
+            let keyRoot =
+                if (fileRootName.StartsWith('_')) then
+                    fileRootName.Substring(1)
+                else
+                    fileRootName
+
+            let jsonPathResult = sjsonIdAndDisplayNameJSONPath.Evaluate(JsonNode.Parse(jsonText))
+            jsonPathResult.Matches
+            |> Seq.map (fun m -> (m.Value.Item("Id").ToString(), m.Value.Item("DisplayName").ToString()))
+            |> Map.ofSeq
+            |> AssemblyResourceTools.createCardRecordForStrings(lessonId, keyRoot, language, "masculine")
+
+        gameTextFiles
+        |> Array.collect generateCardsForGameText
+
+    let internal generateCardsForSjson(path: string, lessonId: int) =
+        let languageDirectories = Directory.GetDirectories(Path.Combine(path, FixPathSeps @"Content\Game\Text"))
+        languageDirectories
+        |> Array.map (fun d -> Path.GetFileName(d))
+        |> Array.collect(generateCardsForLanguageSjson(path, lessonId))
+
+
+let ExtractHades(path: string) =
+    let lessonGameTextEntry = {
+        LessonRecord.ID = 0;
+        Name = "Game Text"
+    }
+    let lessonSubtitlesEntry = {
+        LessonRecord.ID = 1;
+        Name = "Subtitles"
+    }
+
+    let luaScriptsToProcess =
+        [
+            @"Content\Scripts\DeathLoopData.lua"
+            @"Content\Scripts\EncounterData.lua"
+            @"Content\Scripts\EnemyData.lua"
+            @"Content\Scripts\LootData.lua"
+            @"Content\Scripts\NPCData.lua"
+            @"Content\Scripts\RoomData.lua"
+            @"Content\Scripts\RoomDataAsphodel.lua"
+            @"Content\Scripts\RoomDataElysium.lua"
+            @"Content\Scripts\RoomDataSecrets.lua"
+            @"Content\Scripts\RoomDataStyx.lua"
+            @"Content\Scripts\RoomDataSurface.lua"
+            @"Content\Scripts\RoomDataTartarus.lua"
+        ]
+        |> List.map FixPathSeps
+        |> List.map (fun relativePath -> Path.Combine(path, relativePath))
+
+    let finalCards =
+        [|
+            [|
+                generateCardsForAllSubtitleDirectories(path, lessonSubtitlesEntry.ID)
+                generateCardsForFormattedXml(path, "HelpText", "HelpText*.xml", lessonGameTextEntry.ID)
+                generateCardsForFormattedXml(path, "1_Keywords", "1_Keywords*.xml", lessonGameTextEntry.ID)
+                generateCardsForFormattedXml(path, "Events", "Events*.xml", lessonGameTextEntry.ID)
+                generateCardsForLaunchTextXml(path, lessonGameTextEntry.ID)
+                Hades.generateCardsForSjson(path, lessonGameTextEntry.ID)
+                Hades.generateCardsForSjson(path, lessonGameTextEntry.ID)
+            |]
+            luaScriptsToProcess |> List.map (Hades.generateCardsForLuaScript(lessonGameTextEntry.ID)) |> Array.ofList
+        |]
+        |> Array.collect id
+        |> Array.collect id
+
+    {
+        LudumLinguarumPlugins.ExtractedContent.lessons = [| lessonGameTextEntry; lessonSubtitlesEntry |]
+        LudumLinguarumPlugins.ExtractedContent.cards = finalCards
+    }

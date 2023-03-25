@@ -3,6 +3,8 @@ module SjsonTools
 open FParsec
 
 open System.IO
+open System.Text.Json
+open System.Text.RegularExpressions
 
 // Tools to deal with "simplified JSON" and related files, as used by Autodesk Stingray and Bitsquid.
 //
@@ -39,7 +41,8 @@ module SjsonCommentStrippingGrammar =
         | NonCommentBlock of string
         | Comment
 
-    let private multiLineComment: Parser<_, Unit> = attempt (skipChar '/' .>> skipChar '*' .>> manyCharsTill anyChar (skipChar '*' .>> skipChar '/'))
+    let private multiLineComment: Parser<_, Unit> =
+        attempt (skipChar '/' .>> skipChar '*' .>> manyCharsTill anyChar (attempt (skipChar '*' .>> skipChar '/')))
     let private lineComment: Parser<_, Unit> = attempt (skipChar '/' .>> skipChar '/' .>> skipRestOfLine false)
     let private comment =
         choice [
@@ -64,18 +67,46 @@ module SjsonGrammar =
     let private sjsonBool: Parser<_, Unit> = sjsonBoolTrue <|> sjsonBoolFalse
     let private sjsonNumber: Parser<_, Unit> = pfloat .>> spaces |>> SjsonNumber
 
-    // Parses any string between double quotes, with escaping support
+    let internal tripleQuotedStringLiteral =
+        // Check for triple quotes at the end of the file, or triple quotes followed by something that is not a quote.
+        let terminalTripleQuotes =
+            (pstring "\"\"\"") .>> (choice [eof; (notFollowedByL (pstring "\"") "terminal quote") >>% ()])
+
+        // Normalize any non-standard escaped characters inside triple quotes, by using the
+        // \u syntax.
+        let anyCharAndFixupInvalidEscaped =
+            choice [
+                attempt (pchar '\\' >>. notFollowedBy (anyOf "\\'\"nrt[]") >>. anyChar)
+                anyChar
+            ]
+        between (pstring "\"\"\"") (pstring "\"\"\"") (manyCharsTill anyCharAndFixupInvalidEscaped (choice [eof; lookAhead (attempt terminalTripleQuotes >>% ())]))
+
+    // Parses any string between triple, double or single quotes, with escaping support
     let internal quotedStringLiteral: Parser<_, Unit> =
         let str s = pstring s
-        let normalCharSnippet = manySatisfy (fun c -> c <> '\\' && c <> '"')
-        let escapedChar = str "\\" >>. (anyOf "\\\"nrt" |>> function
-                                                            | 'n' -> @"\n"
-                                                            | 'r' -> @"\r"
-                                                            | 't' -> @"\t"
-                                                            | '"' -> "\\\""
-                                                            | c   -> "\\" + string c)
-        between (str "\"") (str "\"")
-                (stringsSepBy normalCharSnippet escapedChar)
+        let normalCharSnippetForDoubleQuoted = manySatisfy (fun c -> c <> '\\' && c <> '"')
+        let normalCharSnippetForSingleQuoted = manySatisfy (fun c -> c <> '\\' && c <> '\'')
+
+        let escapedChar =
+            pstring "\\" >>.
+//                (anyOf "\\'\"nrt[]" |>> function
+                (anyChar |>> function
+                         | 'n' -> @"\n"
+                         | 'r' -> @"\r"
+                         | 't' -> @"\t"
+                         | '"' -> "\""
+                         | '\'' -> "'"
+                         | c   -> "\\u" + (int(c)).ToString("X4")
+                )
+
+
+        choice [
+            tripleQuotedStringLiteral
+            between (str "'") (str "'") (stringsSepBy normalCharSnippetForSingleQuoted escapedChar)
+            between (str "\"") (str "\"")
+                    (stringsSepBy normalCharSnippetForDoubleQuoted escapedChar)
+        ]
+        
 
     let private sjsonString: Parser<_, Unit> = quotedStringLiteral .>> spaces |>> SjsonString
 
@@ -131,17 +162,72 @@ module SjsonGrammar =
     let internal sjsonFileScopeContainer =
         spaces >>. manyTill (sjsonProperty .>> spaces) eof |>> Map.ofList |>> SjsonObject
 
+    let private unescapedDoubleQuotesRegex = new Regex("([^\\\\])\"|^\"")
+
     // Used to output standard JSON, from the SJSON domain model.
-    let rec internal printJson(node: SjsonNode, writer: TextWriter) =
+    let rec internal printUnnamedJsonNodeInternal(node: SjsonNode, writer: Utf8JsonWriter) =
+        match node with
+        | SjsonObject o ->
+            writer.WriteStartObject()
+            o
+            |> Seq.iter (fun kv -> printNamedJsonNodeInternal(kv.Value, kv.Key, writer))
+            writer.WriteEndObject()
+        | SjsonArray a ->
+            writer.WriteStartArray()
+            a
+            |> Seq.iter (fun v -> printUnnamedJsonNodeInternal(v, writer))
+            writer.WriteEndArray()
+        | SjsonNull -> writer.WriteNullValue()
+        | SjsonBool b -> writer.WriteBooleanValue(b)
+        | SjsonNumber n -> writer.WriteNumberValue(n)
+        | SjsonString s -> writer.WriteStringValue(s)
+    and internal printNamedJsonNodeInternal(node: SjsonNode, name: string, writer: Utf8JsonWriter) =
+        match node with
+        | SjsonObject o ->
+            writer.WriteStartObject(name)
+            o
+            |> Seq.iter (fun kv -> printNamedJsonNodeInternal(kv.Value, kv.Key, writer))
+            writer.WriteEndObject()
+        | SjsonArray a ->
+            writer.WriteStartArray(name)
+            a
+            |> Seq.iter (fun v -> printUnnamedJsonNodeInternal(v, writer))
+            writer.WriteEndArray()
+        | SjsonNull -> writer.WriteNull(name)
+        | SjsonBool b -> writer.WriteBoolean(name, b)
+        | SjsonNumber n -> writer.WriteNumber(name, n)
+        | SjsonString s -> writer.WriteString(name, s)
+
+    let internal printJson(node: SjsonNode) =
+        use ms = new MemoryStream()
+        let writer = new Utf8JsonWriter(ms)
+        printUnnamedJsonNodeInternal(node, writer)
+        writer.Flush() |> ignore
+
+        ms.Seek(0, SeekOrigin.Begin) |> ignore
+        use sr = new StreamReader(ms)
+        let result = sr.ReadToEnd()
+        result
+        
+
+    let rec internal printJsonOld(node: SjsonNode, writer: TextWriter) =
         match node with
         | SjsonNull -> writer.Write("null")
-        | SjsonBool b -> writer.Write(b.ToString())
+        | SjsonBool b -> if b then writer.Write("true") else writer.Write("false")
         | SjsonNumber n -> writer.Write(n.ToString())
-        | SjsonString s -> writer.Write("\"" + s + "\"")
+        | SjsonString s ->
+            // Escape any unescaped quotes that might be in the string, and replace any embedded newlines with an escaped newline.
+            let sFixed =
+                unescapedDoubleQuotesRegex.Replace(s, new MatchEvaluator(fun m -> m.Groups.Item(1).Value + "\\\""))
+                    .Replace("\r", @"\n")
+                    .Replace("\n", @"\n")
+                    .Replace("\\", @"\\")
+
+            writer.Write("\"" + sFixed + "\"")
         | SjsonArray a ->
             writer.WriteLine("[")
             a |> List.iteri(fun i v ->
-                printJson(v, writer)
+                printJsonOld(v, writer)
                 if i < (a.Length - 1) then
                     writer.WriteLine(",")
             )
@@ -151,7 +237,7 @@ module SjsonGrammar =
             writer.WriteLine("{")
             o |> Map.toList |> List.iteri (fun i (k, v) ->
                 writer.Write("\"" + k + "\": ")
-                printJson(v, writer)
+                printJsonOld(v, writer)
                 if i < (o.Count - 1) then
                     writer.WriteLine(",")
             )
@@ -173,11 +259,10 @@ let stripComments(sjson: string): string =
 
 
 let sjsonToJSON(sjson: string): string =
-    let parsedSjson = run SjsonGrammar.sjsonFileScopeContainer (stripComments sjson)
+    let commentStrippedJson = stripComments sjson
+    let parsedSjson = run SjsonGrammar.sjsonFileScopeContainer commentStrippedJson
     match parsedSjson with
     | ParserResult.Failure _ ->
         failwith "failed to parse SJSON successfully for JSON transformation"
     | ParserResult.Success (result, _, _) ->
-        use sw = new StringWriter()
-        SjsonGrammar.printJson(result, sw)
-        sw.ToString()
+        SjsonGrammar.printJson(result)

@@ -19,3 +19,4 @@ CsvHelper
 sqlite-net-pcl
 
 FParsec
+JsonPath.Net

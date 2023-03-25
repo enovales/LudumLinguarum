@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "WSL": {
+      "commandName": "WSL2",
+      "distributionName": ""
+    },
+    "Debug Hades Import": {
+      "commandName": "Project",
+      "commandLineArgs": "import --game=\"Hades\" --game-dir=\"E:\\SteamLibrary\\steamapps\\common\\Hades\""
+    }
+  }
+}
