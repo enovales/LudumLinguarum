@@ -89,7 +89,6 @@ module SjsonGrammar =
 
         let escapedChar =
             pstring "\\" >>.
-//                (anyOf "\\'\"nrt[]" |>> function
                 (anyChar |>> function
                          | 'n' -> @"\n"
                          | 'r' -> @"\r"
@@ -209,41 +208,6 @@ module SjsonGrammar =
         let result = sr.ReadToEnd()
         result
         
-
-    let rec internal printJsonOld(node: SjsonNode, writer: TextWriter) =
-        match node with
-        | SjsonNull -> writer.Write("null")
-        | SjsonBool b -> if b then writer.Write("true") else writer.Write("false")
-        | SjsonNumber n -> writer.Write(n.ToString())
-        | SjsonString s ->
-            // Escape any unescaped quotes that might be in the string, and replace any embedded newlines with an escaped newline.
-            let sFixed =
-                unescapedDoubleQuotesRegex.Replace(s, new MatchEvaluator(fun m -> m.Groups.Item(1).Value + "\\\""))
-                    .Replace("\r", @"\n")
-                    .Replace("\n", @"\n")
-                    .Replace("\\", @"\\")
-
-            writer.Write("\"" + sFixed + "\"")
-        | SjsonArray a ->
-            writer.WriteLine("[")
-            a |> List.iteri(fun i v ->
-                printJsonOld(v, writer)
-                if i < (a.Length - 1) then
-                    writer.WriteLine(",")
-            )
-            writer.WriteLine()
-            writer.WriteLine("]")
-        | SjsonObject o ->
-            writer.WriteLine("{")
-            o |> Map.toList |> List.iteri (fun i (k, v) ->
-                writer.Write("\"" + k + "\": ")
-                printJsonOld(v, writer)
-                if i < (o.Count - 1) then
-                    writer.WriteLine(",")
-            )
-            writer.WriteLine()
-            writer.WriteLine("}")
-
 let stripComments(sjson: string): string =
     let parsedSjson = run SjsonCommentStrippingGrammar.commentPreprocessorParser sjson
     match parsedSjson with
