@@ -20,6 +20,20 @@ let supergiantGamesTests =
                 let result = Lua.stripComments input
                 Expect.equal result expected "multi-line comment was not removed correctly"
 
+        testCase "cue regex extraction works as expected" <|
+            fun () ->
+                let input = """Foo, Cue = "Blah", Meep = "Moop", Text = "Boo" """
+                let result = Lua.hadesCueRegex.Match(input)
+                Expect.equal result.Success true "regex should match against input"
+                Expect.equal result.Groups.[1].Value "Blah" "cue should be extracted successfully"
+
+        testCase "text regex extraction works as expected" <|
+            fun () ->
+                let input = """Foo, Cue = "Blah", Meep = "Moop", Text = "Boo" """
+                let result = Lua.hadesTextRegex.Match(input)
+                Expect.equal result.Success true "regex should match against input"
+                Expect.equal result.Groups.[1].Value "Boo" "text should be extracted successfully"
+
         testCase "cue and text regex extraction works as expected" <|
             fun () ->
                 let input = """{ blah = { foo = { Cue = "cue1", Text = "text1" }, }, }"""

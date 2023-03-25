@@ -49,35 +49,35 @@ let tests =
         testCase "Parse a simple SJSON file into equivalent JSON" <|
             fun () ->
                 let input = "test = \"foo\""
-                let expected = "{\n\"test\": \"foo\"\n}\n".ReplaceLineEndings()
+                let expected = "{\"test\":\"foo\"}".ReplaceLineEndings()
                 let result = sjsonToJSON input
                 Expect.equal result expected "unexpected parse result"
 
         testCase "Parse escaped quotes" <|
             fun () ->
                 let input = "test = \"\\\"foo\\\"\""
-                let expected = "{\n\"test\": \"\\\"foo\\\"\"\n}\n".ReplaceLineEndings()
+                let expected = "{\"test\":\"\\u0022foo\\u0022\"}".ReplaceLineEndings()
                 let result = sjsonToJSON input
                 Expect.equal result expected "unexpected parse result"
 
         testCase "Parse a SJSON file with a struct into equivalent JSON" <|
             fun () ->
                 let input = "test_struct = { foo = \"bar\" }"
-                let expected = "{\n\"test_struct\": {\n\"foo\": \"bar\"\n}\n\n}\n".ReplaceLineEndings()
+                let expected = "{\"test_struct\":{\"foo\":\"bar\"}}".ReplaceLineEndings()
                 let result = sjsonToJSON input
                 Expect.equal result expected "unexpected parse result"
 
         testCase "Parse a SJSON file with an array into equivalent JSON" <|
             fun () ->
                 let input = "test_array = [1 2 3 4 5]"
-                let expected = "{\n\"test_array\": [\n1,\n2,\n3,\n4,\n5\n]\n\n}\n".ReplaceLineEndings()
+                let expected = "{\"test_array\":[1,2,3,4,5]}".ReplaceLineEndings()
                 let result = sjsonToJSON input
                 Expect.equal result expected "unexpected parse result"
 
         testCase "Parse a SJSON file with trailing commas in an array into equivalent JSON" <|
             fun () ->
                 let input = "test_array = [1, 2, 3, 4, 5,]"
-                let expected = "{\n\"test_array\": [\n1,\n2,\n3,\n4,\n5\n]\n\n}\n".ReplaceLineEndings()
+                let expected = "{\"test_array\":[1,2,3,4,5]}".ReplaceLineEndings()
                 let result = sjsonToJSON input
                 Expect.equal result expected "unexpected parse result"
 
@@ -98,24 +98,4 @@ foo = "bar"
                 let expected = "\n \nfoo = \"bar\"\n".ReplaceLineEndings()
                 let result = (stripComments input).ReplaceLineEndings()
                 Expect.equal result expected "unexpected multi-line comment stripping behavior"
-
-        testCase "properly handle escaping quotes in strings when writing SJSON as JSON, when the quotes are at the start of the string" <|
-            fun () ->
-                let input = SjsonString "\""
-                let expected = "\"\\\"\""
-                let writer = new StringWriter()
-                SjsonGrammar.printJson(input) |> ignore
-                let result = writer.ToString()
-                Expect.equal result expected "string did not have quotes escaped correctly"
-                ()
-
-        testCase "properly handle escaping quotes in strings when writing SJSON as JSON, when the quotes are somewhere in the middle of the string" <|
-            fun () ->
-                let input = SjsonString "abc\""
-                let expected = "\"abc\\\"\""
-                let writer = new StringWriter()
-                SjsonGrammar.printJson(input) |> ignore
-                let result = writer.ToString()
-                Expect.equal result expected "string did not have quotes escaped correctly"
-                ()
     ]

@@ -61,6 +61,8 @@ module Lua =
 
     let private hadesCueAndTextRegexPattern = @"\{[^{}]*\bCue\s*=\s*""(?<Cue>.*?)"".*Text\s*=\s*""(?<Text>.*?)"""
     let internal hadesCueAndTextRegex = new Regex(hadesCueAndTextRegexPattern, RegexOptions.Singleline)
+    let internal hadesCueRegex = new Regex(@"Cue\s*=\s*""(?<Cue>.*?)""")
+    let internal hadesTextRegex = new Regex(@"Text\s=\s*""(?<Text>.*?)""")
 
 
     let stripComments(luaSource: string): string =
@@ -206,19 +208,35 @@ let ExtractBastion(path: string) = extractSupergiantGame(path)
 let ExtractTransistor(path: string) = extractSupergiantGame(path)
 let ExtractPyre(path: string) = extractSupergiantGame(path)
 
-module Hades = 
+module Hades =
+    let private getLuaScriptCueAndText(commentStrippedText: string) =
+        let matchResults = Lua.hadesCueAndTextRegex.Matches(commentStrippedText) |> Array.ofSeq
+        matchResults
+        |> Array.map (fun r -> (r.Groups.Item("Cue").Value, r.Groups.Item("Text").Value))
+        |> Map.ofArray
+
+    let private getLuaScriptCueAndText2(commentStrippedText: string) =
+        // Rather than write a parser for the Lua grammar, we're going to consume the text by line, and
+        // filter for cue and text lines that appear in pairs.
+        let lines =
+            commentStrippedText.ReplaceLineEndings().Split([| Environment.NewLine|], StringSplitOptions.RemoveEmptyEntries)
+            |> Array.filter(fun l -> l.Contains("Cue = ") || l.Contains("Text = "))
+
+        lines
+        |> Array.pairwise
+        |> Array.filter(fun (p1, p2) -> p1.Contains("Cue = ") && p2.Contains("Text = "))
+        |> Array.map(fun (p1, p2) -> (Lua.hadesCueRegex.Match(p1).Groups.Item("Cue").Value, Lua.hadesTextRegex.Match(p2).Groups.Item("Text").Value))
+        |> Map.ofArray
+        
     // Hades isn't structured the same way as the other Supergiant games, and requires some bespoke 
     // mapping to allow us to match up English text that is stored in some of the Lua scripts, 
     // with the localized versions, which are in the subtitle or game text files.
     let internal generateCardsForLuaScript(lessonId: int)(path: string) =
         let fileText = File.ReadAllText(path)
         let commentStrippedText = Lua.stripComments(fileText)
-        let matchResults = Lua.hadesCueAndTextRegex.Matches(commentStrippedText) |> Array.ofSeq
         let fileRootName = Path.GetFileNameWithoutExtension(path)
 
-        matchResults
-        |> Array.map (fun r -> (r.Groups.Item("Cue").Value, r.Groups.Item("Text").Value))
-        |> Map.ofArray
+        getLuaScriptCueAndText2(commentStrippedText)
         |> AssemblyResourceTools.createCardRecordForStrings(lessonId, fileRootName, "en", "masculine")
 
     let internal normalizeQuotesToDoubleQuotes(sjson: string) =
