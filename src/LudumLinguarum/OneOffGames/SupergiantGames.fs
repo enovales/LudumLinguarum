@@ -1,5 +1,6 @@
 module SupergiantGames
 
+open CsvTools
 open LLDatabase
 open LLUtils
 
@@ -59,8 +60,6 @@ module Lua =
         let internal commentPreprocessorParser: Parser<_, Unit> =
             manyTill (choice [comment; nonComment]) eof
 
-    let private hadesCueAndTextRegexPattern = @"\{[^{}]*\bCue\s*=\s*""(?<Cue>.*?)"".*Text\s*=\s*""(?<Text>.*?)"""
-    let internal hadesCueAndTextRegex = new Regex(hadesCueAndTextRegexPattern, RegexOptions.Singleline)
     let internal hadesCueRegex = new Regex(@"Cue\s*=\s*""(?<Cue>.*?)""")
     let internal hadesTextRegex = new Regex(@"Text\s=\s*""(?<Text>.*?)""")
 
@@ -210,12 +209,6 @@ let ExtractPyre(path: string) = extractSupergiantGame(path)
 
 module Hades =
     let private getLuaScriptCueAndText(commentStrippedText: string) =
-        let matchResults = Lua.hadesCueAndTextRegex.Matches(commentStrippedText) |> Array.ofSeq
-        matchResults
-        |> Array.map (fun r -> (r.Groups.Item("Cue").Value, r.Groups.Item("Text").Value))
-        |> Map.ofArray
-
-    let private getLuaScriptCueAndText2(commentStrippedText: string) =
         // Rather than write a parser for the Lua grammar, we're going to consume the text by line, and
         // filter for cue and text lines that appear in pairs.
         let lines =
@@ -236,7 +229,7 @@ module Hades =
         let commentStrippedText = Lua.stripComments(fileText)
         let fileRootName = Path.GetFileNameWithoutExtension(path)
 
-        getLuaScriptCueAndText2(commentStrippedText)
+        getLuaScriptCueAndText(commentStrippedText)
         |> AssemblyResourceTools.createCardRecordForStrings(lessonId, fileRootName, "en", "masculine")
 
     let internal normalizeQuotesToDoubleQuotes(sjson: string) =
@@ -255,7 +248,6 @@ module Hades =
     let private sjsonFileNameRegex = new Regex(@"(?<name>[^\.]+)[\.](?<lang>..(-..)?)[\.]sjson")
     let private sjsonIdAndDisplayNameJSONPath = JsonPath.Parse("$..[?(@.Id && @.DisplayName)]")
     let private sjsonNonStandardCharacterEscapingRegex1 = new Regex(@"\\Column [0-9]+")
-    let private sjsonNonStandardQuotingRegex1 = new Regex("=\s(?<open>'\\\")(?<contents>.*)(?<close>\\\"')$")
 
     let private generateCardsForLanguageSjson(path: string, lessonId: int)(language: string) =
         let gameTextFiles = Directory.GetFiles(Path.Combine(path, FixPathSeps(@"Content\Game\Text\" + language)), "*.sjson")
@@ -267,7 +259,6 @@ module Hades =
             let fileName = Path.GetFileName(filePath)
             let filePartsResults = sjsonFileNameRegex.Match(fileName)
             let fileRootName = filePartsResults.Groups.Item("name").Value
-            let fileLanguage = filePartsResults.Groups.Item("lang").Value
 
             // There are some issues with the files that come with the game, where it doesn't seem to conform to the
             // published SJSON spec. We'll perform some ad-hoc fixups to try and get things working, without
@@ -313,6 +304,40 @@ module Hades =
         |> Array.map (fun d -> Path.GetFileName(d))
         |> Array.collect(generateCardsForLanguageSjson(path, lessonId))
 
+    let internal generateCardsForAllSubtitleDirectories(path: string, lessonId: int) =
+        // Subtitle handling
+        let subtitleDirectories = Directory.GetDirectories(Path.Combine(path, FixPathSeps @"Content\Subtitles"))
+        let generateCardsForSubtitles(subtitleDir: string) = 
+            let files = Directory.GetFiles(subtitleDir, "*.csv")
+            let language = stripLanguageRegion(Path.GetFileName(subtitleDir).ToLowerInvariant())
+            let subtitlesForFile(subtitlePath: string) =
+                let lines = File.ReadAllLines(subtitlePath)
+                let headerFields = lines |> Array.head |> extractFieldsForLine(Some(","))
+                let lastIDIndex = headerFields |> Array.findIndexBack(fun f -> f = "ID")
+                let lineIndex = headerFields |> Array.findIndexBack(fun f -> f = "Line")
+                let greatestFieldIndex = Math.Max(lastIDIndex, lineIndex)
+
+                lines
+                |> Array.skip 1
+                |> Array.map (extractFieldsForLine(Some(",")))
+                |> Array.filter (fun lineFields -> lineFields.Length > greatestFieldIndex)
+                |> Array.map (fun lineFields -> (lineFields.[lastIDIndex]), lineFields.[lineIndex])
+                |> Map.ofArray
+                |> AssemblyResourceTools.createCardRecordForStrings(
+                    lessonId, 
+                    "subtitle_" + Path.GetFileNameWithoutExtension(subtitlePath) + "_", language, "masculine")
+
+            files
+            |> Array.collect subtitlesForFile
+
+        subtitleDirectories
+        |> Array.collect generateCardsForSubtitles
+
+    // Used to remove formatting directives from the final text.
+    let internal formattingBraceRemovalRegex = new Regex(@"\{[^\}]*\}")
+    let internal formattingEscapedWhitespaceRemovalRegex = new Regex(@"\\n|\\r|\\t")
+    let internal formattingAtDirectiveRemovalRegex = new Regex(@"\@[^\s]*\s*")
+
 
 let ExtractHades(path: string) =
     let lessonGameTextEntry = {
@@ -345,7 +370,7 @@ let ExtractHades(path: string) =
     let finalCards =
         [|
             [|
-                generateCardsForAllSubtitleDirectories(path, lessonSubtitlesEntry.ID)
+                Hades.generateCardsForAllSubtitleDirectories(path, lessonSubtitlesEntry.ID)
                 generateCardsForFormattedXml(path, "HelpText", "HelpText*.xml", lessonGameTextEntry.ID)
                 generateCardsForFormattedXml(path, "1_Keywords", "1_Keywords*.xml", lessonGameTextEntry.ID)
                 generateCardsForFormattedXml(path, "Events", "Events*.xml", lessonGameTextEntry.ID)
@@ -357,6 +382,8 @@ let ExtractHades(path: string) =
         |]
         |> Array.collect id
         |> Array.collect id
+        |> Array.map (fun c -> { c with Text = Hades.formattingAtDirectiveRemovalRegex.Replace(Hades.formattingEscapedWhitespaceRemovalRegex.Replace(Hades.formattingBraceRemovalRegex.Replace(c.Text, ""), " "), "") })
+        |> Array.distinctBy (fun c -> c.Text)
 
     {
         LudumLinguarumPlugins.ExtractedContent.lessons = [| lessonGameTextEntry; lessonSubtitlesEntry |]

@@ -34,25 +34,24 @@ let supergiantGamesTests =
                 Expect.equal result.Success true "regex should match against input"
                 Expect.equal result.Groups.[1].Value "Boo" "text should be extracted successfully"
 
-        testCase "cue and text regex extraction works as expected" <|
+        testCase "regex to remove formatting braces from card text works" <|
             fun () ->
-                let input = """{ blah = { foo = { Cue = "cue1", Text = "text1" }, }, }"""
-                let result = Lua.hadesCueAndTextRegex.Match(input)
-                Expect.equal result.Success true "regex should match against input"
-                Expect.equal result.Groups.[1].Value "cue1" "cue should be extracted correctly"
-                Expect.equal result.Groups.[2].Value "text1" "text should be extracted correctly"
+                let input = """{#SomeDirective}{!AnotherDirective}foo{!AThirdDirective}"""
+                let result = Hades.formattingBraceRemovalRegex.Replace(input, "")
+                let expected = "foo"
+                Expect.equal result expected "formatting removal regex did not work as intended"
 
-        testCase "cue and text regex extraction works with other fields in the braces" <|
+        testCase "regex to remove escaped whitespace from card text works" <|
             fun () ->
-                let input = """{ blah = { foo = { Cue = "cue1", Baz = Boo, Text = "text1" }, }, }"""
-                let result = Lua.hadesCueAndTextRegex.Match(input)
-                Expect.equal result.Success true "regex should match against input"
-                Expect.equal result.Groups.[1].Value "cue1" "cue should be extracted correctly"
-                Expect.equal result.Groups.[2].Value "text1" "text should be extracted correctly"
+                let input = """foo\rbar\nbaz\tboo"""
+                let result = Hades.formattingEscapedWhitespaceRemovalRegex.Replace(input, " ")
+                let expected = "foo bar baz boo"
+                Expect.equal result expected "formatting removal regex did not work as intended"
 
-        testCase "cue and text regex extraction does not match if there is only a cue value" <|
+        testCase "regex to remove at-directives from card text works" <|
             fun () ->
-                let input = """{ blah = { foo = { Cue = "cue1" }, }, }"""
-                let result = Lua.hadesCueAndTextRegex.Match(input)
-                Expect.equal result.Success false "regex should not match against input"
+                let input = """@Directive\u1234Blah foo"""
+                let result = Hades.formattingAtDirectiveRemovalRegex.Replace(input, "")
+                let expected = "foo"
+                Expect.equal result expected "formatting removal regex did not work as intended"
     ]
