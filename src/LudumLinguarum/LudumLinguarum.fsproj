@@ -30,6 +30,7 @@
     <Compile Include="CsvTools.fs" />
     <Compile Include="YamlTools.fs" />
     <Compile Include="StreamTools.fs" />
+    <Compile Include="SjsonTools.fs" />
     <None Include="App.config" />
     <Compile Include="InfinityAuroraEngine\CommonTypes.fs" />
     <Compile Include="InfinityAuroraEngine\TalkTable.fs" />
@@ -63,6 +64,7 @@
     <Compile Include="OneOffGames\SpaceChannel5.fs" />
     <Compile Include="OneOffGames\WormsGames.fs" />
     <Compile Include="OneOffGames\XUIGames.fs" />
+    <Compile Include="OneOffGames\SupergiantGames.fs" />
     <Compile Include="OneOffGames\OneOffGamesPlugin.fs" />
     <Compile Include="Main.fs" />
   </ItemGroup>

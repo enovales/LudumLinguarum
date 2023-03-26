@@ -5,13 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased] - 2022-01-28
+## [Unreleased] - 2023-03-25
 
 ### Changed
 
 * Built against .NET 6.
 * Added support for:
     * [Dicey Dungeons](https://store.steampowered.com/app/861540/) \[ar, br, ca, cy, de, en, es, fr, ie, it, ja, ko, nl, pl, pt, ru, sc, sz, tc, tr\]
+    * [Hades](https://store.steampowered.com/app/1145360/Hades/) \[de, en, es, fr, it, ja, ko, pl, pt-BR, ru, zh-CN\]
+    * [Pyre](https://store.steampowered.com/app/462770/Pyre/) \[de, en, es, fr, ru, zh-CN\]
 
 ## [2.0.0-alpha.2] - 2021-06-02
 

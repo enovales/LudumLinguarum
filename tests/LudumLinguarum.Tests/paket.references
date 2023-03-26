@@ -5,3 +5,5 @@ Microsoft.NET.Test.Sdk
 YoloDev.Expecto.TestSdk
 altcover
 System.Text.RegularExpressions
+FParsec
+JsonPath.Net

@@ -11,6 +11,8 @@ nuget YoloDev.Expecto.TestSdk 0.11.1
 nuget Microsoft.NET.Test.Sdk 16.8.0
 nuget altcover ~> 8
 nuget Packaging.Targets 0.1.189
+nuget FParsec 1.1.1
+nuget JsonPath.Net 0.4
 
 nuget System.Reflection
 nuget System.Text.Encoding.CodePages

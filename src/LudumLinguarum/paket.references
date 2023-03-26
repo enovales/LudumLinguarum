@@ -17,3 +17,6 @@ ini-parser
 
 CsvHelper
 sqlite-net-pcl
+
+FParsec
+JsonPath.Net
