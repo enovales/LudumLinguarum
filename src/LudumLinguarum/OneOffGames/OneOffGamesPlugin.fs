@@ -72,6 +72,7 @@ type OneOffGamesPlugin() =
             ({ GameMetadata.name = "Dicey Dungeons"; supportedLanguages = [| "ar"; "br"; "ca"; "cy"; "de"; "en"; "es"; "fr"; "ie"; "it"; "ja"; "ko"; "nl"; "pl"; "pt"; "ru"; "sc"; "sz"; "tc"; "tr" |]}, DiceyDungeons.ExtractDiceyDungeons)
             ({ GameMetadata.name = "Pyre"; supportedLanguages = [| "de"; "en"; "es"; "fr"; "ru"; "zh-CN" |]}, SupergiantGames.ExtractPyre)
             ({ GameMetadata.name = "Hades"; supportedLanguages = [| "de"; "en"; "es"; "fr"; "it"; "ja"; "ko"; "pl"; "pt-BR"; "ru"; "zh-CN" |]}, SupergiantGames.ExtractHades)
+            ({ GameMetadata.name = "Hades II"; supportedLanguages = [| "de"; "el"; "en"; "es"; "fr"; "it"; "ja"; "ko"; "pl"; "pt-BR"; "ru"; "tr"; "uk"; "zh-CN"; "zh-TW" |]}, SupergiantGames.ExtractHades2)
         |] |> Map.ofArray
 
     interface IPlugin with

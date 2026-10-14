@@ -136,7 +136,9 @@ module SjsonGrammar =
         |>> SjsonArray
 
     let private unquotedStringLiteral: Parser<_, Unit> =
-        many1Satisfy (function ' ' | '\t' | '\n' | '}' | ']' -> false | _ -> true)
+        // Note that '=' must be excluded from the characters that can make up an unquoted key: SJSON files
+        // are not required to have whitespace on either side of the '=' that separates keys and values.
+        many1Satisfy (function ' ' | '\t' | '\r' | '\n' | '=' | '}' | ']' -> false | _ -> true)
 
     let private sjsonKeyString: Parser<_, Unit> =
         choice [
