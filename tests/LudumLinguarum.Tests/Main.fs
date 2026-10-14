@@ -10,4 +10,4 @@ module ExpectoTemplate =
     let main argv =
         Encoding.RegisterProvider(CodePagesEncodingProvider.Instance)
 
-        Tests.runTestsInAssembly defaultConfig argv
+        Tests.runTestsInAssemblyWithCLIArgs [||] argv

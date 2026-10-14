@@ -1,6 +1,7 @@
 namespace LudumLinguarum.Tests
 
 open FsCheck
+open FsCheck.FSharp
 open System
 
 module GeneratorsCode =
@@ -44,7 +45,7 @@ module GeneratorsCode =
 
     let nonDigitalString() = 
         gen {  
-                let! a = Arb.generate<NonEmptyString> 
+                let! a = ArbMap.generate<NonEmptyString> ArbMap.defaults 
                 return! Gen.elements [a.ToString()] 
         }
         |> Gen.filter(fun x -> 
@@ -53,17 +54,17 @@ module GeneratorsCode =
 
     let whitespaceString() =
         let length = 
-            Gen.sample 1 1 <| Gen.choose (1, 30)
-            |> List.head
+            Gen.sample 1 (Gen.choose (1, 30))
+            |> Array.head
             |> int
 
-        Gen.arrayOfLength length <| Gen.elements whiteSpace
+        Gen.arrayOfLength length (Gen.elements whiteSpace)
         |> Gen.map (fun x -> new string(x))
 
     let nonEmptyNonAllWhitespaceString() =
         gen {
             return!
-                Arb.generate<NonEmptyString> 
+                ArbMap.generate<NonEmptyString> ArbMap.defaults 
         }
         |> Gen.filter (fun x -> 
             let charA = x.ToString().ToCharArray()
@@ -74,18 +75,18 @@ module GeneratorsCode =
         |> Gen.map (fun x -> x.ToString())
 
     let genNonEmptyNonAllWhitespaceStringList() =
-        let positiveInt = Arb.generate<PositiveInt> 
+        let positiveInt = ArbMap.generate<PositiveInt> ArbMap.defaults 
         let length = 
-            Gen.sample 30 1 positiveInt
-            |> List.head
+            Gen.sample 1 positiveInt
+            |> Array.head
             |> int
 
-        Gen.listOfLength length <| nonEmptyNonAllWhitespaceString()
+        Gen.listOfLength length (nonEmptyNonAllWhitespaceString())
 
     let genDigitsInWhiteSpace () =
         gen {
                 let! frontWhitespace = whitespaceString()
-                let! digits = Arb.generate<NonNegativeInt>
+                let! digits = ArbMap.generate<NonNegativeInt> ArbMap.defaults
                 let! endWhitespace = whitespaceString()
                 return sprintf "%s%s%s" frontWhitespace (digits.ToString()) endWhitespace
         }
@@ -107,7 +108,7 @@ module GeneratorsCode =
     let genDigitsOfLengthInWhiteSpace length =
         gen {
                 let! frontWhitespace = whitespaceString()
-                let! digits = Arb.generate<NonNegativeInt>
+                let! digits = ArbMap.generate<NonNegativeInt> ArbMap.defaults
                 let! endWhitespace = whitespaceString()
                 return sprintf "%s%s%s" frontWhitespace (validDigits digits length) endWhitespace |> Some
         }
@@ -116,30 +117,30 @@ module GeneratorsCode =
 
     let inputZip5Plus4() =
         gen {
-            let! digits = Arb.generate<NonNegativeInt>
+            let! digits = ArbMap.generate<NonNegativeInt> ArbMap.defaults
             return validDigits digits 9
         }
 
     let genUsPhone7() =
         gen {
-                let! digitsExchange = Arb.generate<NonNegativeInt>
+                let! digitsExchange = ArbMap.generate<NonNegativeInt> ArbMap.defaults
                 let exchange = validDigits digitsExchange 3
-                let! digitsSuffix = Arb.generate<NonNegativeInt>
+                let! digitsSuffix = ArbMap.generate<NonNegativeInt> ArbMap.defaults
                 let suffix = validDigits digitsSuffix 4
-                let! divide = Gen.elements["";"-";" -";"  -";"- ";"-  ";" ";" ";]
-                let! start = Gen.elements["";" ";]
-                let! after = Gen.elements["";" ";]
+                let! divide = Gen.elements ["";"-";" -";"  -";"- ";"-  ";" ";" ";]
+                let! start = Gen.elements ["";" ";]
+                let! after = Gen.elements ["";" ";]
 
                 return sprintf "%s%s%s%s%s" start exchange divide suffix after
         }
 
     let genUsPhone10() =
         gen {
-                let! digitsAreaCode = Arb.generate<NonNegativeInt>
+                let! digitsAreaCode = ArbMap.generate<NonNegativeInt> ArbMap.defaults
                 let areaCode = validDigits digitsAreaCode 3
                 let! usPhone7 = genUsPhone7()
-                let! start = Gen.elements["";" ";"(";"( ";"(  ";" (";"  (";" ( ";]
-                let! divide = Gen.elements["";" ";")";" )";"  )";") ";")  ";" ) ";]
+                let! start = Gen.elements ["";" ";"(";"( ";"(  ";" (";"  (";" ( ";]
+                let! divide = Gen.elements ["";" ";")";" )";"  )";") ";")  ";" ) ";]
 
                 return sprintf "%s%s%s%s" start areaCode divide usPhone7
         }
@@ -185,7 +186,7 @@ module GeneratorsCode =
             |> UInt16.Parse
         
         gen { 
-            let! digits = Arb.generate<NonNegativeInt>
+            let! digits = ArbMap.generate<NonNegativeInt> ArbMap.defaults
             let! callingCode = Gen.elements [callingCode digits 4 |> Some; callingCode digits 3 |> Some; callingCode digits 2 |> Some; callingCode digits 1 |> Some; None]
 
             return callingCode
@@ -198,8 +199,8 @@ module GeneratorsCode =
 
             let! usPhone = genUsPhone()
             let! otherPhone = genOtherPhone()
-            let! phone = Gen.elements[usPhone; otherPhone]
-            let! extensionRaw = Arb.generate<NonNegativeInt>
+            let! phone = Gen.elements [usPhone; otherPhone]
+            let! extensionRaw = ArbMap.generate<NonNegativeInt> ArbMap.defaults
 
             let! extension = Gen.elements [extensionRaw.ToString() |> Some; None]
 

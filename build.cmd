@@ -1,4 +1,17 @@
-echo Restoring dotnet tools...
-dotnet tool restore
+@echo off
+setlocal
 
-dotnet fake build -t %*
+set CONFIGURATION=%1
+if "%CONFIGURATION%"=="" set CONFIGURATION=Debug
+
+rem Restore NuGet packages
+dotnet restore
+
+rem Build the solution
+dotnet build --configuration %CONFIGURATION% --no-restore
+
+rem Run tests
+dotnet test --configuration %CONFIGURATION% --no-build
+
+echo Build and test completed.
+endlocal
