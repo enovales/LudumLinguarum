@@ -10,19 +10,18 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Setup .NET Core SDK from global.json
-      uses: actions/setup-dotnet@v1.7.2
+    - uses: actions/checkout@v4
+
+    - name: Setup .NET Core SDK
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 8.0.x
+
+    - name: Restore dependencies
+      run: dotnet restore
 
     - name: Build
-      if: runner.os != 'Windows'
-      run: |
-        chmod +x ./build.sh
-        ./build.sh
-      env:
-        CI: true
-    - name: Build
-      if: runner.os == 'Windows'
-      run: ./build.cmd
-      env:
-        CI: true
+      run: dotnet build --configuration Release --no-restore
+
+    - name: Test
+      run: dotnet test --configuration Release --no-build

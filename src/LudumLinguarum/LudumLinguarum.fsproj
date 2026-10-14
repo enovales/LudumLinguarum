@@ -1,21 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <OutputType>Exe</OutputType>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-  </PropertyGroup>
-  <PropertyGroup>
     <Title>LudumLinguarum</Title>
     <Description>LudumLinguarum does the thing!</Description>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <IsTestProject>false</IsTestProject>
   </PropertyGroup>
+
   <PropertyGroup Condition="'$(Configuration)'=='Release'">
     <Optimize>true</Optimize>
     <Tailcalls>true</Tailcalls>
   </PropertyGroup>
+
   <ItemGroup>
     <EmbeddedResource Include="dictionary.txt" />
+    <EmbeddedResource Include="OneOffGames\JetSetRadio\SrtExtraction.csv" />
+    <EmbeddedResource Include="OneOffGames\JetSetRadio\StringBlockExtraction.csv" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Include="AssemblyInfo.fs" />
     <Compile Include="LLUtils.fs" />
     <Compile Include="BaseResources.fs" />
@@ -31,7 +39,6 @@
     <Compile Include="YamlTools.fs" />
     <Compile Include="StreamTools.fs" />
     <Compile Include="SjsonTools.fs" />
-    <None Include="App.config" />
     <Compile Include="InfinityAuroraEngine\CommonTypes.fs" />
     <Compile Include="InfinityAuroraEngine\TalkTable.fs" />
     <Compile Include="InfinityAuroraEngine\ArchiveFiles.fs" />
@@ -46,8 +53,6 @@
     <Compile Include="InfinityAuroraEngine\KOTOR2Context.fs" />
     <Compile Include="InfinityAuroraEngine\AuroraPlugin.fs" />
     <Compile Include="OneOffGames\DiceyDungeons.fs" />
-    <EmbeddedResource Include="OneOffGames\JetSetRadio\SrtExtraction.csv" />
-    <EmbeddedResource Include="OneOffGames\JetSetRadio\StringBlockExtraction.csv" />
     <Compile Include="OneOffGames\Utils.fs" />
     <Compile Include="OneOffGames\CivilizationGames.fs" />
     <Compile Include="OneOffGames\CodemastersGames.fs" />
@@ -67,6 +72,24 @@
     <Compile Include="OneOffGames\SupergiantGames.fs" />
     <Compile Include="OneOffGames\OneOffGamesPlugin.fs" />
     <Compile Include="Main.fs" />
+    <None Include="App.config" />
   </ItemGroup>
-  <Import Project="..\..\.paket\Paket.Restore.targets" />
+
+  <ItemGroup>
+    <PackageReference Include="Argu" Version="6.1.1" />
+    <PackageReference Include="FsGettextUtils" Version="0.5.0" />
+    <PackageReference Include="LANGIDMappings" Version="0.5.0" />
+    <PackageReference Include="Mono.Cecil" Version="0.11.5" />
+    <PackageReference Include="SharpCompress" Version="1.0.0" />
+    <PackageReference Include="DotNetZip" Version="1.16.0" />
+    <PackageReference Include="YamlDotNet" Version="15.1.0" />
+    <PackageReference Include="SegaAFSTools" Version="0.4.0" />
+    <PackageReference Include="FsQuotedPrintable" Version="0.3.0" />
+    <PackageReference Include="ini-parser-netstandard" Version="2.5.2" />
+    <PackageReference Include="CsvHelper" Version="30.0.0" />
+    <PackageReference Include="sqlite-net-pcl" Version="1.11.285" />
+    <PackageReference Include="FParsec" Version="1.1.1" />
+    <PackageReference Include="JsonPath.Net" Version="0.4.0" />
+  </ItemGroup>
+
 </Project>
