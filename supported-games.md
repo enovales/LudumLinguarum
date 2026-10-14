@@ -23,6 +23,7 @@ The following games and [language tags](https://en.wikipedia.org/wiki/IETF_langu
 * GRID 2 \[de, en-GB, en-US, es, fr, it, ja, pl, pt-BR\]
 * GRID Autosport \[de, en-GB, en-US, es, fr, it, ja, pl, pt-BR, ru\]
 * Hades \[de, en, es, fr, it, ja, ko, pl, pt-BR, ru, zh-CN\]
+* Hades II \[de, el, en, es, fr, it, ja, ko, pl, pt-BR, ru, tr, uk, zh-CN, zh-TW\]
 * Hatoful Boyfriend \[de, en, es, fr, it, ja, ru\]
 * Hatoful Boyfriend: Holiday Star \[de, en, fr, ja\]
 * Hearts of Iron 3 \[de, en, fr\]

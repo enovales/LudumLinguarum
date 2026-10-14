@@ -67,6 +67,13 @@ let tests =
                 let result = sjsonToJSON input
                 Expect.equal result expected "unexpected parse result"
 
+        testCase "Parse a SJSON file with no whitespace around the key/value separator into equivalent JSON" <|
+            fun () ->
+                let input = "test=\"foo\""
+                let expected = "{\"test\":\"foo\"}".ReplaceLineEndings()
+                let result = sjsonToJSON input
+                Expect.equal result expected "unexpected parse result"
+
         testCase "Parse a SJSON file with an array into equivalent JSON" <|
             fun () ->
                 let input = "test_array = [1 2 3 4 5]"

@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     * [Dicey Dungeons](https://store.steampowered.com/app/861540/) \[ar, br, ca, cy, de, en, es, fr, ie, it, ja, ko, nl, pl, pt, ru, sc, sz, tc, tr\]
     * [Hades](https://store.steampowered.com/app/1145360/Hades/) \[de, en, es, fr, it, ja, ko, pl, pt-BR, ru, zh-CN\]
     * [Pyre](https://store.steampowered.com/app/462770/Pyre/) \[de, en, es, fr, ru, zh-CN\]
+    * [Hades II](https://store.steampowered.com/app/1145370/Hades_II/) \[de, el, en, es, fr, it, ja, ko, pl, pt-BR, ru, tr, uk, zh-CN, zh-TW\]
 
 ## [2.0.0-alpha.2] - 2021-06-02
 

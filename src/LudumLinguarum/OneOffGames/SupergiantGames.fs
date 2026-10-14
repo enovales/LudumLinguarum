@@ -389,3 +389,34 @@ let ExtractHades(path: string) =
         LudumLinguarumPlugins.ExtractedContent.lessons = [| lessonGameTextEntry; lessonSubtitlesEntry |]
         LudumLinguarumPlugins.ExtractedContent.cards = finalCards
     }
+
+// Unlike the original Hades, Hades II does not ship with subtitle CSV files or the HelpText/Events/LaunchText
+// XML files: all localized text (including dialogue and subtitles) lives in the per-language SJSON files
+// underneath the game text directory, which is handled by the SJSON logic shared with the original Hades.
+let ExtractHades2(path: string) =
+    let lessonGameTextEntry = {
+        LessonRecord.ID = 0;
+        Name = "Game Text"
+    }
+
+    // Hades II has a much larger set of Lua scripts containing English-language cues and text than the
+    // original Hades did, so rather than maintaining a fixed list of scripts, process all of them.
+    let luaScriptsToProcess =
+        Directory.GetFiles(Path.Combine(path, FixPathSeps @"Content\Scripts"), "*.lua")
+
+    let finalCards =
+        [|
+            [|
+                Hades.generateCardsForSjson(path, lessonGameTextEntry.ID)
+            |]
+            luaScriptsToProcess |> Array.map (Hades.generateCardsForLuaScript(lessonGameTextEntry.ID))
+        |]
+        |> Array.collect id
+        |> Array.collect id
+        |> Array.map (fun c -> { c with Text = Hades.formattingAtDirectiveRemovalRegex.Replace(Hades.formattingEscapedWhitespaceRemovalRegex.Replace(Hades.formattingBraceRemovalRegex.Replace(c.Text, ""), " "), "") })
+        |> Array.distinctBy (fun c -> c.Text)
+
+    {
+        LudumLinguarumPlugins.ExtractedContent.lessons = [| lessonGameTextEntry |]
+        LudumLinguarumPlugins.ExtractedContent.cards = finalCards
+    }
