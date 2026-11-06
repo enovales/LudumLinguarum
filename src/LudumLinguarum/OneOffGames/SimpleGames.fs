@@ -697,7 +697,10 @@ let ExtractSuperMeatBoy(path: string) =
 let ExtractMegaManLegacyCollection(path: string) = 
     let languages = [| "de"; "en"; "es"; "fr"; "it"; "ja"; "pt-BR"; "ru" |]
 
-    let archive = SharpCompress.Archives.Zip.ZipArchive.Open(Path.Combine(path, "data.pie"), (fun o -> o.Password <- "P091uWEdwe4lI6StDNMNlkodPGvJ38bL3HW6t3BCMYdFi83FXKu7k0NsHP8caDKS"))
+    let readerOptions = SharpCompress.Readers.ReaderOptions()
+    readerOptions.Password <- "P091uWEdwe4lI6StDNMNlkodPGvJ38bL3HW6t3BCMYdFi83FXKu7k0NsHP8caDKS"
+    use stream = File.OpenRead(Path.Combine(path, "data.pie"))
+    let archive = SharpCompress.Archives.Zip.ZipArchive.Open(stream, readerOptions)
 
     // Extract game files to a temporary path, but try cleaning it first.
     let tempPath = Path.Combine(Path.GetTempPath(), @"LudumLinguarumMMLC")
@@ -717,13 +720,14 @@ let ExtractMegaManLegacyCollection(path: string) =
     let cards = 
         try
             try
-                for entry in archive.Entries do
-                    if entry.Key.StartsWith("locale") then
-                        let outputPath = Path.Combine(tempPath, entry.Key)
+                use reader = SharpCompress.Readers.Zip.ZipReader.Open(stream, readerOptions)
+                while reader.MoveToNextEntry() do
+                    if not reader.Entry.IsDirectory && reader.Entry.Key.StartsWith("locale") then
+                        let outputPath = Path.Combine(tempPath, reader.Entry.Key)
                         Directory.CreateDirectory(Path.GetDirectoryName(outputPath)) |> ignore
-                        use stream = File.Create(outputPath)
-                        use entryStream = entry.OpenEntryStream()
-                        entryStream.CopyTo(stream)
+                        use entryStream = reader.OpenEntryStream()
+                        use fileStream = File.Create(outputPath)
+                        entryStream.CopyTo(fileStream)
                 languages |> Array.collect cardsForLanguage
             with
             | _ -> [||]

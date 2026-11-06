@@ -186,7 +186,8 @@ module Common =
         let tempPath = Path.Combine(Path.GetTempPath(), @"LudumLinguarumWCG")
         try Directory.Delete(tempPath) with | _ -> ()
 
-        let archive = SharpCompress.Archives.Zip.ZipArchive.Open(Path.Combine(path, "zip.zip"))
+        use stream = File.OpenRead(Path.Combine(path, "zip.zip"))
+        let archive = SharpCompress.Archives.Zip.ZipArchive.Open(stream)
         let languagesAndFileNames = 
             [|
                 (@"language\AllTextCze.bin", "cs")
@@ -209,13 +210,14 @@ module Common =
         let cards = 
             try
                 try
-                    for entry in archive.Entries do
-                        if entry.Key.StartsWith("language") then
-                            let outputPath = Path.Combine(tempPath, entry.Key)
+                    use reader = SharpCompress.Readers.Zip.ZipReader.Open(stream)
+                    while reader.MoveToNextEntry() do
+                        if not reader.Entry.IsDirectory && reader.Entry.Key.StartsWith("language") then
+                            let outputPath = Path.Combine(tempPath, reader.Entry.Key)
                             Directory.CreateDirectory(Path.GetDirectoryName(outputPath)) |> ignore
-                            use stream = File.Create(outputPath)
-                            use entryStream = entry.OpenEntryStream()
-                            entryStream.CopyTo(stream)
+                            use entryStream = reader.OpenEntryStream()
+                            use fileStream = File.Create(outputPath)
+                            entryStream.CopyTo(fileStream)
                     languagesAndFileNames |> Array.collect(cardsForLanguage(tempPath))
                 with
                 | _ -> [||]
