@@ -186,7 +186,7 @@ module Common =
         let tempPath = Path.Combine(Path.GetTempPath(), @"LudumLinguarumWCG")
         try Directory.Delete(tempPath) with | _ -> ()
 
-        use archive = new Ionic.Zip.ZipFile(Path.Combine(path, "zip.zip"))
+        let archive = SharpCompress.Archives.Zip.ZipArchive.Open(Path.Combine(path, "zip.zip"))
         let languagesAndFileNames = 
             [|
                 (@"language\AllTextCze.bin", "cs")
@@ -209,7 +209,13 @@ module Common =
         let cards = 
             try
                 try
-                    archive.ExtractSelectedEntries("*.*", "language", tempPath)
+                    for entry in archive.Entries do
+                        if entry.Key.StartsWith("language") then
+                            let outputPath = Path.Combine(tempPath, entry.Key)
+                            Directory.CreateDirectory(Path.GetDirectoryName(outputPath)) |> ignore
+                            use stream = File.Create(outputPath)
+                            use entryStream = entry.OpenEntryStream()
+                            entryStream.CopyTo(stream)
                     languagesAndFileNames |> Array.collect(cardsForLanguage(tempPath))
                 with
                 | _ -> [||]
