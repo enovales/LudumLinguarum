@@ -697,9 +697,10 @@ let ExtractSuperMeatBoy(path: string) =
 let ExtractMegaManLegacyCollection(path: string) = 
     let languages = [| "de"; "en"; "es"; "fr"; "it"; "ja"; "pt-BR"; "ru" |]
 
-    use archive = new Ionic.Zip.ZipFile(Path.Combine(path, "data.pie"))
-    archive.set_Password("P091uWEdwe4lI6StDNMNlkodPGvJ38bL3HW6t3BCMYdFi83FXKu7k0NsHP8caDKS")
-    archive.Encryption <- Ionic.Zip.EncryptionAlgorithm.WinZipAes256
+    let readerOptions = SharpCompress.Readers.ReaderOptions()
+    readerOptions.Password <- "P091uWEdwe4lI6StDNMNlkodPGvJ38bL3HW6t3BCMYdFi83FXKu7k0NsHP8caDKS"
+    use stream = File.OpenRead(Path.Combine(path, "data.pie"))
+    let archive = SharpCompress.Archives.Zip.ZipArchive.Open(stream, readerOptions)
 
     // Extract game files to a temporary path, but try cleaning it first.
     let tempPath = Path.Combine(Path.GetTempPath(), @"LudumLinguarumMMLC")
@@ -719,7 +720,14 @@ let ExtractMegaManLegacyCollection(path: string) =
     let cards = 
         try
             try
-                archive.ExtractSelectedEntries("*.*", "locale", tempPath)
+                use reader = SharpCompress.Readers.Zip.ZipReader.Open(stream, readerOptions)
+                while reader.MoveToNextEntry() do
+                    if not reader.Entry.IsDirectory && reader.Entry.Key.StartsWith("locale") then
+                        let outputPath = Path.Combine(tempPath, reader.Entry.Key)
+                        Directory.CreateDirectory(Path.GetDirectoryName(outputPath)) |> ignore
+                        use entryStream = reader.OpenEntryStream()
+                        use fileStream = File.Create(outputPath)
+                        entryStream.CopyTo(fileStream)
                 languages |> Array.collect cardsForLanguage
             with
             | _ -> [||]

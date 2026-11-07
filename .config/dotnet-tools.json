@@ -14,18 +14,7 @@
         "reportgenerator"
       ]
     },
-    "fake-cli": {
-      "version": "5.21.1",
-      "commands": [
-        "fake"
-      ]
-    },
-    "paket": {
-      "version": "7.2.0",
-      "commands": [
-        "paket"
-      ]
-    },
+
     "fsharp-analyzers": {
       "version": "0.11.0",
       "commands": [

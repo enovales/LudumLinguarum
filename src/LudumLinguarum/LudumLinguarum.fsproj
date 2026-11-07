@@ -78,15 +78,15 @@
   <ItemGroup>
     <PackageReference Include="Argu" Version="6.1.1" />
     <PackageReference Include="FsGettextUtils" Version="0.5.0" />
-    <PackageReference Include="LANGIDMappings" Version="0.5.0" />
+    <PackageReference Include="LANGIDMappings" Version="*" />
     <PackageReference Include="Mono.Cecil" Version="0.11.5" />
     <PackageReference Include="SharpCompress" Version="1.0.0" />
-    <PackageReference Include="DotNetZip" Version="1.16.0" />
-    <PackageReference Include="YamlDotNet" Version="15.1.0" />
+
+    <PackageReference Include="YamlDotNet" Version="16.1.0" />
     <PackageReference Include="SegaAFSTools" Version="0.4.0" />
-    <PackageReference Include="FsQuotedPrintable" Version="0.3.0" />
+    <PackageReference Include="FsQuotedPrintable" Version="*" />
     <PackageReference Include="ini-parser-netstandard" Version="2.5.2" />
-    <PackageReference Include="CsvHelper" Version="30.0.0" />
+    <PackageReference Include="CsvHelper" Version="33.0.0" />
     <PackageReference Include="sqlite-net-pcl" Version="1.11.285" />
     <PackageReference Include="FParsec" Version="1.1.1" />
     <PackageReference Include="JsonPath.Net" Version="0.4.0" />
