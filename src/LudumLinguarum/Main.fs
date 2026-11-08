@@ -145,6 +145,7 @@ and [<RequireSubcommandAttribute>] BaseArgs =
     | [<CliPrefix(CliPrefix.None)>] Export_SuperMemo of ParseResults<ExportCommonArgs>
     | [<CliPrefix(CliPrefix.None)>] Export_Mnemosyne of ParseResults<ExportCommonArgs>
     | [<CliPrefix(CliPrefix.None)>] Export_AnyMemo of ParseResults<ExportCommonArgs>
+    | [<CliPrefix(CliPrefix.None)>] Export_Brainscape of ParseResults<ExportCommonArgs>
     | [<CliPrefix(CliPrefix.None)>] Scan_For_Text of ParseResults<ScanForTextArgs>
     with
         interface IArgParserTemplate with
@@ -165,6 +166,7 @@ and [<RequireSubcommandAttribute>] BaseArgs =
                 | Export_SuperMemo _ -> "Exports extracted text for use with the SuperMemo spaced repetition software"
                 | Export_Mnemosyne _ -> "Exports extracted text for use with the Mnemosyne spaced repetition software"
                 | Export_AnyMemo _ -> "Exports extracted text for use with the AnyMemo spaced repetition software"
+                | Export_Brainscape _ -> "Exports extracted text as a UTF-8 CSV for bulk import into the Brainscape spaced repetition app via its 'Import Flashcards' feature"
                 | Scan_For_Text _ -> "Used to scan arbitrary binary data for strings, to locate localized content"
 
 
@@ -564,6 +566,7 @@ let main argv =
     | Some(Export_SuperMemo exportArgs) -> runCommonExportAction(iPluginManager, otw, fldbPath, CardExport.CommonExportTarget.SuperMemo)(exportArgs)
     | Some(Export_Mnemosyne exportArgs) -> runCommonExportAction(iPluginManager, otw, fldbPath, CardExport.CommonExportTarget.Mnemosyne)(exportArgs)
     | Some(Export_AnyMemo exportArgs) -> runCommonExportAction(iPluginManager, otw, fldbPath, CardExport.CommonExportTarget.AnyMemo)(exportArgs)
+    | Some(Export_Brainscape exportArgs) -> runCommonExportAction(iPluginManager, otw, fldbPath, CardExport.CommonExportTarget.Brainscape)(exportArgs)
     | Some(Scan_For_Text sfta) -> runScanForTextAction(otw)(sfta)
     | None -> ()
     | _ -> failwith "unrecognized subcommand"
