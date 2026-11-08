@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 * Added an `export-brainscape` command that exports cards as a UTF-8 CSV file (question/answer columns) for bulk import into [Brainscape](https://www.brainscape.com/) via its "Import Flashcards" feature. Reversible card pairs are exported in both directions.
+* The `export-brainscape` export now splits its output into multiple numerically suffixed files (e.g. `_001`) of at most 500 records each when more than 500 cards are exported, since Brainscape imports one CSV file at a time.
 
 ## [2.0.0-alpha.3] - 2026-11-08
 
