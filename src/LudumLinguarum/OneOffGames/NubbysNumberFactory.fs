@@ -18,11 +18,6 @@ open System.Text.RegularExpressions
 // file has (at least) three columns: a string key, the English source text,
 // and the translated text. In the English file, the translation column just
 // contains a placeholder, so the English text is used directly for it.
-//
-// The files are not consistently formatted: some quote every field and some
-// quote none, some have a UTF-8 BOM, blank lines, a header row, trailing empty
-// columns, and occasionally quoted fields with embedded newlines. A real CSV
-// parser is therefore used instead of line-based splitting.
 
 /// Maps the language code used in the localization file names to an IETF
 /// language tag.
