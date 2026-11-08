@@ -5,7 +5,9 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased] - 2023-03-25
+## [Unreleased]
+
+## [2.0.0-alpha.3] - 2026-11-08
 
 ### Changed
 
@@ -15,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     * [Hades](https://store.steampowered.com/app/1145360/Hades/) \[de, en, es, fr, it, ja, ko, pl, pt-BR, ru, zh-CN\]
     * [Pyre](https://store.steampowered.com/app/462770/Pyre/) \[de, en, es, fr, ru, zh-CN\]
     * [Hades II](https://store.steampowered.com/app/1145370/Hades_II/) \[de, el, en, es, fr, it, ja, ko, pl, pt-BR, ru, tr, uk, zh-CN, zh-TW\]
+    * [Nubby's Number Factory](https://store.steampowered.com/app/3191030/Nubbys_Number_Factory/) \[ca, da, en, es, es-LA, fr, gl, hu, it, nl, no, pl, pt-BR, pt-PT, ru, sk, tr, uk\]
 
 ## [2.0.0-alpha.2] - 2021-06-02
 
@@ -173,6 +176,7 @@ random sampling) to be dumped to a tab-separated text file.
   * [The King of Fighters '98 Ultimate Match](http://store.steampowered.com/app/222420/) \[en, ja\]
   * [The King of Fighters 2002 Unlimited Match](http://store.steampowered.com/app/222440/) \[en, ja\]
   * [Worms Armageddon](http://store.steampowered.com/app/217200/) \[de, en, es, fr, it, nl, pt, ru, sv\]
-[Unreleased]: https://github.com/enovales/LudumLinguarum/compare/v2.0.0-alpha.2...HEAD
+[Unreleased]: https://github.com/enovales/LudumLinguarum/compare/v2.0.0-alpha.3...HEAD
+[2.0.0-alpha.3]: https://github.com/enovales/LudumLinguarum/compare/v2.0.0-alpha.2...v2.0.0-alpha.3
 [2.0.0-alpha.2]: https://github.com/enovales/LudumLinguarum/compare/v1.1.2...v2.0.0-alpha.2
 [2.0.0-alpha.1]: https://github.com/enovales/LudumLinguarum/compare/v1.1.2...v2.0.0-alpha.1

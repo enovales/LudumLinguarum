@@ -73,6 +73,7 @@ type OneOffGamesPlugin() =
             ({ GameMetadata.name = "Pyre"; supportedLanguages = [| "de"; "en"; "es"; "fr"; "ru"; "zh-CN" |]}, SupergiantGames.ExtractPyre)
             ({ GameMetadata.name = "Hades"; supportedLanguages = [| "de"; "en"; "es"; "fr"; "it"; "ja"; "ko"; "pl"; "pt-BR"; "ru"; "zh-CN" |]}, SupergiantGames.ExtractHades)
             ({ GameMetadata.name = "Hades II"; supportedLanguages = [| "de"; "el"; "en"; "es"; "fr"; "it"; "ja"; "ko"; "pl"; "pt-BR"; "ru"; "tr"; "uk"; "zh-CN"; "zh-TW" |]}, SupergiantGames.ExtractHades2)
+            ({ GameMetadata.name = "Nubby's Number Factory"; supportedLanguages = [| "ca"; "da"; "en"; "es"; "es-LA"; "fr"; "gl"; "hu"; "it"; "nl"; "no"; "pl"; "pt-BR"; "pt-PT"; "ru"; "sk"; "tr"; "uk" |] }, NubbysNumberFactory.ExtractNubbysNumberFactory)
         |] |> Map.ofArray
 
     interface IPlugin with
