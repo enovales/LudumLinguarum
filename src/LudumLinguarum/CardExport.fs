@@ -85,12 +85,16 @@ type private SuperMemoPaginatingWriter(otw: TextWriter, exportBasePath: string) 
             streamWriter.WriteLine(line)
             lineCounter <- lineCounter + 1
 
-// Writes cards as a UTF-8 CSV with two columns, which Brainscape's
-// "Import Flashcards" feature reads as question and answer.
-type internal BrainscapeCsvWriter(otw: TextWriter, exportBasePath: string) = 
-    let streamWriter = new StreamWriter(exportBasePath, false, Encoding.UTF8)
-    let csvConfiguration = CsvHelper.Configuration.CsvConfiguration(CultureInfo.InvariantCulture)
-    let csvWriter = new CsvHelper.CsvWriter(streamWriter, csvConfiguration)
+// Writes cards as UTF-8 CSV files with two columns, which Brainscape's
+// "Import Flashcards" feature reads as question and answer. If more than
+// pageSize records are written, the output is split into numerically
+// suffixed files (e.g. deck_001.csv) holding at most pageSize records each.
+type internal BrainscapeCsvWriter(otw: TextWriter, exportBasePath: string, pageSize: int) = 
+    let mkCsvConfiguration() = CsvHelper.Configuration.CsvConfiguration(CultureInfo.InvariantCulture)
+    let mutable recordCounter = 0
+    let mutable fileCounter = 1
+    let mutable streamWriter = new StreamWriter(exportBasePath, false, Encoding.UTF8)
+    let mutable csvWriter = new CsvHelper.CsvWriter(streamWriter, mkCsvConfiguration())
 
     do otw.WriteLine("Writing to [" + exportBasePath + "]")
     interface IDisposable with
@@ -100,12 +104,31 @@ type internal BrainscapeCsvWriter(otw: TextWriter, exportBasePath: string) =
 
     interface ICardWriter with
         member this.WriteCard(line: String) = 
+            if (recordCounter >= pageSize) then
+                csvWriter.Dispose()
+
+                let newFileName = 
+                    Path.GetDirectoryName(exportBasePath) + 
+                    new string([|Path.DirectorySeparatorChar|]) + 
+                    Path.GetFileNameWithoutExtension(exportBasePath) + 
+                    "_" + 
+                    fileCounter.ToString("000") + 
+                    Path.GetExtension(exportBasePath)
+
+                streamWriter <- new StreamWriter(newFileName, false, Encoding.UTF8)
+                csvWriter <- new CsvHelper.CsvWriter(streamWriter, mkCsvConfiguration())
+                otw.WriteLine("Writing to [" + newFileName + "]")
+
+                fileCounter <- fileCounter + 1
+                recordCounter <- 0
+
             // Card text has already had tabs, CRs, and LFs stripped, so the
             // line is exactly two tab-separated fields: question and answer.
             let fields = line.Split('\t')
             csvWriter.WriteField(fields.[0])
             csvWriter.WriteField(fields.[1])
             csvWriter.NextRecord()
+            recordCounter <- recordCounter + 1
 
 type CommonExporter(iPluginManager: IPluginManager, outputTextWriter: TextWriter, 
                     llDatabase: LLDatabase, config: CommonExporterConfiguration) = 
@@ -217,7 +240,7 @@ type CommonExporter(iPluginManager: IPluginManager, outputTextWriter: TextWriter
         let cardWriter: ICardWriter = 
             match config.Target with
             | CommonExportTarget.SuperMemo -> new SuperMemoPaginatingWriter(outputTextWriter, config.ExportPath) :> ICardWriter
-            | CommonExportTarget.Brainscape -> new BrainscapeCsvWriter(outputTextWriter, config.ExportPath) :> ICardWriter
+            | CommonExportTarget.Brainscape -> new BrainscapeCsvWriter(outputTextWriter, config.ExportPath, 500) :> ICardWriter
             | CommonExportTarget.Anki 
             | CommonExportTarget.Mnemosyne 
             | CommonExportTarget.AnyMemo -> new NonPaginatingWriter(outputTextWriter, config.ExportPath) :> ICardWriter
