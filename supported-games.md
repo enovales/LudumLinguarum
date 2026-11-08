@@ -37,6 +37,7 @@ The following games and [language tags](https://en.wikipedia.org/wiki/IETF_langu
 * Magicka \[de, en, es, fr, hu, it, pl, ru\]
 * Multiwinia \[de, en, es, fr, it\]
 * Neverwinter Nights \[de, en, es, fr, it, pl\]
+* Nubby's Number Factory \[ca, da, en, es, es-LA, fr, gl, hu, it, nl, no, pl, pt-BR, pt-PT, ru, sk, tr, uk\]
 * Orcs Must Die! \[de, en, es, fr, it, ja, pl, pt, ru\]
 * Orcs Must Die! 2 \[de, en, es, fr, it, ja, pl, pt, ru\]
 * Pillars of Eternity \[de, en, es, fr, it, ko, pl, ru\]

@@ -23,6 +23,7 @@
     <Compile Include="OneOffGames.Tests\JetSetRadioTests.fs" />
     <Compile Include="OneOffGames.Tests\MadballsBaboInvasionTests.fs" />
     <Compile Include="OneOffGames.Tests\MagickaTests.fs" />
+    <Compile Include="OneOffGames.Tests\NubbysNumberFactoryTests.fs" />
     <Compile Include="OneOffGames.Tests\OrcsMustDieTests.fs" />
     <Compile Include="OneOffGames.Tests\ParadoxStrategyGamesTests.fs" />
     <Compile Include="OneOffGames.Tests\PillarsOfEternityTests.fs" />

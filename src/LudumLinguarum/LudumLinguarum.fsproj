@@ -59,6 +59,7 @@
     <Compile Include="OneOffGames\JetSetRadio.fs" />
     <Compile Include="OneOffGames\MadballsBaboInvasion.fs" />
     <Compile Include="OneOffGames\Magicka.fs" />
+    <Compile Include="OneOffGames\NubbysNumberFactory.fs" />
     <Compile Include="OneOffGames\OrcsMustDie.fs" />
     <Compile Include="OneOffGames\AgeOfEmpiresGames.fs" />
     <Compile Include="OneOffGames\ParadoxStrategyGames.fs" />
