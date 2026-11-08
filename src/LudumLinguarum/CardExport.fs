@@ -3,7 +3,9 @@ module CardExport
 open LLDatabase
 open LudumLinguarumPlugins
 open System
+open System.Globalization
 open System.IO
+open System.Text
 open System.Text.RegularExpressions
 
 type CommonExportTarget = 
@@ -11,6 +13,7 @@ type CommonExportTarget =
     | SuperMemo
     | Mnemosyne
     | AnyMemo
+    | Brainscape
 
 type CommonExporterConfiguration =
     {
@@ -82,6 +85,28 @@ type private SuperMemoPaginatingWriter(otw: TextWriter, exportBasePath: string) 
             streamWriter.WriteLine(line)
             lineCounter <- lineCounter + 1
 
+// Writes cards as a UTF-8 CSV with two columns, which Brainscape's
+// "Import Flashcards" feature reads as question and answer.
+type internal BrainscapeCsvWriter(otw: TextWriter, exportBasePath: string) = 
+    let streamWriter = new StreamWriter(exportBasePath, false, Encoding.UTF8)
+    let csvConfiguration = CsvHelper.Configuration.CsvConfiguration(CultureInfo.InvariantCulture)
+    let csvWriter = new CsvHelper.CsvWriter(streamWriter, csvConfiguration)
+
+    do otw.WriteLine("Writing to [" + exportBasePath + "]")
+    interface IDisposable with
+        member this.Dispose() = 
+            csvWriter.Dispose()
+            streamWriter.Dispose()
+
+    interface ICardWriter with
+        member this.WriteCard(line: String) = 
+            // Card text has already had tabs, CRs, and LFs stripped, so the
+            // line is exactly two tab-separated fields: question and answer.
+            let fields = line.Split('\t')
+            csvWriter.WriteField(fields.[0])
+            csvWriter.WriteField(fields.[1])
+            csvWriter.NextRecord()
+
 type CommonExporter(iPluginManager: IPluginManager, outputTextWriter: TextWriter, 
                     llDatabase: LLDatabase, config: CommonExporterConfiguration) = 
 
@@ -127,8 +152,14 @@ type CommonExporter(iPluginManager: IPluginManager, outputTextWriter: TextWriter
                 | (CommonExportTarget.SuperMemo, _, _) -> ""
                 | (CommonExportTarget.Mnemosyne, _, _) -> "\t"
                 | (CommonExportTarget.AnyMemo, _, _) -> "\t"
+                | (CommonExportTarget.Brainscape, _, _) -> ""
 
             cardWriter.WriteCard(recogText + "\t" + prodText + reverseText)
+
+            // Brainscape's CSV import has no reverse-card column, so reversible
+            // pairs are additionally exported in the reverse direction.
+            if (applicationTarget = CommonExportTarget.Brainscape && r.Reversible && p.Reversible) then
+                cardWriter.WriteCard(prodText + "\t" + recogText)
 
         let (recognitionCards, productionCards) = 
             this.GenerateRecognitionAndProductionCardSets(lesson, config.RecognitionLanguage, config.ProductionLanguage)
@@ -186,6 +217,7 @@ type CommonExporter(iPluginManager: IPluginManager, outputTextWriter: TextWriter
         let cardWriter: ICardWriter = 
             match config.Target with
             | CommonExportTarget.SuperMemo -> new SuperMemoPaginatingWriter(outputTextWriter, config.ExportPath) :> ICardWriter
+            | CommonExportTarget.Brainscape -> new BrainscapeCsvWriter(outputTextWriter, config.ExportPath) :> ICardWriter
             | CommonExportTarget.Anki 
             | CommonExportTarget.Mnemosyne 
             | CommonExportTarget.AnyMemo -> new NonPaginatingWriter(outputTextWriter, config.ExportPath) :> ICardWriter

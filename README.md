@@ -7,6 +7,7 @@ games, which can then be turned into flash cards for use with the following [spa
 2. [SuperMemo](https://www.supermemo.com/)
 3. [Mnemosyne](https://mnemosyne-proj.org/)
 4. [AnyMemo](https://anymemo.org/)
+5. [Brainscape](https://www.brainscape.com/), a web and mobile app. Cards are exported as a CSV file that can be bulk-imported via its "Import Flashcards" feature.
 
 In other words, you can spice up your language learning regimen by drilling yourself with flash cards containing text from video games!
 
@@ -99,6 +100,20 @@ text to 5 whitespace-separated words in the target language, which can be useful
 9. Select the **Import** menu item under the **File** menu. Select the file you exported in step 7, and make sure that the file format selected is **Tab-separated text files**. You may want to add a tag to these cards, so you can bulk-modify them after import.
 10. Click the **Ok** button. After the import is complete, you may want to select the cards (under **Cards** -> **Browse Cards...**), and change the card type from **Front-to-back only** to **Front-to-back and back-to-front**.
 11. You are now ready to study with Mnemosyne! Read its documentation to find more information about how to use the client.
+
+# Brainscape Quick Start
+
+This walkthrough covers importing text from a game, exporting it to a CSV file that Brainscape can import in one shot, and then using the flashcards to drill.
+
+1. Download and extract the latest version of Ludum Linguarum, [from the list of releases above](https://github.com/enovales/LudumLinguarum/releases).
+2. Ensure that you have at least [one of the supported games](https://github.com/enovales/LudumLinguarum/blob/master/docsrc/content/supported-games.md) installed.
+3. Open up a command prompt window, in the directory to which you extracted Ludum Linguarum.
+4. Type `LudumLinguarum list-supported-games` to find the name of the game that you want to extract.
+5. Type `LudumLinguarum import --game="<game name>" --game-dir="<root directory of game>"` to import the game text. (Some games that only support a single language with their installed data may require you to specify the language with `--language-tag=<language tag>`.)
+6. Type `LudumLinguarum export-brainscape --game="<game name>" --recognition-language="<first language>" --production-language="<second language>" --export-path="<path to export .csv file>" --production-word-limit=5`. The arguments work the same way as in the Anki quick start above: the "recognition language" is the language you already know, the "production language" is the one you are trying to learn, and `production-word-limit` restricts cards to short phrases in the target language. The export is a UTF-8 CSV file with two columns, which Brainscape reads as question and answer. Cards that can be reversed are exported in both directions.
+7. Open the [Brainscape website](https://www.brainscape.com/) and create a class with a deck inside it (or open an existing deck).
+8. Click **Add Cards** and choose **Import Flashcards**, then upload the CSV file exported in step 6.
+9. Select the new deck and start studying!
 
 # Other notes
 
