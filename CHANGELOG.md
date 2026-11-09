@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+* Added support for [Balatro](https://store.steampowered.com/app/2379780/Balatro/) \[de, en-US, es-419, es-ES, fr, id, it, ja, ko, nl, pl, pt-BR, ru, zh-CN, zh-TW\]
 * Added an `export-brainscape` command that exports cards as a UTF-8 CSV file (question/answer columns) for bulk import into [Brainscape](https://www.brainscape.com/) via its "Import Flashcards" feature. Reversible card pairs are exported in both directions.
 * The `export-brainscape` export now splits its output into multiple numerically suffixed files (e.g. `_001`) of at most 500 records each when more than 500 cards are exported, since Brainscape imports one CSV file at a time.
 

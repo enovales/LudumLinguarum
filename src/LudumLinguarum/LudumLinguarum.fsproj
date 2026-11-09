@@ -54,6 +54,7 @@
     <Compile Include="InfinityAuroraEngine\AuroraPlugin.fs" />
     <Compile Include="OneOffGames\DiceyDungeons.fs" />
     <Compile Include="OneOffGames\Utils.fs" />
+    <Compile Include="OneOffGames\Balatro.fs" />
     <Compile Include="OneOffGames\CivilizationGames.fs" />
     <Compile Include="OneOffGames\CodemastersGames.fs" />
     <Compile Include="OneOffGames\JetSetRadio.fs" />

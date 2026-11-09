@@ -3,6 +3,7 @@ The following games and [language tags](https://en.wikipedia.org/wiki/IETF_langu
 * Age of Empires II: HD Edition \[de, en, es, fr, it, ja, ko, nl, pt, ru, zh\]
 * Age of Empires III \[de, en, es, fr, it\]
 * Audiosurf \[en, ru\]
+* Balatro \[de, en-US, es-419, es-ES, fr, id, it, ja, ko, nl, pl, pt-BR, ru, zh-CN, zh-TW\]
 * Bastion \[de, en, es, fr, it\]
 * Braid \[cs, de, en, es, fr, it, ja, ka, ko, pl, pt, ru, zh\]
 * Crusader Kings II \[de, en, es, fr\]
