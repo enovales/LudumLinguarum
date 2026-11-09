@@ -3,6 +3,8 @@
 open Expecto
 open LLDatabase
 open FsCheck
+open System
+open System.IO
 
 type LLDatabaseTestData = 
     {
@@ -235,3 +237,59 @@ let tests =
       ()
   )
   |> testList "LLDatabase tests"
+
+[<Tests>]
+let keyHashTests =
+  testList "LLDatabase key hash tests" [
+    test "calculateKeyHash is stable and SHA-256-based, not per-process randomized" {
+      let key = "some card key"
+      use sha = System.Security.Cryptography.SHA256.Create()
+      let expected = BitConverter.ToInt32(sha.ComputeHash(Text.Encoding.UTF8.GetBytes(key)), 0)
+      Expect.equal expected (calculateKeyHash key) "hash should be derived from SHA-256 of the UTF-8 key"
+      Expect.equal (calculateKeyHash key) (calculateKeyHash key) "hash should be deterministic"
+      Expect.notEqual (calculateKeyHash key) (calculateKeyHash (key + "x")) "different keys should hash differently"
+    }
+
+    test "Re-importing cards updates them in place even when stored hashes are stale" {
+      let path = Path.Combine(Path.GetTempPath(), "lldb-reimport-" + Guid.NewGuid().ToString("N") + ".db3")
+      try
+        let mkCard key text lang =
+          {
+            CardRecord.ID = 0
+            LessonID = 0
+            Text = text
+            Gender = ""
+            Key = key
+            GenderlessKey = key
+            KeyHash = 0
+            GenderlessKeyHash = 0
+            SoundResource = ""
+            LanguageTag = lang
+            Reversible = true
+          }
+        let cards = [| mkCard "k1" "alpha" "en"; mkCard "k1" "eins" "de" |]
+
+        // initial import
+        do
+          use db = new LLDatabase(path)
+          let lessonId = db.CreateOrUpdateLesson({ LessonRecord.ID = 0; Name = "lesson" })
+          db.CreateOrUpdateCards(cards |> Array.map (fun c -> { c with LessonID = lessonId }))
+
+        // simulate a database written by an older version, whose stored hashes
+        // were randomized per process
+        do
+          use raw = new SQLite.SQLiteConnection(path)
+          raw.Execute("update CardEntry set KeyHash = -987654321, GenderlessKeyHash = -987654321") |> ignore
+
+        // re-import in a fresh connection, as a new process would
+        do
+          use db = new LLDatabase(path)
+          let lessonId = db.CreateOrUpdateLesson({ LessonRecord.ID = 0; Name = "lesson" })
+          db.CreateOrUpdateCards(cards |> Array.map (fun c -> { c with LessonID = lessonId; Text = c.Text + " updated" }))
+          Expect.equal 2 db.Cards.Length "re-import should update existing cards, not duplicate them"
+          Expect.isTrue (db.Cards |> Array.forall (fun c -> c.Text.EndsWith("updated"))) "card text should be updated"
+          Expect.isTrue (db.Cards |> Array.forall (fun c -> c.KeyHash = calculateKeyHash c.Key)) "stored hashes should be rewritten with the stable hash"
+      finally
+        File.Delete(path)
+    }
+  ]

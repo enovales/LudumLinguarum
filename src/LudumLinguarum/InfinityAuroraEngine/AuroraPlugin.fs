@@ -40,13 +40,13 @@ type private ExtractionContext<'TalkTableString when 'TalkTableString :> ITalkTa
 /// <summary>
 /// Function that generates a set of cards for a provided 2DA file.
 /// </summary>
-type TwoDAExtractor<'TalkTableString when 'TalkTableString :> ITalkTableString> = 
+type private TwoDAExtractor<'TalkTableString when 'TalkTableString :> ITalkTableString> = 
     ExtractionContext<'TalkTableString> * TwoDAFile * LessonRecord * string -> CardRecord array
 
 /// <summary>
 /// 2DA resref, extractor method, lesson name
 /// </summary>
-type TwoDAExtractionOrder<'TalkTableString when 'TalkTableString :> ITalkTableString> = string * TwoDAExtractor<'TalkTableString> * string
+type private TwoDAExtractionOrder<'TalkTableString when 'TalkTableString :> ITalkTableString> = string * TwoDAExtractor<'TalkTableString> * string
 
 type private ExtractedContentWithIndex = 
     {

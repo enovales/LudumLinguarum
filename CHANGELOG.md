@@ -13,6 +13,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Added an `export-brainscape` command that exports cards as a UTF-8 CSV file (question/answer columns) for bulk import into [Brainscape](https://www.brainscape.com/) via its "Import Flashcards" feature. Reversible card pairs are exported in both directions.
 * The `export-brainscape` export now splits its output into multiple numerically suffixed files (e.g. `_001`) of at most 500 records each when more than 500 cards are exported, since Brainscape imports one CSV file at a time.
 
+### Fixed
+
+* Card key hashes are now computed with a stable SHA-256-based hash instead of `string.GetHashCode()`, which is randomized per process; re-importing a game in a new process no longer duplicates its cards. Card lookups now match on the key text itself, so databases written by older versions are updated in place on re-import instead of being duplicated.
+* Fixed the FS0044 deprecation warnings for the Aurora engine 2DA extractor type abbreviations.
+
+### Changed
+
+* CI now installs the .NET 10 SDK (matching `global.json`) instead of the .NET 8 SDK.
+
+### Removed
+
+* Removed MiniScaffold/FAKE leftovers that are no longer used by the build system: the `.config` dotnet tool manifest (SourceLink/ReportGenerator/F# analyzers), the `sg.tmp` temp file, the extra .NET 6 SDK install in the devcontainer setup, and the outdated FAKE-based build/release docs in `README.md` (replaced with the current `dotnet build`/`dotnet test` commands and GitHub release instructions).
+
 ## [2.0.0-alpha.3] - 2026-11-08
 
 ### Changed

@@ -187,28 +187,28 @@ type CommonExporter(iPluginManager: IPluginManager, outputTextWriter: TextWriter
         let (recognitionCards, productionCards) = 
             this.GenerateRecognitionAndProductionCardSets(lesson, config.RecognitionLanguage, config.ProductionLanguage)
 
-        // filter and then group cards by their key hash and gender, and then match them up with each other.
-        let recognitionByHashKeys = 
+        // filter and then group cards by their key and gender, and then match them up with each other.
+        let recognitionByKeys = 
             recognitionCards 
             |> Array.filter(recognitionLengthFilter)
             |> Array.filter(recognitionWordCountFilter)
-            |> Array.groupBy(fun t -> (t.GenderlessKeyHash, t.Gender))
-        let productionByHashKeys = 
+            |> Array.groupBy(fun t -> (t.GenderlessKey, t.Gender))
+        let productionByKeys = 
             productionCards 
             |> Array.filter(productionLengthFilter)
             |> Array.filter(productionWordCountFilter)
-            |> Array.groupBy(fun t -> (t.GenderlessKeyHash, t.Gender)) |> Map.ofArray
+            |> Array.groupBy(fun t -> (t.GenderlessKey, t.Gender)) |> Map.ofArray
 
         // Match up recognition cards with the same key and gender string with
         // production cards with the same key and gender string.
-        let pairsByHashKeys = 
-            recognitionByHashKeys |> 
+        let pairsByKeys = 
+            recognitionByKeys |> 
             Array.map(fun (k, cards) -> 
-                (cards, productionByHashKeys |> Map.tryFind(k))) |> 
+                (cards, productionByKeys |> Map.tryFind(k))) |> 
             Array.filter(fun (_, prod) -> prod.IsSome) |> 
             Array.map(fun (cards, prod) -> (cards, prod.Value))
         
-        pairsByHashKeys
+        pairsByKeys
         |> Array.iter(fun (rs, ps) -> 
             Array.zip rs ps
             |> Array.iter(fun (r, p) -> writeCard(r, p)))
