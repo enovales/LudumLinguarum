@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+* Added support for RGG Studio games, covering both the old-engine (PAR archives with SLLZ compression and 20070319 `.bin` text tables) and Dragon Engine (armp `.bin` text tables) flavors of the studio's file formats:
+    * [Yakuza 0](https://store.steampowered.com/app/638970/Yakuza_0/) \[en, ja\]
+    * [Yakuza Kiwami](https://store.steampowered.com/app/834530/Yakuza_Kiwami/) \[en, ja\]
+    * [Yakuza Kiwami 2](https://store.steampowered.com/app/910380/Yakuza_Kiwami_2/) \[en, ja, zh-CN, zh-TW\]
+    * [Yakuza 6: The Song of Life](https://store.steampowered.com/app/1388590/Yakuza_6_The_Song_of_Life/) \[en, ja, zh-CN, zh-TW\]
+    * [Judgment](https://store.steampowered.com/app/1717230/Judgment/) \[de, en, es, fr, it, ja, ko, zh-CN, zh-TW\]
+    * [Lost Judgment](https://store.steampowered.com/app/1451810/Lost_Judgment/) \[de, en, es, fr, it, ja, ko, zh-CN, zh-TW\]
+    * [Yakuza: Like a Dragon](https://store.steampowered.com/app/1235140/Yakuza_Like_a_Dragon/) \[de, en, es, fr, it, ja, ko, pt-BR, ru, zh-CN, zh-TW\]
 * Added support for [Balatro](https://store.steampowered.com/app/2379780/Balatro/) \[de, en-US, es-419, es-ES, fr, id, it, ja, ko, nl, pl, pt-BR, ru, zh-CN, zh-TW\]
 * Added an `export-brainscape` command that exports cards as a UTF-8 CSV file (question/answer columns) for bulk import into [Brainscape](https://www.brainscape.com/) via its "Import Flashcards" feature. Reversible card pairs are exported in both directions.
 * The `export-brainscape` export now splits its output into multiple numerically suffixed files (e.g. `_001`) of at most 500 records each when more than 500 cards are exported, since Brainscape imports one CSV file at a time.
