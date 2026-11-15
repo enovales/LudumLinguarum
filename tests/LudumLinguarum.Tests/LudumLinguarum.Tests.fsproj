@@ -38,6 +38,7 @@
     <Compile Include="InfinityAuroraEngine.Tests\ArchiveFilesTests.fs" />
     <Compile Include="InfinityAuroraEngine.Tests\GFFFileTypesTests.fs" />
     <Compile Include="InfinityAuroraEngine.Tests\TwoDATests.fs" />
+    <Compile Include="RggEngine.Tests\RggEngineTests.fs" />
     <Compile Include="Main.fs" />
   </ItemGroup>
 
