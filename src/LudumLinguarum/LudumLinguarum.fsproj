@@ -52,6 +52,12 @@
     <Compile Include="InfinityAuroraEngine\KOTOR1Context.fs" />
     <Compile Include="InfinityAuroraEngine\KOTOR2Context.fs" />
     <Compile Include="InfinityAuroraEngine\AuroraPlugin.fs" />
+    <Compile Include="RGGStudio\ParArchive.fs" />
+    <Compile Include="RGGStudio\LocalizedBinFile.fs" />
+    <Compile Include="RGGStudio\ArmpBinFile.fs" />
+    <Compile Include="RGGStudio\OldEngineGames.fs" />
+    <Compile Include="RGGStudio\DragonEngineGames.fs" />
+    <Compile Include="RGGStudio\RGGStudioPlugin.fs" />
     <Compile Include="OneOffGames\DiceyDungeons.fs" />
     <Compile Include="OneOffGames\Utils.fs" />
     <Compile Include="OneOffGames\Balatro.fs" />
