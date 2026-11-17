@@ -11,6 +11,7 @@ open RggEngine.Sllz
 open System
 open System.IO
 open System.Text
+open UnrealEngine
 
 let private filterValidSyntheticStrings (items: string list) : string array =
     items
@@ -466,14 +467,14 @@ let rggGamesAndPluginTests =
                     if Directory.Exists(tempDir) then
                         Directory.Delete(tempDir, true)
 
-        testCase "RggPlugin is discoverable by PluginManager and exposes all 14 RGG Studio games" <|
+        testCase "RggPlugin is discoverable by PluginManager and exposes all 15 RGG Studio games" <|
             fun () ->
                 let pm = new PluginManager() :> IPluginManager
                 let discovered = pm.Discover(typeof<RggPlugin>.Assembly)
                 Expect.isTrue (discovered |> List.contains typeof<RggPlugin>) "PluginManager.Discover should find RggPlugin"
 
                 pm.Instantiate(TextWriter.Null, typeof<RggPlugin>, [||])
-                Expect.equal pm.SupportedGames.Length 14 "RggPlugin should expose 14 supported games"
+                Expect.equal pm.SupportedGames.Length 15 "RggPlugin should expose 15 supported games"
                 for spec in supportedGames do
                     Expect.isSome (pm.GetPluginForGame(spec.Name)) $"GetPluginForGame should resolve '{spec.Name}'"
 
@@ -522,6 +523,104 @@ let rggGamesAndPluginTests =
                     Expect.equal byLangAndKey.[("en", "db.nex/sound_auth_text:Main/scene_01/subtitle")] "Synthetic English subtitle." "en subtitle"
                     Expect.equal byLangAndKey.[("ja", "db.nex/sound_auth_text:Main/scene_01/subtitle")] "合成日本語字幕。" "ja subtitle"
                     Expect.equal byLangAndKey.[("es-419", "db.nex/sound_auth_text:Main/scene_01/subtitle")] "Subtítulo sintético." "es-419 subtitle from db.nex/ls"
+                finally
+                    if Directory.Exists(tempDir) then
+                        Directory.Delete(tempDir, true)
+
+        testProperty "UnrealLocRes build and parse round-trips synthetic string namespaces" <|
+            fun (rawStrings: string list) ->
+                let valid = filterValidSyntheticStrings rawStrings
+                if valid.Length > 0 then
+                    let entries = valid |> Array.mapi (fun idx s -> ($"key_{idx:D4}", s))
+                    let locresBytes = UnrealLocRes.build [| ("synthetic_ns", entries) |]
+                    Expect.isTrue (UnrealLocRes.isLocRes locresBytes) "built bytes should have LocRes magic"
+                    let parsed = UnrealLocRes.parse locresBytes
+                    let expected = entries |> Array.map (fun (k, v) -> ($"synthetic_ns/{k}", v))
+                    Expect.equal parsed expected "parsed LocRes entries should match input"
+
+        testProperty "UnrealPak build and read round-trips uncompressed and Zlib-compressed payloads" <|
+            fun (p1: byte array) (p2: byte array) ->
+                let b1 = if isNull p1 then [||] else p1
+                let b2 = if isNull p2 then [||] else p2
+                let pakBytes =
+                    UnrealPak.buildPakArchive [|
+                        ("SyntheticGame/Content/Localization/Game/en/Game.locres", b1, false)
+                        ("SyntheticGame/Content/Projects/Devil2/data/db.macan/en/tips.bin", b2, true)
+                    |]
+                use ms = new MemoryStream(pakBytes, false)
+                Expect.isTrue (UnrealPak.isPakStream ms) "built archive should be recognized as an Unreal .pak stream"
+                let idx = UnrealPak.readIndex ms
+                Expect.equal idx.Files.Length 2 "should have 2 files in FullDirectoryIndex"
+                let actualMap =
+                    idx.Files
+                    |> Array.map (fun f -> (f.Path, UnrealPak.readEntryBytes (ms, idx, f)))
+                    |> Map.ofArray
+                Expect.equal actualMap.["SyntheticGame/Content/Localization/Game/en/Game.locres"] b1 "uncompressed pak entry should match"
+                Expect.equal actualMap.["SyntheticGame/Content/Projects/Devil2/data/db.macan/en/tips.bin"] b2 "Zlib-compressed pak entry should match"
+
+        testCase "Like a Dragon: Ishin! extracts Unreal .locres, db.macan ARMP tables, and wdr_<lang> .msg files from .pak archives" <|
+            fun () ->
+                let tempDir = Path.Combine(Path.GetTempPath(), "LL_RggIshinTest_" + Guid.NewGuid().ToString("N"))
+                Directory.CreateDirectory(tempDir) |> ignore
+                try
+                    let paksDir = Path.Combine(tempDir, "LikeaDragonIshin", "Content", "Paks")
+                    Directory.CreateDirectory(paksDir) |> ignore
+
+                    let enLocRes =
+                        UnrealLocRes.build [|
+                            ("ability_name", [| ("0001", "Synthetic Swordsmanship") |])
+                        |]
+                    let jaLocRes =
+                        UnrealLocRes.build [|
+                            ("ability_name", [| ("0001", "合成剣術") |])
+                        |]
+                    let zhsLocRes =
+                        UnrealLocRes.build [|
+                            ("ability_name", [| ("0001", "合成剑术") |])
+                        |]
+
+                    let enDbArmp =
+                        Armp.buildDragonEngineArmp (
+                            [| "text" |],
+                            [| ("tip_01", [| "Synthetic combat tip." |]) |]
+                        )
+                    let jaDbArmp =
+                        Armp.buildDragonEngineArmp (
+                            [| "text" |],
+                            [| ("tip_01", [| "合成戦闘のコツ。" |]) |]
+                        )
+
+                    let enMsg = Msg.build ([| [| "Welcome to synthetic Kyo." |] |], [| "Speaker" |], Encoding.UTF8)
+                    let jaMsg = Msg.build ([| [| "合成の京へようこそ。" |] |], [| "話者" |], Encoding.UTF8)
+
+                    let pakBytes =
+                        UnrealPak.buildPakArchive [|
+                            ("LikeaDragonIshin/Content/Localization/Game/en/Game.locres", enLocRes, true)
+                            ("LikeaDragonIshin/Content/Localization/Game/ja/Game.locres", jaLocRes, true)
+                            ("LikeaDragonIshin/Content/Localization/Game/zh-Hans/Game.locres", zhsLocRes, true)
+                            ("LikeaDragonIshin/Content/Projects/Devil2/data/db.macan/en/tips.bin", enDbArmp, true)
+                            ("LikeaDragonIshin/Content/Projects/Devil2/data/db.macan/ja/tips.bin", jaDbArmp, true)
+                            ("LikeaDragonIshin/Content/Projects/Devil2/data/wdr_en/msg/uid01/uid0001.msg", enMsg, true)
+                            ("LikeaDragonIshin/Content/Projects/Devil2/data/wdr_ja/msg/uid01/uid0001.msg", jaMsg, true)
+                        |]
+
+                    File.WriteAllBytes(Path.Combine(paksDir, "pakchunk0-WindowsNoEditor.pak"), pakBytes)
+
+                    let plugin = new RggPlugin() :> IGameExtractorPlugin
+                    let extracted = plugin.ExtractAll("Like a Dragon: Ishin!", tempDir, [||])
+
+                    let byLangAndKey =
+                        extracted.cards
+                        |> Array.map (fun c -> ((c.LanguageTag, c.Key), c.Text))
+                        |> Map.ofArray
+
+                    Expect.equal byLangAndKey.[("en", "locres/Game:ability_name/0001")] "Synthetic Swordsmanship" "en LocRes entry"
+                    Expect.equal byLangAndKey.[("ja", "locres/Game:ability_name/0001")] "合成剣術" "ja LocRes entry"
+                    Expect.equal byLangAndKey.[("zh-CN", "locres/Game:ability_name/0001")] "合成剑术" "zh-CN LocRes entry from zh-Hans"
+                    Expect.equal byLangAndKey.[("en", "db/tips:Main/tip_01/text")] "Synthetic combat tip." "en db.macan ARMP entry"
+                    Expect.equal byLangAndKey.[("ja", "db/tips:Main/tip_01/text")] "合成戦闘のコツ。" "ja db.macan ARMP entry"
+                    Expect.equal byLangAndKey.[("en", "wdr/msg/uid01/uid0001:line/0/0")] "Welcome to synthetic Kyo." "en wdr msg entry"
+                    Expect.equal byLangAndKey.[("ja", "wdr/msg/uid01/uid0001:line/0/0")] "合成の京へようこそ。" "ja wdr msg entry"
                 finally
                     if Directory.Exists(tempDir) then
                         Directory.Delete(tempDir, true)

@@ -9,10 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-* Added support for RGG Studio games (Old Engine / Kiwami Engine and Dragon Engine), including `.par` (`PARC`) archives, `SLLZ` v1/v2 decompression, `armp` tables, `20070319` binary tables, `string_tbl.bin`, `.msg` dialogue scripts, `cmn.bin` cutscene subtitles, `encounter_pupup_message.bin`, and `dispose_string.bin`:
+* Added support for RGG Studio games (Old Engine / Kiwami Engine, Dragon Engine, and Unreal Engine 4 hybrid), including `.par` (`PARC`) archives, `SLLZ` v1/v2 decompression, Unreal `.pak` archives and `.locres` localization tables, `armp` tables, `20070319` binary tables, `string_tbl.bin`, `.msg` dialogue scripts, `cmn.bin` cutscene subtitles, `encounter_pupup_message.bin`, and `dispose_string.bin`:
     * [Judgment](https://store.steampowered.com/app/2058180/Judgment/) \[de, en, es, fr, it, ja, ko, zh-CN, zh-TW\]
     * [Like a Dragon Gaiden: The Man Who Erased His Name](https://store.steampowered.com/app/2375550/Like_a_Dragon_Gaiden_The_Man_Who_Erased_His_Name/) \[de, en, es, fr, it, ja, ko, pt-BR, ru, zh-CN, zh-TW\]
     * [Like a Dragon: Infinite Wealth](https://store.steampowered.com/app/2072450/Like_a_Dragon_Infinite_Wealth/) \[de, en, es, fr, it, ja, ko, pt-BR, ru, zh-CN, zh-TW\]
+    * [Like a Dragon: Ishin!](https://store.steampowered.com/app/1805480/Like_a_Dragon_Ishin/) \[de, en, es, fr, it, ja, ko, zh-CN, zh-TW\]
     * [Like a Dragon: Pirate Yakuza in Hawaii](https://store.steampowered.com/app/3061810/Like_a_Dragon_Pirate_Yakuza_in_Hawaii/) \[de, en, es, fr, it, ja, ko, pt-BR, ru, zh-CN, zh-TW\]
     * [Lost Judgment](https://store.steampowered.com/app/2058190/Lost_Judgment/) \[de, en, es, fr, it, ja, ko, zh-CN, zh-TW\]
     * [Yakuza 0](https://store.steampowered.com/app/638970/Yakuza_0/) \[en, ja, zh-CN\]

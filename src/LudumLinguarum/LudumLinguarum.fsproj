@@ -52,6 +52,8 @@
     <Compile Include="InfinityAuroraEngine\KOTOR1Context.fs" />
     <Compile Include="InfinityAuroraEngine\KOTOR2Context.fs" />
     <Compile Include="InfinityAuroraEngine\AuroraPlugin.fs" />
+    <Compile Include="UnrealEngine\UnrealPak.fs" />
+    <Compile Include="UnrealEngine\UnrealLocRes.fs" />
     <Compile Include="RggEngine\Sllz.fs" />
     <Compile Include="RggEngine\ParArchive.fs" />
     <Compile Include="RggEngine\RggFormats.fs" />

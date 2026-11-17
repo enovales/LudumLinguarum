@@ -36,6 +36,7 @@ The following games and [language tags](https://en.wikipedia.org/wiki/IETF_langu
 * Judgment \[de, en, es, fr, it, ja, ko, zh-CN, zh-TW\]
 * Like a Dragon Gaiden: The Man Who Erased His Name \[de, en, es, fr, it, ja, ko, pt-BR, ru, zh-CN, zh-TW\]
 * Like a Dragon: Infinite Wealth \[de, en, es, fr, it, ja, ko, pt-BR, ru, zh-CN, zh-TW\]
+* Like a Dragon: Ishin! \[de, en, es, fr, it, ja, ko, zh-CN, zh-TW\]
 * Like a Dragon: Pirate Yakuza in Hawaii \[de, en, es, fr, it, ja, ko, pt-BR, ru, zh-CN, zh-TW\]
 * Lost Judgment \[de, en, es, fr, it, ja, ko, zh-CN, zh-TW\]
 * Madballs: Babo Invasion \[de, en, es, fr, it, ja, ko, pt, ru, zh\]

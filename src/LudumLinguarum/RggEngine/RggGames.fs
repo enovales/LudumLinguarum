@@ -9,11 +9,13 @@ open System
 open System.Collections.Generic
 open System.IO
 open System.Text
+open UnrealEngine
 
 /// Engine family for an RGG Studio game.
 type RggEngineKind =
     | OldEngine
     | DragonEngine
+    | UnrealHybridEngine
 
 /// Metadata describing a supported RGG Studio game.
 type RggGameSpec =
@@ -44,9 +46,15 @@ let internal multiLetterLanguageMap =
         ("pt", "pt-BR")
         ("br", "pt-BR")
         ("ru", "ru")
+        ("tw", "zh-TW")
         ("zh", "zh-TW")
+        ("zh-tw", "zh-TW")
+        ("zh-hant", "zh-TW")
         ("zht", "zh-TW")
         ("cht", "zh-TW")
+        ("cn", "zh-CN")
+        ("zh-cn", "zh-CN")
+        ("zh-hans", "zh-CN")
         ("zhs", "zh-CN")
         ("chs", "zh-CN")
     |]
@@ -626,6 +634,159 @@ let extractDragonEngineGame (gameName: string) (path: string) : LudumLinguarumPl
         LudumLinguarumPlugins.ExtractedContent.cards = uniqueCards
     }
 
+type internal UnrealHybridFileKind =
+    | LocResFile
+    | ArmpBinFile
+    | MsgFile
+
+/// Resolves a virtual path from an Unreal Engine + RGG hybrid game (such as Like a Dragon: Ishin!)
+/// into (languageTag, normalizedKeyPrefix, fileKind) if it is a localized resource.
+let internal tryResolveUnrealHybridVirtualPath (virtualPath: string) : (string * string * UnrealHybridFileKind) option =
+    let normalized = virtualPath.Replace('\\', '/').Trim('/')
+    if String.IsNullOrEmpty(normalized)
+       || normalized.StartsWith("Engine/", StringComparison.OrdinalIgnoreCase)
+       || normalized.IndexOf("/Plugins/", StringComparison.OrdinalIgnoreCase) >= 0 then
+        None
+    else
+        let segments = normalized.Split('/', StringSplitOptions.RemoveEmptyEntries)
+        if segments.Length < 3 then
+            None
+        else
+            let fileName = segments.[segments.Length - 1]
+            if fileName.EndsWith(".locres", StringComparison.OrdinalIgnoreCase) then
+                let locIdx =
+                    segments
+                    |> Array.tryFindIndex (fun s -> s.Equals("Localization", StringComparison.OrdinalIgnoreCase))
+                match locIdx with
+                | Some i when i + 3 < segments.Length ->
+                    let langFolder = segments.[i + 2]
+                    match UnrealLocRes.tryMapUnrealLanguage langFolder with
+                    | Some langTag ->
+                        let stem = Path.GetFileNameWithoutExtension(fileName)
+                        Some(langTag, $"locres/{stem}", LocResFile)
+                    | None -> None
+                | _ -> None
+            elif fileName.EndsWith(".bin", StringComparison.OrdinalIgnoreCase) && not (isNonLocalizedDragonEngineBin fileName) then
+                let dbIdx =
+                    segments
+                    |> Array.tryFindIndex (fun s ->
+                        let lower = s.ToLowerInvariant()
+                        lower = "db" || lower.StartsWith("db.", StringComparison.Ordinal) || lower.StartsWith("db_", StringComparison.Ordinal))
+                match dbIdx with
+                | Some i when i + 2 < segments.Length ->
+                    let langFolder = segments.[i + 1]
+                    match tryMapDragonEngineLanguage langFolder with
+                    | Some langTag ->
+                        let relAfterLang = String.Join("/", segments.[i + 2 ..])
+                        let stem = relAfterLang.Substring(0, relAfterLang.Length - 4)
+                        Some(langTag, $"db/{stem}", ArmpBinFile)
+                    | None -> None
+                | _ -> None
+            elif fileName.EndsWith(".msg", StringComparison.OrdinalIgnoreCase) then
+                let wdrIdx =
+                    segments
+                    |> Array.tryFindIndex (fun s -> s.StartsWith("wdr_", StringComparison.OrdinalIgnoreCase))
+                match wdrIdx with
+                | Some i when i + 1 < segments.Length ->
+                    let wdrSeg = segments.[i]
+                    let lastUnder = wdrSeg.LastIndexOf('_')
+                    if lastUnder > 0 && lastUnder < wdrSeg.Length - 1 then
+                        let langSuffix = wdrSeg.Substring(lastUnder + 1)
+                        match tryMapOldEngineLanguage langSuffix with
+                        | Some langTag ->
+                            let relAfterWdr = String.Join("/", segments.[i + 1 ..])
+                            let stem = relAfterWdr.Substring(0, relAfterWdr.Length - 4)
+                            Some(langTag, $"wdr/{stem}", MsgFile)
+                        | None -> None
+                    else
+                        None
+                | _ -> None
+            else
+                None
+
+let private parseUnrealHybridFileBytes (kind: UnrealHybridFileKind, fileName: string, rawBytes: byte array, langTag: string) : (string * string) array =
+    Encoding.RegisterProvider(CodePagesEncodingProvider.Instance)
+    try
+        match kind with
+        | LocResFile ->
+            if UnrealLocRes.isLocRes rawBytes then
+                UnrealLocRes.parse rawBytes
+                |> Array.choose (fun (k, v) ->
+                    let cleaned = cleanText v
+                    if String.IsNullOrWhiteSpace(cleaned) then None
+                    else Some(k, cleaned))
+            else
+                [||]
+        | ArmpBinFile ->
+            parseDragonEngineFileBytes (fileName, rawBytes, langTag)
+        | MsgFile ->
+            Msg.parse (rawBytes, Encoding.UTF8)
+    with _ ->
+        [||]
+
+/// Extracts localized content from an Unreal Engine + RGG Studio hybrid game directory (such as Like a Dragon: Ishin!).
+let extractUnrealHybridGame (gameName: string) (path: string) : LudumLinguarumPlugins.ExtractedContent =
+    let lesson = { LessonRecord.ID = 0; Name = "Game Text" }
+    let normalizedRoot = FixPathSeps path
+    if not (Directory.Exists(normalizedRoot)) then
+        raise (ArgumentException($"Directory '{path}' does not exist for {gameName}."))
+
+    let allCards = ResizeArray<CardRecord>()
+
+    // 1. Scan Unreal Engine .pak files (such as LikeaDragonIshin/Content/Paks/*.pak)
+    let pakFiles =
+        Directory.GetFiles(normalizedRoot, "*.pak", SearchOption.AllDirectories)
+        |> Array.sort
+
+    for pakPath in pakFiles do
+        if UnrealPak.isPakFile pakPath then
+            use fs = new FileStream(pakPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)
+            let index = UnrealPak.readIndex fs
+            for entry in index.Files do
+                match tryResolveUnrealHybridVirtualPath entry.Path with
+                | Some(langTag, keyPrefix, kind) ->
+                    let fileBytes = UnrealPak.readEntryBytes (fs, index, entry)
+                    let fileName = Path.GetFileName(entry.Path)
+                    let entries = parseUnrealHybridFileBytes (kind, fileName, fileBytes, langTag)
+                    for (entryKey, text) in entries do
+                        allCards.Add(createCard lesson.ID langTag $"{keyPrefix}:{entryKey}" text)
+                | None -> ()
+
+    // 2. Also support unpacked/loose .locres, .bin, and .msg files under the game directory
+    let looseFiles =
+        Directory.EnumerateFiles(normalizedRoot, "*.*", SearchOption.AllDirectories)
+        |> Seq.filter (fun p ->
+            let ext = Path.GetExtension(p).ToLowerInvariant()
+            ext = ".locres" || ext = ".bin" || ext = ".msg")
+        |> Seq.sort
+        |> Seq.toArray
+
+    for fullPath in looseFiles do
+        let relPath = Path.GetRelativePath(normalizedRoot, fullPath).Replace('\\', '/')
+        match tryResolveUnrealHybridVirtualPath relPath with
+        | Some(langTag, keyPrefix, kind) ->
+            let fileBytes = File.ReadAllBytes(fullPath)
+            let fileName = Path.GetFileName(fullPath)
+            let entries = parseUnrealHybridFileBytes (kind, fileName, fileBytes, langTag)
+            for (entryKey, text) in entries do
+                allCards.Add(createCard lesson.ID langTag $"{keyPrefix}:{entryKey}" text)
+        | None -> ()
+
+    // Deduplicate by (LanguageTag, Key) while preserving order
+    let seen = HashSet<string * string>()
+    let uniqueCards =
+        allCards
+        |> Seq.filter (fun c -> seen.Add((c.LanguageTag, c.Key)))
+        |> Seq.toArray
+
+    if uniqueCards.Length = 0 then
+        raise (ArgumentException($"No RGG Studio / Unreal Engine localization files were found in '{path}' for {gameName}."))
+
+    {
+        LudumLinguarumPlugins.ExtractedContent.lessons = [| lesson |]
+        LudumLinguarumPlugins.ExtractedContent.cards = uniqueCards
+    }
+
 /// List of all supported RGG Studio games and their engine specifications.
 let supportedGames: RggGameSpec array =
     [|
@@ -635,6 +796,9 @@ let supportedGames: RggGameSpec array =
         { Name = "Yakuza 3 Remastered"; Engine = OldEngine; Codename = None; SupportedLanguages = [| "en"; "ja"; "ko"; "zh-CN"; "zh-TW" |] }
         { Name = "Yakuza 4 Remastered"; Engine = OldEngine; Codename = None; SupportedLanguages = [| "en"; "ja"; "ko"; "zh-CN"; "zh-TW" |] }
         { Name = "Yakuza 5 Remastered"; Engine = OldEngine; Codename = None; SupportedLanguages = [| "en"; "ja"; "ko"; "zh-CN"; "zh-TW" |] }
+
+        // Unreal Engine + RGG Studio hybrid games
+        { Name = "Like a Dragon: Ishin!"; Engine = UnrealHybridEngine; Codename = Some "macan"; SupportedLanguages = [| "de"; "en"; "es"; "fr"; "it"; "ja"; "ko"; "zh-CN"; "zh-TW" |] }
 
         // Dragon Engine games
         { Name = "Yakuza 6: The Song of Life"; Engine = DragonEngine; Codename = Some "lexus"; SupportedLanguages = [| "en"; "ja"; "ko"; "zh-CN"; "zh-TW" |] }
@@ -671,6 +835,7 @@ let extractGame (spec: RggGameSpec) (path: string) : LudumLinguarumPlugins.Extra
         match spec.Engine with
         | OldEngine -> extractOldEngineGame spec.Name path
         | DragonEngine -> extractDragonEngineGame spec.Name path
+        | UnrealHybridEngine -> extractUnrealHybridGame spec.Name path
     let supportedSet = HashSet<string>(spec.SupportedLanguages, StringComparer.OrdinalIgnoreCase)
     let supportedCards =
         extracted.cards
