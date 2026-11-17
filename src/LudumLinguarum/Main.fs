@@ -552,6 +552,7 @@ let main argv =
 
     iPluginManager.Instantiate(otw, typeof<OneOffGames.OneOffGamesPlugin>, [||])
     iPluginManager.Instantiate(otw, typeof<InfinityAuroraEngine.AuroraPlugin>, [||])
+    iPluginManager.Instantiate(otw, typeof<RggEngine.RggPlugin>, [||])
 
     match results.TryGetSubCommand() with
     | Some(Import ia) -> runImportAction(iPluginManager, otw, fldbPath)(ia)

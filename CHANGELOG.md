@@ -9,6 +9,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+* Added support for RGG Studio games (Old Engine / Kiwami Engine, Dragon Engine, and Unreal Engine 4 hybrid), including `.par` (`PARC`) archives, `SLLZ` v1/v2 decompression, Unreal `.pak` archives and `.locres` localization tables, `armp` tables, `20070319` binary tables, `string_tbl.bin`, `.msg` dialogue scripts, `cmn.bin` cutscene subtitles, `encounter_pupup_message.bin`, and `dispose_string.bin`:
+    * [Judgment](https://store.steampowered.com/app/2058180/Judgment/) \[de, en, es, fr, it, ja, ko, zh-CN, zh-TW\]
+    * [Like a Dragon Gaiden: The Man Who Erased His Name](https://store.steampowered.com/app/2375550/Like_a_Dragon_Gaiden_The_Man_Who_Erased_His_Name/) \[de, en, es, fr, it, ja, ko, pt-BR, ru, zh-CN, zh-TW\]
+    * [Like a Dragon: Infinite Wealth](https://store.steampowered.com/app/2072450/Like_a_Dragon_Infinite_Wealth/) \[de, en, es, fr, it, ja, ko, pt-BR, ru, zh-CN, zh-TW\]
+    * [Like a Dragon: Ishin!](https://store.steampowered.com/app/1805480/Like_a_Dragon_Ishin/) \[de, en, es, fr, it, ja, ko, zh-CN, zh-TW\]
+    * [Like a Dragon: Pirate Yakuza in Hawaii](https://store.steampowered.com/app/3061810/Like_a_Dragon_Pirate_Yakuza_in_Hawaii/) \[de, en, es, fr, it, ja, ko, pt-BR, ru, zh-CN, zh-TW\]
+    * [Lost Judgment](https://store.steampowered.com/app/2058190/Lost_Judgment/) \[de, en, es, fr, it, ja, ko, zh-CN, zh-TW\]
+    * [Yakuza 0](https://store.steampowered.com/app/638970/Yakuza_0/) \[en, ja, zh-CN\]
+    * [Yakuza 3 Remastered](https://store.steampowered.com/app/1088710/Yakuza_3_Remastered/) \[en, ja, ko, zh-CN, zh-TW\]
+    * [Yakuza 4 Remastered](https://store.steampowered.com/app/1105500/Yakuza_4_Remastered/) \[en, ja, ko, zh-CN, zh-TW\]
+    * [Yakuza 5 Remastered](https://store.steampowered.com/app/1105510/Yakuza_5_Remastered/) \[en, ja, ko, zh-CN, zh-TW\]
+    * [Yakuza 6: The Song of Life](https://store.steampowered.com/app/1388590/Yakuza_6_The_Song_of_Life/) \[en, ja, ko, zh-CN, zh-TW\]
+    * [Yakuza Kiwami](https://store.steampowered.com/app/834530/Yakuza_Kiwami/) \[de, en, es, es-419, fr, it, ja, ko, pt-BR, ru, zh-CN, zh-TW\]
+    * [Yakuza Kiwami 2](https://store.steampowered.com/app/927380/Yakuza_Kiwami_2/) \[en, ja, ko, zh-CN, zh-TW\]
+    * [Yakuza Kiwami 3 & Dark Ties](https://store.steampowered.com/app/3937550/Yakuza_Kiwami_3__Dark_Ties/) \[de, en, es, es-419, fr, it, ja, ko, pt-BR, ru, zh-CN, zh-TW\]
+    * [Yakuza: Like a Dragon](https://store.steampowered.com/app/1235140/Yakuza_Like_a_Dragon/) \[de, en, es, fr, it, ja, ko, pt-BR, ru, zh-CN, zh-TW\]
 * Added support for [Balatro](https://store.steampowered.com/app/2379780/Balatro/) \[de, en-US, es-419, es-ES, fr, id, it, ja, ko, nl, pl, pt-BR, ru, zh-CN, zh-TW\]
 * Added an `export-brainscape` command that exports cards as a UTF-8 CSV file (question/answer columns) for bulk import into [Brainscape](https://www.brainscape.com/) via its "Import Flashcards" feature. Reversible card pairs are exported in both directions.
 * The `export-brainscape` export now splits its output into multiple numerically suffixed files (e.g. `_001`) of at most 500 records each when more than 500 cards are exported, since Brainscape imports one CSV file at a time.

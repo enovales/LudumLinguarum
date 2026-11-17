@@ -1,4 +1,4 @@
-﻿module WormsGames
+module WormsGames
 open LLDatabase
 open LLUtils
 open StreamTools
@@ -172,8 +172,7 @@ module Common =
 
         // For each entry, move to its position, and then read the null-terminated string.
         stringTableEntries
-        |> Array.mapi(fun i e -> (i, e))
-        |> Array.collect(fun (i: int, entry: StringEntry) -> readNullTerminatedString(stringsFileBytes, Encoding.UTF8)(int entry.position + 8) |> Option.map (fun entry -> (i, entry)) |> Option.toArray)
+        |> Array.mapi(fun i (entry: StringEntry) -> (i, endianReader.ReadNullTerminatedStringAt(int64 entry.position + 8L, Encoding.UTF8)))
         |> Array.map stripNulls
         |> Array.filter filterOutEmpties
         |> Array.map(fun (i, s) -> (i.ToString(), s.Replace(@"\n", "")))
