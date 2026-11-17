@@ -238,6 +238,10 @@ let rggGamesAndPluginTests =
                 // In Old Engine (Yakuza 0 / Kiwami), 'c' is English while in Dragon Engine (Yakuza 6) 'c' is Traditional Chinese
                 Expect.equal (tryMapOldEngineLanguage "c") (Some "en") "Old Engine 'c' should map to 'en'"
                 Expect.equal (tryMapOldEngineLanguage "j") (Some "ja") "Old Engine 'j' should map to 'ja'"
+                Expect.equal (tryMapOldEngineLanguage "h") (Some "zh-CN") "Old Engine 'h' should map to 'zh-CN'"
+                Expect.equal (tryMapOldEngineLanguage "z") (Some "zh-TW") "Old Engine 'z' should map to 'zh-TW'"
+                Expect.equal (tryMapOldEngineLanguage "l") (Some "es-419") "Old Engine 'l' should map to 'es-419'"
+                Expect.equal (tryMapOldEngineLanguage "ls") (Some "es-419") "Old Engine 'ls' should map to 'es-419'"
                 Expect.equal (tryMapDragonEngineLanguage "c") (Some "zh-TW") "Dragon Engine 'c' should map to 'zh-TW'"
                 Expect.equal (tryMapDragonEngineLanguage "e") (Some "en") "Dragon Engine 'e' should map to 'en'"
                 Expect.equal (tryMapDragonEngineLanguage "j") (Some "ja") "Dragon Engine 'j' should map to 'ja'"
@@ -472,4 +476,53 @@ let rggGamesAndPluginTests =
                 Expect.equal pm.SupportedGames.Length 14 "RggPlugin should expose 14 supported games"
                 for spec in supportedGames do
                     Expect.isSome (pm.GetPluginForGame(spec.Name)) $"GetPluginForGame should resolve '{spec.Name}'"
+
+        testCase "Yakuza Kiwami Remastered layout extracts db.nex multi-language ARMP tables and filters unlocalized IDs" <|
+            fun () ->
+                let tempDir = Path.Combine(Path.GetTempPath(), "LL_RggYKRemasterTest_" + Guid.NewGuid().ToString("N"))
+                Directory.CreateDirectory(tempDir) |> ignore
+                try
+                    let dataDir = Path.Combine(tempDir, "runtime", "media", "data")
+                    let dbNexEn = Path.Combine(dataDir, "db.nex", "en")
+                    let dbNexJa = Path.Combine(dataDir, "db.nex", "ja")
+                    let dbNexLs = Path.Combine(dataDir, "db.nex", "ls")
+                    Directory.CreateDirectory(dbNexEn) |> ignore
+                    Directory.CreateDirectory(dbNexJa) |> ignore
+                    Directory.CreateDirectory(dbNexLs) |> ignore
+
+                    let enArmp =
+                        Armp.buildDragonEngineArmp (
+                            [| "id"; "subtitle" |],
+                            [| ("scene_01", [| "internal_id_01"; "Synthetic English subtitle." |]) |]
+                        )
+                    let jaArmp =
+                        Armp.buildDragonEngineArmp (
+                            [| "id"; "subtitle" |],
+                            [| ("scene_01", [| "internal_id_01"; "合成日本語字幕。" |]) |]
+                        )
+                    let lsArmp =
+                        Armp.buildDragonEngineArmp (
+                            [| "id"; "subtitle" |],
+                            [| ("scene_01", [| "internal_id_01"; "Subtítulo sintético." |]) |]
+                        )
+
+                    File.WriteAllBytes(Path.Combine(dbNexEn, "sound_auth_text.bin"), enArmp)
+                    File.WriteAllBytes(Path.Combine(dbNexJa, "sound_auth_text.bin"), jaArmp)
+                    File.WriteAllBytes(Path.Combine(dbNexLs, "sound_auth_text.bin"), lsArmp)
+
+                    let plugin = new RggPlugin() :> IGameExtractorPlugin
+                    let extracted = plugin.ExtractAll("Yakuza Kiwami", tempDir, [||])
+
+                    let byLangAndKey =
+                        extracted.cards
+                        |> Array.map (fun c -> ((c.LanguageTag, c.Key), c.Text))
+                        |> Map.ofArray
+
+                    Expect.isFalse (byLangAndKey.ContainsKey(("en", "db.nex/sound_auth_text:Main/scene_01/id"))) "unlocalized identical id column should be filtered out"
+                    Expect.equal byLangAndKey.[("en", "db.nex/sound_auth_text:Main/scene_01/subtitle")] "Synthetic English subtitle." "en subtitle"
+                    Expect.equal byLangAndKey.[("ja", "db.nex/sound_auth_text:Main/scene_01/subtitle")] "合成日本語字幕。" "ja subtitle"
+                    Expect.equal byLangAndKey.[("es-419", "db.nex/sound_auth_text:Main/scene_01/subtitle")] "Subtítulo sintético." "es-419 subtitle from db.nex/ls"
+                finally
+                    if Directory.Exists(tempDir) then
+                        Directory.Delete(tempDir, true)
     ]

@@ -33,6 +33,7 @@ let internal multiLetterLanguageMap =
         ("es", "es")
         ("ese", "es")
         ("esl", "es-419")
+        ("ls", "es-419")
         ("fr", "fr")
         ("it", "it")
         ("ja", "ja")
@@ -67,11 +68,13 @@ let internal oldEngineSingleLetterMap =
         ("c", "en")
         ("e", "en")
         ("j", "ja")
-        ("z", "zh-CN")
+        ("h", "zh-CN")
+        ("z", "zh-TW")
         ("k", "ko")
         ("d", "de")
         ("f", "fr")
         ("i", "it")
+        ("l", "es-419")
         ("p", "pt-BR")
         ("r", "ru")
         ("s", "es")
@@ -176,6 +179,7 @@ let internal parseDragonEngineFileBytes (fileName: string, rawBytes: byte array,
         [||]
 
 /// Checks whether a filename has an Old Engine language suffix (such as "ability.bin_c", "ability.bin_j", "name_c.bin")
+/// or a leading language directory segment (such as "en/sound_auth_text.bin" inside db.nex)
 /// and returns (normalizedBaseNameWithoutExtension, languageTag option).
 let internal splitOldEngineFileLanguage (filePath: string) : string * string option =
     let normalized = filePath.Replace('\\', '/').Trim('/')
@@ -185,6 +189,19 @@ let internal splitOldEngineFileLanguage (filePath: string) : string * string opt
     let fileName = Path.GetFileName(normalized)
     let ext = Path.GetExtension(fileName)
     let stem = Path.GetFileNameWithoutExtension(fileName)
+
+    let tryLeadingDirLanguage () =
+        let firstSlash = dirPart.IndexOf('/')
+        if firstSlash > 0 then
+            let firstSeg = dirPart.Substring(0, firstSlash).ToLowerInvariant()
+            match multiLetterLanguageMap |> Map.tryFind firstSeg with
+            | Some tag ->
+                let restDir = dirPart.Substring(firstSlash + 1)
+                (restDir + stem, Some tag)
+            | None ->
+                (dirPart + stem, None)
+        else
+            (dirPart + stem, None)
 
     // Case 1: ".bin_c", ".bin_j", ".bin_en", etc.
     if ext.StartsWith(".bin_", StringComparison.OrdinalIgnoreCase) && ext.Length > 5 then
@@ -202,9 +219,9 @@ let internal splitOldEngineFileLanguage (filePath: string) : string * string opt
                 let cleanStem = stem.Substring(0, lastUnderscore)
                 (dirPart + cleanStem, Some tag)
             | None ->
-                (dirPart + stem, None)
+                tryLeadingDirLanguage ()
         else
-            (dirPart + stem, None)
+            tryLeadingDirLanguage ()
 
 /// Checks whether a container name (folder or .par stem, e.g. "boot_en", "wdr_par_c", "pausepar_e", "auth_w64_j")
 /// has an Old Engine language suffix, returning (normalizedCategoryName, languageTag option).
@@ -281,6 +298,62 @@ let private extractCardsFromOldEngineVirtualFiles
 
     cards.ToArray()
 
+let private isOldEngineTextEntryName (fileName: string) : bool =
+    let ext = Path.GetExtension(fileName).ToLowerInvariant()
+    ext = ".bin" || ext.StartsWith(".bin_", StringComparison.Ordinal) || ext = ".msg"
+
+let private isOldEngineNestedParCandidate (fileName: string) : bool =
+    let stem = Path.GetFileNameWithoutExtension(fileName).ToLowerInvariant()
+    not (String.IsNullOrEmpty(stem))
+    && not (stem |> Seq.forall Char.IsDigit)
+    && stem <> "ptc"
+    && stem <> "res"
+    && stem <> "tex"
+
+let private shouldScanOldEngineParPath (root: string) (parPath: string) : bool =
+    let rel = Path.GetRelativePath(root, parPath).Replace('\\', '/')
+    let segments = rel.Split('/', StringSplitOptions.RemoveEmptyEntries)
+    if segments.Length = 1 then
+        let lowerFile = segments.[0].ToLowerInvariant()
+        lowerFile <> "chara.par" && lowerFile <> "flood.par" && lowerFile <> "hact.par"
+    elif segments.Length >= 2 then
+        let topDir = segments.[0].ToLowerInvariant()
+        topDir.StartsWith("boot", StringComparison.Ordinal)
+        || topDir.StartsWith("stay", StringComparison.Ordinal)
+        || topDir.StartsWith("pause", StringComparison.Ordinal)
+        || topDir.StartsWith("wdr", StringComparison.Ordinal)
+        || topDir.StartsWith("auth", StringComparison.Ordinal)
+        || topDir.StartsWith("hact", StringComparison.Ordinal)
+        || topDir.StartsWith("common", StringComparison.Ordinal)
+    else
+        false
+
+let private shouldSkipOldEngineLooseFolder (topFolder: string) : bool =
+    let lower = topFolder.ToLowerInvariant()
+    lower = "stage"
+    || lower = "chara"
+    || lower = "chara_arc"
+    || lower = "chara_common"
+    || lower.StartsWith("motion", StringComparison.Ordinal)
+    || lower.StartsWith("movie", StringComparison.Ordinal)
+    || lower.StartsWith("sound", StringComparison.Ordinal)
+    || lower.StartsWith("stream", StringComparison.Ordinal)
+    || lower = "shader"
+    || lower = "effect"
+    || lower = "2dpar"
+    || lower = "fontpar"
+    || lower = "light_anim"
+    || lower = "cloth"
+    || lower = "loading"
+    || lower = "drama_scanner"
+    || lower = "fighter"
+    || lower = "df"
+    || lower = "crm"
+    || lower = "module"
+    || lower.StartsWith("puid", StringComparison.Ordinal)
+    || lower = "scenario"
+    || lower.StartsWith("map", StringComparison.Ordinal)
+
 /// Extracts localized content from an Old Engine / Kiwami Engine game directory.
 let extractOldEngineGame (gameName: string) (path: string) : LudumLinguarumPlugins.ExtractedContent =
     let lesson = { LessonRecord.ID = 0; Name = "Game Text" }
@@ -291,16 +364,17 @@ let extractOldEngineGame (gameName: string) (path: string) : LudumLinguarumPlugi
     let allCards = ResizeArray<CardRecord>()
 
     for root in dataRoots do
-        // 1. Enumerate all .par files under root (up to 2 directory levels deep)
+        // 1. Enumerate localization .par files under root
         let parFiles =
             if Directory.Exists(root) then
                 Directory.GetFiles(root, "*.par", SearchOption.AllDirectories)
+                |> Array.filter (shouldScanOldEngineParPath root)
                 |> Array.sort
             else
                 [||]
 
         for parPath in parFiles do
-            if isPar (File.ReadAllBytes(parPath)) then
+            if isParFile parPath then
                 let relParPath = Path.GetRelativePath(root, parPath).Replace('\\', '/')
                 let segments = relParPath.Split('/', StringSplitOptions.RemoveEmptyEntries)
                 let parFileName = Path.GetFileName(parPath)
@@ -326,7 +400,7 @@ let extractOldEngineGame (gameName: string) (path: string) : LudumLinguarumPlugi
                     else
                         parCategory
 
-                let virtualFiles = extractAllFromFile (parPath, true)
+                let virtualFiles = extractFilteredFromFile (parPath, true, isOldEngineTextEntryName, isOldEngineNestedParCandidate)
                 let extracted = extractCardsFromOldEngineVirtualFiles lesson.ID effectiveCategory effectiveLangOpt virtualFiles
                 allCards.AddRange(extracted)
 
@@ -352,23 +426,24 @@ let extractOldEngineGame (gameName: string) (path: string) : LudumLinguarumPlugi
                     if firstSlash > 0 then rel.Substring(0, firstSlash) else "")
 
             for (topFolder, filesInFolder) in groupedByFolder do
-                let (folderCat, folderLangOpt) =
-                    if String.IsNullOrEmpty(topFolder) then ("", None)
-                    else splitOldEngineContainerLanguage topFolder
+                if not (shouldSkipOldEngineLooseFolder topFolder) then
+                    let (folderCat, folderLangOpt) =
+                        if String.IsNullOrEmpty(topFolder) then ("", None)
+                        else splitOldEngineContainerLanguage topFolder
 
-                let virtualFiles =
-                    filesInFolder
-                    |> Array.map (fun fullPath ->
-                        let rel = Path.GetRelativePath(root, fullPath).Replace('\\', '/')
-                        let relInsideFolder =
-                            if not (String.IsNullOrEmpty(topFolder)) && rel.StartsWith(topFolder + "/", StringComparison.Ordinal) then
-                                rel.Substring(topFolder.Length + 1)
-                            else
-                                rel
-                        (relInsideFolder, File.ReadAllBytes(fullPath)))
+                    let virtualFiles =
+                        filesInFolder
+                        |> Array.map (fun fullPath ->
+                            let rel = Path.GetRelativePath(root, fullPath).Replace('\\', '/')
+                            let relInsideFolder =
+                                if not (String.IsNullOrEmpty(topFolder)) && rel.StartsWith(topFolder + "/", StringComparison.Ordinal) then
+                                    rel.Substring(topFolder.Length + 1)
+                                else
+                                    rel
+                            (relInsideFolder, File.ReadAllBytes(fullPath)))
 
-                let extracted = extractCardsFromOldEngineVirtualFiles lesson.ID folderCat folderLangOpt virtualFiles
-                allCards.AddRange(extracted)
+                    let extracted = extractCardsFromOldEngineVirtualFiles lesson.ID folderCat folderLangOpt virtualFiles
+                    allCards.AddRange(extracted)
 
     // Deduplicate by (LanguageTag, Key) while preserving order
     let seen = HashSet<string * string>()
@@ -466,6 +541,26 @@ let internal resolveDragonEngineVirtualPath (categoryPrefix: string, archiveLang
         | None, None ->
             None
 
+let private isNonLocalizedDragonEngineBin (fileName: string) : bool =
+    let lower = fileName.ToLowerInvariant()
+    lower.StartsWith("sound_se_name_table", StringComparison.Ordinal)
+    || lower.StartsWith("character_tex_change_table", StringComparison.Ordinal)
+    || lower.StartsWith("character_model_model_data", StringComparison.Ordinal)
+    || lower.StartsWith("character_character_data", StringComparison.Ordinal)
+    || lower.StartsWith("sound_cuesheet_info", StringComparison.Ordinal)
+    || lower.StartsWith("sound_speech_info", StringComparison.Ordinal)
+    || lower.StartsWith("sound_movie_info", StringComparison.Ordinal)
+    || lower.StartsWith("talk_param", StringComparison.Ordinal)
+    || lower.StartsWith("rumble", StringComparison.Ordinal)
+    || lower.StartsWith("scene_preload_", StringComparison.Ordinal)
+    || lower.StartsWith("db_unittest_", StringComparison.Ordinal)
+    || lower.StartsWith("db2_test_", StringComparison.Ordinal)
+    || lower.StartsWith("db_example_", StringComparison.Ordinal)
+
+let private isDragonEngineCandidateBin (fileName: string) : bool =
+    fileName.EndsWith(".bin", StringComparison.OrdinalIgnoreCase)
+    && not (isNonLocalizedDragonEngineBin fileName)
+
 /// Extracts localized content from a Dragon Engine game directory.
 let extractDragonEngineGame (gameName: string) (path: string) : LudumLinguarumPlugins.ExtractedContent =
     let lesson = { LessonRecord.ID = 0; Name = "Game Text" }
@@ -477,7 +572,7 @@ let extractDragonEngineGame (gameName: string) (path: string) : LudumLinguarumPl
 
     for root in dataRoots do
         if Directory.Exists(root) then
-            // 1. Scan .par archives in root (such as db.par, db.<codename>.<lang>.par, talk*.par)
+            // 1. Scan .par archives in root (such as db.par, db.<codename>.<lang>.par, ui.<codename>.<lang>.par)
             let parFiles =
                 Directory.GetFiles(root, "*.par", SearchOption.AllDirectories)
                 |> Array.sort
@@ -486,19 +581,17 @@ let extractDragonEngineGame (gameName: string) (path: string) : LudumLinguarumPl
                 let parName = Path.GetFileName(parPath)
                 match tryParseDragonEngineParName parName with
                 | Some(categoryPrefix, archiveLangOpt) ->
-                    let rawParBytes = File.ReadAllBytes(parPath)
-                    if isPar rawParBytes then
-                        use ms = new MemoryStream(rawParBytes, false)
-                        let virtualFiles = extractAllFromStream (ms, true)
+                    // Unlocalized talk_*.par / auth_*.par containers hold thousands of nested animation/voice .par files without language folders
+                    if not ((categoryPrefix = "talk" || categoryPrefix = "auth") && archiveLangOpt.IsNone) && isParFile parPath then
+                        let virtualFiles = extractFilteredFromFile (parPath, true, isDragonEngineCandidateBin, (fun _ -> true))
                         for (vPath, fileBytes) in virtualFiles do
                             let fileName = Path.GetFileName(vPath)
-                            if fileName.EndsWith(".bin", StringComparison.OrdinalIgnoreCase) then
-                                match resolveDragonEngineVirtualPath (categoryPrefix, archiveLangOpt, vPath) with
-                                | Some(langTag, normStem) ->
-                                    let entries = parseDragonEngineFileBytes (fileName, fileBytes, langTag)
-                                    for (entryKey, text) in entries do
-                                        allCards.Add(createCard lesson.ID langTag $"{normStem}:{entryKey}" text)
-                                | None -> ()
+                            match resolveDragonEngineVirtualPath (categoryPrefix, archiveLangOpt, vPath) with
+                            | Some(langTag, normStem) ->
+                                let entries = parseDragonEngineFileBytes (fileName, fileBytes, langTag)
+                                for (entryKey, text) in entries do
+                                    allCards.Add(createCard lesson.ID langTag $"{normStem}:{entryKey}" text)
+                            | None -> ()
                 | None -> ()
 
             // 2. Scan loose .bin files (such as data/db/e/*.bin, data/db/j/*.bin, data/db/en/*.bin, data/db.yazawa/en/*.bin)
@@ -507,15 +600,16 @@ let extractDragonEngineGame (gameName: string) (path: string) : LudumLinguarumPl
                 |> Array.sort
 
             for binPath in looseBins do
-                let relPath = Path.GetRelativePath(root, binPath).Replace('\\', '/')
-                match resolveDragonEngineVirtualPath ("db", None, relPath) with
-                | Some(langTag, normStem) ->
-                    let fileName = Path.GetFileName(binPath)
-                    let fileBytes = File.ReadAllBytes(binPath)
-                    let entries = parseDragonEngineFileBytes (fileName, fileBytes, langTag)
-                    for (entryKey, text) in entries do
-                        allCards.Add(createCard lesson.ID langTag $"{normStem}:{entryKey}" text)
-                | None -> ()
+                let fileName = Path.GetFileName(binPath)
+                if isDragonEngineCandidateBin fileName then
+                    let relPath = Path.GetRelativePath(root, binPath).Replace('\\', '/')
+                    match resolveDragonEngineVirtualPath ("db", None, relPath) with
+                    | Some(langTag, normStem) ->
+                        let fileBytes = File.ReadAllBytes(binPath)
+                        let entries = parseDragonEngineFileBytes (fileName, fileBytes, langTag)
+                        for (entryKey, text) in entries do
+                            allCards.Add(createCard lesson.ID langTag $"{normStem}:{entryKey}" text)
+                    | None -> ()
 
     // Deduplicate by (LanguageTag, Key) while preserving order
     let seen = HashSet<string * string>()
@@ -537,7 +631,7 @@ let supportedGames: RggGameSpec array =
     [|
         // Old Engine / Kiwami Engine games
         { Name = "Yakuza 0"; Engine = OldEngine; Codename = None; SupportedLanguages = [| "en"; "ja"; "zh-CN" |] }
-        { Name = "Yakuza Kiwami"; Engine = OldEngine; Codename = None; SupportedLanguages = [| "en"; "ja"; "zh-CN" |] }
+        { Name = "Yakuza Kiwami"; Engine = OldEngine; Codename = None; SupportedLanguages = [| "de"; "en"; "es"; "es-419"; "fr"; "it"; "ja"; "ko"; "pt-BR"; "ru"; "zh-CN"; "zh-TW" |] }
         { Name = "Yakuza 3 Remastered"; Engine = OldEngine; Codename = None; SupportedLanguages = [| "en"; "ja"; "ko"; "zh-CN"; "zh-TW" |] }
         { Name = "Yakuza 4 Remastered"; Engine = OldEngine; Codename = None; SupportedLanguages = [| "en"; "ja"; "ko"; "zh-CN"; "zh-TW" |] }
         { Name = "Yakuza 5 Remastered"; Engine = OldEngine; Codename = None; SupportedLanguages = [| "en"; "ja"; "ko"; "zh-CN"; "zh-TW" |] }
@@ -554,8 +648,38 @@ let supportedGames: RggGameSpec array =
         { Name = "Like a Dragon: Pirate Yakuza in Hawaii"; Engine = DragonEngine; Codename = Some "spr"; SupportedLanguages = [| "de"; "en"; "es"; "fr"; "it"; "ja"; "ko"; "pt-BR"; "ru"; "zh-CN"; "zh-TW" |] }
     |]
 
+/// Filters out internal identifier/parameter keys that appear in 2 or more languages with the exact same untranslated text in every language.
+let private filterUnlocalizedMultiLanguageCards (cards: CardRecord array) : CardRecord array =
+    let keyStats = Dictionary<string, int * string * bool>(StringComparer.Ordinal)
+    for c in cards do
+        match keyStats.TryGetValue(c.Key) with
+        | false, _ ->
+            keyStats.[c.Key] <- (1, c.Text, false)
+        | true, (count, firstText, hasDiff) ->
+            let nowDiff = hasDiff || not (String.Equals(firstText, c.Text, StringComparison.Ordinal))
+            keyStats.[c.Key] <- (count + 1, firstText, nowDiff)
+
+    cards
+    |> Array.filter (fun c ->
+        match keyStats.TryGetValue(c.Key) with
+        | true, (count, _, hasDiff) -> count < 2 || hasDiff
+        | false, _ -> true)
+
 /// Extracts localized text for a supported RGG Studio game given its spec and installation directory.
 let extractGame (spec: RggGameSpec) (path: string) : LudumLinguarumPlugins.ExtractedContent =
-    match spec.Engine with
-    | OldEngine -> extractOldEngineGame spec.Name path
-    | DragonEngine -> extractDragonEngineGame spec.Name path
+    let extracted =
+        match spec.Engine with
+        | OldEngine -> extractOldEngineGame spec.Name path
+        | DragonEngine -> extractDragonEngineGame spec.Name path
+    let supportedSet = HashSet<string>(spec.SupportedLanguages, StringComparer.OrdinalIgnoreCase)
+    let supportedCards =
+        extracted.cards
+        |> Array.filter (fun c -> supportedSet.Contains(c.LanguageTag))
+    let baseCards =
+        if supportedCards.Length > 0 then supportedCards
+        else extracted.cards
+    let filteredCards = filterUnlocalizedMultiLanguageCards baseCards
+    if filteredCards.Length > 0 then
+        { extracted with cards = filteredCards }
+    else
+        { extracted with cards = baseCards }

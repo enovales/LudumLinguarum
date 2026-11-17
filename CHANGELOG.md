@@ -20,7 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     * [Yakuza 4 Remastered](https://store.steampowered.com/app/1105500/Yakuza_4_Remastered/) \[en, ja, ko, zh-CN, zh-TW\]
     * [Yakuza 5 Remastered](https://store.steampowered.com/app/1105510/Yakuza_5_Remastered/) \[en, ja, ko, zh-CN, zh-TW\]
     * [Yakuza 6: The Song of Life](https://store.steampowered.com/app/1388590/Yakuza_6_The_Song_of_Life/) \[en, ja, ko, zh-CN, zh-TW\]
-    * [Yakuza Kiwami](https://store.steampowered.com/app/834530/Yakuza_Kiwami/) \[en, ja, zh-CN\]
+    * [Yakuza Kiwami](https://store.steampowered.com/app/834530/Yakuza_Kiwami/) \[de, en, es, es-419, fr, it, ja, ko, pt-BR, ru, zh-CN, zh-TW\]
     * [Yakuza Kiwami 2](https://store.steampowered.com/app/927380/Yakuza_Kiwami_2/) \[en, ja, ko, zh-CN, zh-TW\]
     * [Yakuza Kiwami 3 & Dark Ties](https://store.steampowered.com/app/3937550/Yakuza_Kiwami_3__Dark_Ties/) \[de, en, es, es-419, fr, it, ja, ko, pt-BR, ru, zh-CN, zh-TW\]
     * [Yakuza: Like a Dragon](https://store.steampowered.com/app/1235140/Yakuza_Like_a_Dragon/) \[de, en, es, fr, it, ja, ko, pt-BR, ru, zh-CN, zh-TW\]

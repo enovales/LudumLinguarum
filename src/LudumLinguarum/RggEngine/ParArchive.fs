@@ -210,28 +210,48 @@ let readEntryBytes (inputStream: Stream, entry: ParFileEntry, decompress: bool) 
         if ownsStream then
             stream.Dispose()
 
-/// Extracts all files from a PARC stream into (virtualPath, decompressedBytes) pairs.
-/// When expandNestedPars is true, any nested .par files are recursively extracted under their parent path/stem.
-let rec extractAllFromStream (inputStream: Stream, expandNestedPars: bool) : (string * byte array) array =
+/// Checks whether a file on disk starts with the "PARC" or "SLLZ" magic signature without reading the entire file.
+let isParFile (parFilePath: string) : bool =
+    if String.IsNullOrWhiteSpace(parFilePath) || not (File.Exists(parFilePath)) then
+        false
+    else
+        try
+            use fs = new FileStream(parFilePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)
+            isParStream fs
+        with _ ->
+            false
+
+/// Extracts matching files from a PARC stream into (virtualPath, decompressedBytes) pairs.
+/// Only file entries satisfying fileFilter are read and decompressed, and when expandNestedPars is true,
+/// only nested .par entries satisfying nestedParFilter are recursively expanded.
+let rec extractFilteredFromStream
+    (inputStream: Stream, expandNestedPars: bool, fileFilter: string -> bool, nestedParFilter: string -> bool)
+    : (string * byte array) array =
     let stream, ownsStream = unwrapOuterStream inputStream
     try
         let entries = readEntries stream
-        let output = ResizeArray<string * byte array>(entries.Length)
+        let output = ResizeArray<string * byte array>()
 
         for entry in entries do
-            let bytes = readEntryBytes (stream, entry, true)
-            if expandNestedPars
-               && entry.FileName.EndsWith(".par", StringComparison.OrdinalIgnoreCase)
-               && isPar bytes then
-                let prefix = entry.Path.Substring(0, entry.Path.Length - 4)
-                use nestedMs = new MemoryStream(bytes, false)
-                let nestedFiles = extractAllFromStream (nestedMs, true)
-                for (nestedPath, nestedBytes) in nestedFiles do
-                    let combinedPath =
-                        if String.IsNullOrEmpty(prefix) then nestedPath
-                        else prefix + "/" + nestedPath
-                    output.Add((combinedPath, nestedBytes))
-            else
+            if entry.FileName.EndsWith(".par", StringComparison.OrdinalIgnoreCase) then
+                if expandNestedPars && nestedParFilter entry.FileName then
+                    let bytes = readEntryBytes (stream, entry, true)
+                    if isPar bytes then
+                        let prefix = entry.Path.Substring(0, entry.Path.Length - 4)
+                        use nestedMs = new MemoryStream(bytes, false)
+                        let nestedFiles = extractFilteredFromStream (nestedMs, true, fileFilter, nestedParFilter)
+                        for (nestedPath, nestedBytes) in nestedFiles do
+                            let combinedPath =
+                                if String.IsNullOrEmpty(prefix) then nestedPath
+                                else prefix + "/" + nestedPath
+                            output.Add((combinedPath, nestedBytes))
+                    elif fileFilter entry.FileName then
+                        output.Add((entry.Path, bytes))
+                elif fileFilter entry.FileName then
+                    let bytes = readEntryBytes (stream, entry, true)
+                    output.Add((entry.Path, bytes))
+            elif fileFilter entry.FileName then
+                let bytes = readEntryBytes (stream, entry, true)
                 output.Add((entry.Path, bytes))
 
         output.ToArray()
@@ -239,10 +259,21 @@ let rec extractAllFromStream (inputStream: Stream, expandNestedPars: bool) : (st
         if ownsStream then
             stream.Dispose()
 
+/// Extracts matching files from a PARC (.par) file on disk.
+let extractFilteredFromFile
+    (parFilePath: string, expandNestedPars: bool, fileFilter: string -> bool, nestedParFilter: string -> bool)
+    : (string * byte array) array =
+    use fs = new FileStream(parFilePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)
+    extractFilteredFromStream (fs, expandNestedPars, fileFilter, nestedParFilter)
+
+/// Extracts all files from a PARC stream into (virtualPath, decompressedBytes) pairs.
+/// When expandNestedPars is true, any nested .par files are recursively extracted under their parent path/stem.
+let extractAllFromStream (inputStream: Stream, expandNestedPars: bool) : (string * byte array) array =
+    extractFilteredFromStream (inputStream, expandNestedPars, (fun _ -> true), (fun _ -> true))
+
 /// Extracts all files from a PARC (.par) file on disk.
 let extractAllFromFile (parFilePath: string, expandNestedPars: bool) : (string * byte array) array =
-    use fs = new FileStream(parFilePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)
-    extractAllFromStream (fs, expandNestedPars)
+    extractFilteredFromFile (parFilePath, expandNestedPars, (fun _ -> true), (fun _ -> true))
 
 type private BuilderDirNode =
     {

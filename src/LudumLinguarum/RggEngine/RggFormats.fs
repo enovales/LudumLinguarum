@@ -595,15 +595,15 @@ module Bin20070319 =
             if sectionStartOffset <= rw.Length then
                 rw.Seek(sectionStartOffset) |> ignore
                 match col.DataType with
-                | 0 | 3 ->
-                    // String / Value: entryCount consecutive null-terminated strings
+                | 0 ->
+                    // String: entryCount consecutive null-terminated strings
                     for r = 0 to entryCount - 1 do
                         if rw.Position < rw.Length then
                             let s = cleanText (rw.ReadNullTerminatedString(encoding))
                             if not (String.IsNullOrWhiteSpace(s)) then
                                 results.Add(($"{r}/{col.Name}", s))
-                | 1 | 4 ->
-                    // String_tbl / Value_tbl: AdditionalDataCount strings followed by entryCount byte indices
+                | 1 ->
+                    // String_tbl: AdditionalDataCount strings followed by entryCount byte indices
                     let strTable =
                         Array.init (max 0 col.AdditionalDataCount) (fun _ ->
                             if rw.Position < rw.Length then rw.ReadNullTerminatedString(encoding)
@@ -615,8 +615,8 @@ module Bin20070319 =
                                 let s = cleanText strTable.[idx]
                                 if not (String.IsNullOrWhiteSpace(s)) then
                                     results.Add(($"{r}/{col.Name}", s))
-                | 2 | 5 ->
-                    // String_idx / Value_idx: AdditionalDataCount pairs of (uint16 rowId, null-terminated string)
+                | 2 ->
+                    // String_idx: AdditionalDataCount pairs of (uint16 rowId, null-terminated string)
                     for _ = 0 to col.AdditionalDataCount - 1 do
                         if rw.Position + 2L <= rw.Length then
                             let rowId = int (rw.ReadUInt16())

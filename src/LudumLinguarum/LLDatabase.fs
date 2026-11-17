@@ -151,8 +151,7 @@ type LanguageQueryResult() =
 // UTF-8 bytes of the key with SHA-256 instead, so the value is stable
 // across processes and platforms.
 let internal calculateKeyHash(key: string) =
-    use sha = SHA256.Create()
-    BitConverter.ToInt32(sha.ComputeHash(Encoding.UTF8.GetBytes(key)), 0)
+    BitConverter.ToInt32(SHA256.HashData(Encoding.UTF8.GetBytes(key)), 0)
 
 type LLDatabase(dbPath: string) = 
     let db = new SQLiteConnection(dbPath)
@@ -192,7 +191,11 @@ type LLDatabase(dbPath: string) =
         this.Cards |> Array.filter(fun c -> lids.Contains(c.LessonID)) |> this.DeleteCardsInternal
         
     member private this.UpdateCardWithHash(c: CardRecord) = 
-        { c with KeyHash = calculateKeyHash(c.Key); GenderlessKeyHash = calculateKeyHash(c.GenderlessKey) }
+        let keyHash = calculateKeyHash(c.Key)
+        let genderlessKeyHash =
+            if c.GenderlessKey = c.Key then keyHash
+            else calculateKeyHash(c.GenderlessKey)
+        { c with KeyHash = keyHash; GenderlessKeyHash = genderlessKeyHash }
 
     member private this.AddCardInternal(c: CardRecord) = 
         let cardRecordWithHash = this.UpdateCardWithHash(c)

@@ -75,7 +75,7 @@ The following games and [language tags](https://en.wikipedia.org/wiki/IETF_langu
 * Yakuza 4 Remastered \[en, ja, ko, zh-CN, zh-TW\]
 * Yakuza 5 Remastered \[en, ja, ko, zh-CN, zh-TW\]
 * Yakuza 6: The Song of Life \[en, ja, ko, zh-CN, zh-TW\]
-* Yakuza Kiwami \[en, ja, zh-CN\]
+* Yakuza Kiwami \[de, en, es, es-419, fr, it, ja, ko, pt-BR, ru, zh-CN, zh-TW\]
 * Yakuza Kiwami 2 \[en, ja, ko, zh-CN, zh-TW\]
 * Yakuza Kiwami 3 & Dark Ties \[de, en, es, es-419, fr, it, ja, ko, pt-BR, ru, zh-CN, zh-TW\]
 * Yakuza: Like a Dragon \[de, en, es, fr, it, ja, ko, pt-BR, ru, zh-CN, zh-TW\]
