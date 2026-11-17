@@ -4,20 +4,9 @@
 curl -SL --output dotnet-install.sh https://dot.net/v1/dotnet-install.sh
 
 
-# Attempt to install via global.json first
+# Install the .NET SDK version required by the project, via global.json
 FILE=global.json
 if test -f "$FILE"; then
     echo "installing dotnet via $FILE"
     /bin/bash dotnet-install.sh --verbose --jsonfile $FILE
 fi
-
-
-# Add additional versions if required
-DOTNET_VERSIONS=(
-    # 'latest'
-    '6.0.101'
-)
-for version in ${DOTNET_VERSIONS[@]}; do
-   echo "installing dotnet $version"
-   /bin/bash dotnet-install.sh --verbose --version $version
-done

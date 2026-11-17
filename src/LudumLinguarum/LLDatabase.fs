@@ -1,7 +1,10 @@
 ﻿module LLDatabase
 
 open SQLite
+open System
 open System.Collections.Generic
+open System.Security.Cryptography
+open System.Text
 
 // one-time initialization of provider
 SQLitePCL.raw.SetProvider(new SQLitePCL.SQLite3Provider_e_sqlite3())
@@ -143,12 +146,18 @@ type CardEntry() =
 type LanguageQueryResult() = 
     member val LanguageTag = "" with get, set
 
+// string.GetHashCode() is randomized per process, which made re-imported
+// cards fail to match their existing rows and get duplicated. Hash the
+// UTF-8 bytes of the key with SHA-256 instead, so the value is stable
+// across processes and platforms.
+let internal calculateKeyHash(key: string) =
+    use sha = SHA256.Create()
+    BitConverter.ToInt32(sha.ComputeHash(Encoding.UTF8.GetBytes(key)), 0)
+
 type LLDatabase(dbPath: string) = 
     let db = new SQLiteConnection(dbPath)
     let lessonTableID = db.CreateTable(typeof<LessonEntry>)
     let cardTableID = db.CreateTable(typeof<CardEntry>)
-
-    let calculateKeyHash(key: string) = key.GetHashCode()
 
     member this.Lessons = 
         db.Query<LessonEntry>("select * from LessonEntry") |> Seq.map(fun t -> t.ToLessonRecord()) |> Array.ofSeq
@@ -189,7 +198,9 @@ type LLDatabase(dbPath: string) =
         let cardRecordWithHash = this.UpdateCardWithHash(c)
         let cardWithHash = CardEntry.FromCardRecord(cardRecordWithHash)
         db.Insert(cardWithHash) |> ignore
-        let newRecordId = (db.Query<CardEntry>("select * from CardEntry where KeyHash = ? and LessonID = ? and LanguageTag = ?", cardWithHash.KeyHash, cardWithHash.LessonID, cardWithHash.LanguageTag) |> Array.ofSeq |> Array.head).ID
+        // Match on the key text rather than the stored hash, so rows written
+        // by older versions (with per-process randomized hashes) are found too.
+        let newRecordId = (db.Query<CardEntry>("select * from CardEntry where \"Key\" = ? and LessonID = ? and LanguageTag = ?", cardWithHash.Key, cardWithHash.LessonID, cardWithHash.LanguageTag) |> Array.ofSeq |> Array.head).ID
         { cardRecordWithHash with ID = newRecordId }
 
     member this.AddCard(c: CardRecord) = 
@@ -230,7 +241,7 @@ type LLDatabase(dbPath: string) =
 
     member this.CreateOrUpdateCard(ce: CardRecord) = 
         let existingEntry = 
-            db.Query<CardEntry>("select * from CardEntry where KeyHash = ? and LessonID = ?", calculateKeyHash(ce.Key), ce.LessonID) 
+            db.Query<CardEntry>("select * from CardEntry where \"Key\" = ? and LessonID = ?", ce.Key, ce.LessonID) 
             |> Seq.tryHead
 
         match existingEntry with
@@ -244,17 +255,19 @@ type LLDatabase(dbPath: string) =
         // the cards passed in, but with the KeyHash computed
         let cardsWithHashes = c |> Seq.map this.UpdateCardWithHash |> Array.ofSeq
 
-        let keyHashMap = this.Cards |> Array.groupBy(fun t -> t.KeyHash) |> Map.ofArray
+        // Group by the key text rather than the stored hash, so rows written
+        // by older versions (with per-process randomized hashes) still match.
+        let keyMap = this.Cards |> Array.groupBy(fun t -> t.Key) |> Map.ofArray
         let checkLessonIDAndLanguage(key: CardRecord)(checking: CardRecord) = 
             (key.LessonID = checking.LessonID) && (key.LanguageTag = checking.LanguageTag)
 
         let hasExistingCard(card: CardRecord) = 
-            match keyHashMap |> Map.containsKey(card.KeyHash) with
-            | true when keyHashMap.Item(card.KeyHash) |> Array.exists(checkLessonIDAndLanguage(card)) -> true
+            match keyMap |> Map.containsKey(card.Key) with
+            | true when keyMap.Item(card.Key) |> Array.exists(checkLessonIDAndLanguage(card)) -> true
             | _ -> false
                 
         let idOfExistingCard(card: CardRecord) = 
-            let cardList = keyHashMap.Item(card.KeyHash)
+            let cardList = keyMap.Item(card.Key)
 
             match cardList |> Array.tryFind(checkLessonIDAndLanguage(card)) with
             | Some(found) -> found.ID
@@ -287,3 +300,6 @@ type LLDatabase(dbPath: string) =
 
     member this.CardsFromLessonAndLanguageTag(le: LessonRecord, language: string) = 
         this.CardsFromLessonAndLanguageTag(le.ID, language)
+
+    interface IDisposable with
+        member _.Dispose() = db.Dispose()
