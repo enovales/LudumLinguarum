@@ -30,6 +30,7 @@
     <Compile Include="LLDatabase.fs" />
     <Compile Include="MediaDatabase.fs" />
     <Compile Include="AudioPipeline.fs" />
+    <Compile Include="FmodTools.fs" />
     <Compile Include="TtsProviders.fs" />
     <Compile Include="AnkiApkgExport.fs" />
     <Compile Include="Plugins.fs" />

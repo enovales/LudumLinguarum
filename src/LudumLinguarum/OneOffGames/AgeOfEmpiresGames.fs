@@ -1,11 +1,14 @@
 module AgeOfEmpiresGames
 
+open AudioPipeline
 open LLDatabase
 open LLUtils
+open LudumLinguarumPlugins
 open System
 open System.IO
 open System.Text
 open System.Text.RegularExpressions
+open System.Xml.Linq
 
 let private formattingRegexes = 
     [|
@@ -165,8 +168,101 @@ let ExtractAOE2HD(path: string) =
 /////////////////////////////////////////////////////////////////////////////
 // Age of Empires III
 
-let ExtractAOE3(path: string) = 
-    let stringSources = 
+type internal Aoe3XmlEntry =
+    {
+        LocId: string
+        Text: string
+        Speaker: string
+        SoundFileName: string option
+    }
+
+let private mapAoe3LanguageName (languageName: string) : string =
+    match languageName.Trim() with
+    | "English" -> "en"
+    | "French" -> "fr"
+    | "German" -> "de"
+    | "Spanish" -> "es"
+    | "Italian" -> "it"
+    | other -> failwith ("unrecognized language name in Language name attribute: " + other)
+
+/// <summary>
+/// Parses an Age of Empires III stringtable XML element, returning the detected language tag
+/// and all string entries (including optional gamecharacter speaker and soundfilename attributes).
+/// </summary>
+let internal parseAoe3StringTableXml (xel: XElement) : string * Aoe3XmlEntry array =
+    let languageNode =
+        xel.Descendants()
+        |> Seq.find (fun t -> t.Name.LocalName = "Language")
+    let languageTag =
+        languageNode.Attribute(XName.Get("name")).Value
+        |> mapAoe3LanguageName
+
+    let tryAttr (el: XElement) (name: string) =
+        let attr = el.Attribute(XName.Get(name))
+        if isNull attr || String.IsNullOrWhiteSpace(attr.Value) then None
+        else Some (attr.Value.Trim())
+
+    let entries =
+        xel.Descendants()
+        |> Seq.filter (fun t -> t.Name.LocalName = "String")
+        |> Seq.choose (fun el ->
+            match tryAttr el "_locID" with
+            | None -> None
+            | Some locId ->
+                let text = sanitizePipeline (el.Value.Trim())
+                if String.IsNullOrWhiteSpace(text) then
+                    None
+                else
+                    Some
+                        {
+                            LocId = locId
+                            Text = text
+                            Speaker = tryAttr el "gamecharacter" |> Option.defaultValue ""
+                            SoundFileName = tryAttr el "soundfilename"
+                        }
+        )
+        |> Seq.groupBy (fun e -> e.LocId)
+        |> Seq.map (fun (_, group) ->
+            // Prefer an entry with a soundfilename if the same _locID appears twice
+            group
+            |> Seq.sortBy (fun e -> if e.SoundFileName.IsSome then 0 else 1)
+            |> Seq.head
+        )
+        |> Array.ofSeq
+
+    (languageTag, entries)
+
+/// <summary>
+/// Indexes loose audio files (.mp3 / .wav) under Age of Empires III's `bin\Sound` directory
+/// by lowercase filename stem (prioritizing `dialog`, `Chats`, `cinematics`, and `taunts`).
+/// </summary>
+let internal indexAoe3SoundFiles (rootPath: string) : Map<string, string> =
+    let soundRoot = Path.Combine(rootPath, FixPathSeps @"bin\Sound")
+    if not (Directory.Exists(soundRoot)) then
+        Map.empty
+    else
+        let priorityForPath (fullPath: string) =
+            let rel = fullPath.Substring(soundRoot.Length).ToLowerInvariant()
+            if rel.Contains("dialog") then 0
+            elif rel.Contains("chats") then 1
+            elif rel.Contains("cinematics") then 2
+            elif rel.Contains("taunts") then 3
+            else 4
+
+        Directory.GetFiles(soundRoot, "*.*", SearchOption.AllDirectories)
+        |> Array.filter (fun p ->
+            let ext = Path.GetExtension(p).ToLowerInvariant()
+            ext = ".mp3" || ext = ".wav"
+        )
+        |> Array.sortBy (fun p -> (priorityForPath p, p.ToLowerInvariant()))
+        |> Array.fold (fun acc p ->
+            let stem = Path.GetFileNameWithoutExtension(p).ToLowerInvariant()
+            if acc |> Map.containsKey stem then acc
+            else acc |> Map.add stem p
+        ) Map.empty
+
+let ExtractAOE3WithMedia (path: string) (_args: string array) (mediaCtx: MediaExtractionContext) =
+    let stringSources =
         [|
             (FixPathSeps @"bin\data\stringtable.xml", "Base Game")
             (FixPathSeps @"bin\data\stringtablex.xml", "Warchiefs Expansion")
@@ -176,27 +272,99 @@ let ExtractAOE3(path: string) =
             (FixPathSeps @"bin\data\unithelpstringsy.xml", "Asian Dynasties Expansion Unit Help")
         |]
 
-    let generateCardsForXml(xmlPath: string, lesson: LessonRecord) = 
-        if (File.Exists(xmlPath)) then
-            use fs = new FileStream(xmlPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)
-            OrcsMustDie.generateCardsForXmlStream(lesson.ID, None, "")(fs)
-            |> Array.map (fun c -> { c with Text = sanitizePipeline(c.Text) })
-        else
-            [||]
-
-    let pathsToLessons = 
+    let pathsToLessons =
         stringSources
         |> Array.mapi (fun i (p, lessonName) -> (Path.Combine(path, p), { LessonRecord.ID = i; Name = lessonName }))
 
-    let lessonsAndCardGroups = 
+    let parsedPerLesson =
         pathsToLessons
-        |> Array.map(fun ptl -> (snd(ptl), generateCardsForXml(ptl)))
+        |> Array.map (fun (xmlPath, lesson) ->
+            if File.Exists(xmlPath) then
+                use fs = new FileStream(xmlPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)
+                let xel = XElement.Load(fs)
+                let (lang, entries) = parseAoe3StringTableXml xel
+                (lesson, Some (lang, entries))
+            else
+                (lesson, None)
+        )
 
-    let lessons = lessonsAndCardGroups |> Array.map fst
-    let cards = lessonsAndCardGroups |> Array.map(snd) |> Array.collect(id)
+    let rawCardsWithSound =
+        parsedPerLesson
+        |> Array.collect (fun (lesson, parsedOpt) ->
+            match parsedOpt with
+            | None -> [||]
+            | Some (lang, entries) ->
+                entries
+                |> Array.map (fun entry ->
+                    let card =
+                        {
+                            CardRecord.ID = 0
+                            LessonID = lesson.ID
+                            Text = entry.Text
+                            Gender = "masculine"
+                            Key = entry.LocId + "masculine"
+                            GenderlessKey = entry.LocId
+                            KeyHash = 0
+                            GenderlessKeyHash = 0
+                            SoundResource = ""
+                            ImageResource = ""
+                            Speaker = entry.Speaker
+                            LanguageTag = lang
+                            Reversible = true
+                        }
+                    (card, entry.SoundFileName)
+                )
+        )
 
-    // TODO: extract launcher strings from resource DLLs?
+    let finalCards =
+        match mediaCtx.ExtractAudio, mediaCtx.MediaStore with
+        | true, Some store ->
+            let soundFiles = indexAoe3SoundFiles path
+            let workItems =
+                rawCardsWithSound
+                |> Array.choose (fun (card, soundNameOpt) ->
+                    soundNameOpt
+                    |> Option.bind (fun sn ->
+                        let key = Path.GetFileNameWithoutExtension(sn).ToLowerInvariant()
+                        soundFiles
+                        |> Map.tryFind key
+                        |> Option.map (fun audioPath ->
+                            {
+                                AudioIngestWorkItem.Key = key
+                                LanguageTag = card.LanguageTag
+                                SourceDescription = audioPath
+                                InputFilePath = audioPath
+                                SubsongIndex = None
+                            }
+                        )
+                    )
+                )
+                |> Array.distinctBy (fun w -> w.Key)
+
+            mediaCtx.Log(sprintf "Age of Empires III audio extraction: matched %d unique voice clips from %d indexed sound files." workItems.Length soundFiles.Count)
+            let (hashBySoundKey, succeeded, errors) =
+                ingestExtractedAudioFileBatch store mediaCtx.AudioTools mediaCtx.AudioOptions mediaCtx.Log workItems
+            mediaCtx.Log(sprintf "Age of Empires III audio extraction complete: ingested %d clips (%d errors)." succeeded errors)
+
+            rawCardsWithSound
+            |> Array.map (fun (card, soundNameOpt) ->
+                match soundNameOpt with
+                | Some sn ->
+                    let key = Path.GetFileNameWithoutExtension(sn).ToLowerInvariant()
+                    match hashBySoundKey |> Map.tryFind key with
+                    | Some hash -> { card with SoundResource = hash }
+                    | None -> card
+                | None -> card
+            )
+        | _ ->
+            rawCardsWithSound |> Array.map fst
+
+    let lessons = parsedPerLesson |> Array.map fst
+
     {
         LudumLinguarumPlugins.ExtractedContent.lessons = lessons
-        LudumLinguarumPlugins.ExtractedContent.cards = cards
+        LudumLinguarumPlugins.ExtractedContent.cards = finalCards
     }
+
+let ExtractAOE3(path: string) =
+    ExtractAOE3WithMedia path [||] MediaExtractionContext.None

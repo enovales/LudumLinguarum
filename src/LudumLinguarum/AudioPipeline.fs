@@ -2,10 +2,13 @@ module AudioPipeline
 
 open MediaDatabase
 open System
+open System.Collections.Concurrent
 open System.Diagnostics
 open System.Globalization
 open System.IO
 open System.Text.RegularExpressions
+open System.Threading
+open System.Threading.Tasks
 
 type ExternalToolConfig =
     {
@@ -372,6 +375,68 @@ let ingestExtractedAudioBytes
                 Data = transcoded.Mp3Bytes
             }
         Ok (store.PutMedia(record))
+
+/// <summary>
+/// Describes a single extracted audio file (or subsong inside an audio bank) to ingest in a batch.
+/// </summary>
+type AudioIngestWorkItem =
+    {
+        Key: string
+        LanguageTag: string
+        SourceDescription: string
+        InputFilePath: string
+        SubsongIndex: int option
+    }
+
+/// <summary>
+/// Transcodes and ingests a batch of extracted audio files in parallel (bounded concurrency)
+/// into IMediaStore, returning a map from work-item Key to stored SHA-256 hash.
+/// </summary>
+let ingestExtractedAudioFileBatch
+    (store: IMediaStore)
+    (tools: ExternalToolConfig)
+    (opts: AudioIngestOptions)
+    (log: string -> unit)
+    (items: AudioIngestWorkItem array)
+    : Map<string, string> * int * int =
+    if items.Length = 0 then
+        (Map.empty, 0, 0)
+    else
+        let results = ConcurrentDictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        let mutable completed = 0
+        let mutable succeeded = 0
+        let mutable errors = 0
+        let logLock = obj()
+
+        let parallelOptions = ParallelOptions()
+        parallelOptions.MaxDegreeOfParallelism <- Math.Clamp(Environment.ProcessorCount, 1, 6)
+
+        Parallel.ForEach(
+            items,
+            parallelOptions,
+            fun item ->
+                match ingestExtractedAudioFile store tools opts item.LanguageTag item.SourceDescription item.InputFilePath item.SubsongIndex with
+                | Ok hash ->
+                    results.[item.Key] <- hash
+                    Interlocked.Increment(&succeeded) |> ignore
+                | Error err ->
+                    let errNum = Interlocked.Increment(&errors)
+                    if errNum <= 10 then
+                        lock logLock (fun () -> log (sprintf "Warning: failed to ingest audio '%s': %s" item.SourceDescription err))
+
+                let doneCount = Interlocked.Increment(&completed)
+                if items.Length >= 50 && (doneCount % 100 = 0 || doneCount = items.Length) then
+                    lock logLock (fun () ->
+                        log (sprintf "Audio ingest progress: %d/%d (%d succeeded, %d errors)" doneCount items.Length succeeded errors)
+                    )
+        )
+        |> ignore
+
+        let resultMap =
+            results
+            |> Seq.map (fun kv -> (kv.Key, kv.Value))
+            |> Map.ofSeq
+        (resultMap, succeeded, errors)
 
 /// <summary>
 /// Extracts PNG dimensions (width, height) from raw PNG header bytes if valid.

@@ -27,6 +27,18 @@ let tests =
           Expect.isTrue kotor2.SupportsAudio "KOTOR II should declare audio support"
           Expect.isTrue (kotor2.supportedAudioLanguages |> Array.contains "de") "KOTOR II should declare German audio"
 
+          let aoe3 = byName.["Age of Empires III"]
+          Expect.isTrue aoe3.SupportsAudio "Age of Empires III should declare audio support"
+          Expect.isTrue (aoe3.supportedAudioLanguages |> Array.contains "de") "Age of Empires III should declare German audio"
+
+          let hades = byName.["Hades"]
+          Expect.isTrue hades.SupportsAudio "Hades should declare audio support"
+          Expect.equal hades.supportedAudioLanguages [| "en" |] "Hades should declare English audio"
+
+          let hades2 = byName.["Hades II"]
+          Expect.isTrue hades2.SupportsAudio "Hades II should declare audio support"
+          Expect.equal hades2.supportedAudioLanguages [| "en" |] "Hades II should declare English audio"
+
           let balatro = byName.["Balatro"]
           Expect.isFalse balatro.SupportsAudio "Balatro should declare no native audio extraction"
           Expect.isFalse balatro.SupportsImages "Balatro should declare no native image extraction"
