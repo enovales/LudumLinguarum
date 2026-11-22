@@ -31,6 +31,8 @@ let tests =
           KeyHash = 0
           Reversible = true
           SoundResource = ""
+          ImageResource = ""
+          Speaker = ""
           Text = "Test card"
           LanguageTag = "en"
           ID = 0
@@ -46,6 +48,8 @@ let tests =
           KeyHash = 0
           Reversible = true
           SoundResource = ""
+          ImageResource = ""
+          Speaker = ""
           Text = "Test card"
           LanguageTag = "de"
           ID = 0
@@ -87,6 +91,8 @@ let tests =
               Reversible = true
               Text = "Test card"
               SoundResource = ""
+              ImageResource = ""
+              Speaker = ""
           }
 
           let cid = db.AddCard(ce)
@@ -153,6 +159,8 @@ let tests =
               Reversible = true
               Text = "Test card"
               SoundResource = ""
+              ImageResource = ""
+              Speaker = ""
           }
 
           let cid = db.CreateOrUpdateCard(ce)
@@ -191,6 +199,8 @@ let tests =
               Reversible = true
               Text = "Test card"
               SoundResource = ""
+              ImageResource = ""
+              Speaker = ""
           }
 
           let cid = db.AddCard(ce)
@@ -264,6 +274,8 @@ let keyHashTests =
             KeyHash = 0
             GenderlessKeyHash = 0
             SoundResource = ""
+            ImageResource = ""
+            Speaker = ""
             LanguageTag = lang
             Reversible = true
           }

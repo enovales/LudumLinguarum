@@ -56,6 +56,8 @@ let createCardRecordForStrings(lid: int, keyRoot: string, language: string, gend
             KeyHash = 0
             GenderlessKeyHash = 0
             SoundResource = ""
+            ImageResource = ""
+            Speaker = ""
             LanguageTag = language
             Reversible = true
         }

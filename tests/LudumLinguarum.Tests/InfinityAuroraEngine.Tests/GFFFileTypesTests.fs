@@ -27,6 +27,7 @@ let private testNodes =
             QuestEntry = None
             Script = None
             Sound = None
+            VO_ResRef = None
             Text = Some(testStrings.[i])
             Next = []
             Speaker = None

@@ -49,6 +49,8 @@ let private ExtractLanguageCards(l: LessonRecord)(language: string, path: string
                     KeyHash = 0
                     GenderlessKeyHash = 0
                     SoundResource = ""
+                    ImageResource = ""
+                    Speaker = ""
                     LanguageTag = language
                     Reversible = true
                 }
@@ -62,6 +64,8 @@ let private ExtractLanguageCards(l: LessonRecord)(language: string, path: string
                     KeyHash = 0
                     GenderlessKeyHash = 0
                     SoundResource = ""
+                    ImageResource = ""
+                    Speaker = ""
                     LanguageTag = "en"
                     Reversible = true
                 }

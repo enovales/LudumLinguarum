@@ -38,6 +38,8 @@ type CardRecord = {
         KeyHash: int
         GenderlessKeyHash: int
         SoundResource: string
+        ImageResource: string
+        Speaker: string
         LanguageTag: string
         Reversible: bool
     }
@@ -53,6 +55,8 @@ type CardRecord = {
             + "KeyHash = " + this.KeyHash.ToString() + ", "
             + "GenderlessKeyHash = " + this.GenderlessKeyHash.ToString() + ", "
             + "SoundResource = " + this.SoundResource.ToString() + ", "
+            + "ImageResource = " + this.ImageResource.ToString() + ", "
+            + "Speaker = " + this.Speaker.ToString() + ", "
             + "LanguageTag = " + this.LanguageTag.ToString() + ", "
             + "Reversible = " + this.Reversible.ToString() + ", "
             + ")"
@@ -97,9 +101,21 @@ type CardEntry() =
     member val GenderlessKeyHash = 0 with get, set
 
     /// <summary>
-    /// The path to an optional sound resource associated with this.
+    /// The content hash (or path) of an optional sound resource associated with this card
+    /// in the companion media database.
     /// </summary>
     member val SoundResource = "" with get, set
+
+    /// <summary>
+    /// The content hash (or path) of an optional visual asset associated with this card
+    /// in the companion media database.
+    /// </summary>
+    member val ImageResource = "" with get, set
+
+    /// <summary>
+    /// Optional speaker or character identifier associated with this card.
+    /// </summary>
+    member val Speaker = "" with get, set
 
     /// <summary>
     /// An IETF language tag describing the text on this card.
@@ -114,17 +130,20 @@ type CardEntry() =
     member val Reversible = true with get, set
 
     member this.ToCardRecord() = 
+        let safeStr (s: string) = if isNull s then "" else s
         {
             CardRecord.ID = this.ID
             LessonID = this.LessonID
-            Text = this.Text
-            Gender = this.Gender
-            Key = this.Key
-            GenderlessKey = this.GenderlessKey
+            Text = safeStr this.Text
+            Gender = safeStr this.Gender
+            Key = safeStr this.Key
+            GenderlessKey = safeStr this.GenderlessKey
             KeyHash = this.KeyHash
             GenderlessKeyHash = this.GenderlessKeyHash
-            SoundResource = this.SoundResource
-            LanguageTag = this.LanguageTag
+            SoundResource = safeStr this.SoundResource
+            ImageResource = safeStr this.ImageResource
+            Speaker = safeStr this.Speaker
+            LanguageTag = safeStr this.LanguageTag
             Reversible = this.Reversible
         }
 
@@ -139,6 +158,8 @@ type CardEntry() =
         dbce.KeyHash <- ce.KeyHash
         dbce.GenderlessKeyHash <- ce.GenderlessKeyHash
         dbce.SoundResource <- ce.SoundResource
+        dbce.ImageResource <- ce.ImageResource
+        dbce.Speaker <- ce.Speaker
         dbce.LanguageTag <- ce.LanguageTag
         dbce.Reversible <- ce.Reversible
         dbce
@@ -269,20 +290,42 @@ type LLDatabase(dbPath: string) =
             | true when keyMap.Item(card.Key) |> Array.exists(checkLessonIDAndLanguage(card)) -> true
             | _ -> false
                 
-        let idOfExistingCard(card: CardRecord) = 
+        let existingCardFor(card: CardRecord) = 
             let cardList = keyMap.Item(card.Key)
 
             match cardList |> Array.tryFind(checkLessonIDAndLanguage(card)) with
-            | Some(found) -> found.ID
+            | Some(found) -> found
             | _ -> failwith "shouldn't happen"
 
         // cards with the same key hash and language tag that already exist in the db
         let (existingCards, newCards) = cardsWithHashes |> Array.partition hasExistingCard
 
-        let cardsToUpdateWithIds = existingCards |> Array.map (fun c -> { c with ID = idOfExistingCard(c) })
+        // Preserve previously extracted media hashes / speaker metadata when a subsequent
+        // text-only re-import leaves those fields empty.
+        let mergeExisting (incoming: CardRecord) =
+            let prev = existingCardFor incoming
+            {
+                incoming with
+                    ID = prev.ID
+                    SoundResource = if String.IsNullOrWhiteSpace(incoming.SoundResource) then prev.SoundResource else incoming.SoundResource
+                    ImageResource = if String.IsNullOrWhiteSpace(incoming.ImageResource) then prev.ImageResource else incoming.ImageResource
+                    Speaker = if String.IsNullOrWhiteSpace(incoming.Speaker) then prev.Speaker else incoming.Speaker
+            }
+
+        let cardsToUpdateWithIds = existingCards |> Array.map mergeExisting
 
         db.UpdateAll(cardsToUpdateWithIds |> Seq.map CardEntry.FromCardRecord) |> ignore
         db.InsertAll(newCards |> Seq.map CardEntry.FromCardRecord) |> ignore
+
+    member this.ReferencedMediaHashes() : Set<string> =
+        this.Cards
+        |> Seq.collect (fun c ->
+            [
+                if not (String.IsNullOrWhiteSpace(c.SoundResource)) then yield c.SoundResource
+                if not (String.IsNullOrWhiteSpace(c.ImageResource)) then yield c.ImageResource
+            ]
+        )
+        |> Set.ofSeq
 
 
     member this.CardsFromLesson(lid: int) = 

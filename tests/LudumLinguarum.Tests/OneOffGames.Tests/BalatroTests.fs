@@ -98,6 +98,8 @@ let private mkCard(languageTag: string)(key: string)(text: string): CardRecord =
         KeyHash = 0
         GenderlessKeyHash = 0
         SoundResource = ""
+        ImageResource = ""
+        Speaker = ""
         LanguageTag = languageTag
         Reversible = true
     }

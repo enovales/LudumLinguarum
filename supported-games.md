@@ -31,7 +31,7 @@ The following games and [language tags](https://en.wikipedia.org/wiki/IETF_langu
 * Hell Yeah! \[en, de, es, fr, it, ja\]
 * IHF Handball Challenge 12 \[da, de, en, es, hu, it, pt\]
 * IHF Handball Challenge 14 \[da, de, en, es, fr, pl, sv\]
-* Jade Empire \[de, en, es, fr, it\]
+* Jade Empire \[de, en, es, fr, it\] (audio: de, en, es, fr, it)
 * Jet Set Radio \[de, en, es, fr, it, ja\]
 * Judgment \[de, en, es, fr, it, ja, ko, zh-CN, zh-TW\]
 * Like a Dragon Gaiden: The Man Who Erased His Name \[de, en, es, fr, it, ja, ko, pt-BR, ru, zh-CN, zh-TW\]
@@ -43,7 +43,7 @@ The following games and [language tags](https://en.wikipedia.org/wiki/IETF_langu
 * Magical Drop V \[de, en, es, fr, it, ja\]
 * Magicka \[de, en, es, fr, hu, it, pl, ru\]
 * Multiwinia \[de, en, es, fr, it\]
-* Neverwinter Nights \[de, en, es, fr, it, pl\]
+* Neverwinter Nights \[de, en, es, fr, it, pl\] (audio: de, en, es, fr, it, pl)
 * Nubby's Number Factory \[ca, da, en, es, es-LA, fr, gl, hu, it, nl, no, pl, pt-BR, pt-PT, ru, sk, tr, uk\]
 * Orcs Must Die! \[de, en, es, fr, it, ja, pl, pt, ru\]
 * Orcs Must Die! 2 \[de, en, es, fr, it, ja, pl, pt, ru\]
@@ -54,15 +54,15 @@ The following games and [language tags](https://en.wikipedia.org/wiki/IETF_langu
 * Puzzle Chronicles \[de, en, en-GB, es, es-MX, fr, fr-CA, it\]
 * Puzzle Kingdoms \[de, en, es, fr, it\]
 * Puzzle Quest 2 \[de, en, es, fr, it\]
-* Sid Meier's Civilization IV \[de, en, es, fr, it\]
-* Sid Meier's Civilization IV: Beyond the Sword \[de, en, es, fr, it\]
+* Sid Meier's Civilization IV \[de, en, es, fr, it\] (audio: de, en, es, fr, it)
+* Sid Meier's Civilization IV: Beyond the Sword \[de, en, es, fr, it\] (audio: de, en, es, fr, it)
 * Sid Meier's Civilization IV: Colonization \[de, en, es, fr, it\]
-* Sid Meier's Civilization IV: Warlords \[de, en, es, fr, it\]
+* Sid Meier's Civilization IV: Warlords \[de, en, es, fr, it\] (audio: de, en, es, fr, it)
 * Skulls of the Shogun \[de, en, es, fr, it, ja, ko, pt, ru, zh\]
 * Sonic Adventure DX \[de, en, es, fr, it, ja\]
 * Space Channel 5: Part 2 \[en, de, es, fr, it, jp\]
-* Star Wars: Knights of the Old Republic \[de, en, es, fr, it\]
-* Star Wars: Knights of the Old Republic II \[de, en, es, fr, it\]
+* Star Wars: Knights of the Old Republic \[de, en, es, fr, it\] (audio: de, en, es, fr, it)
+* Star Wars: Knights of the Old Republic II \[de, en, es, fr, it\] (audio: de, en, es, fr, it)
 * The King of Fighters '98 Ultimate Match \[en, ja\]
 * The King of Fighters 2002 Unlimited Match \[en, ja\]
 * The Witness \[ar, de, en, es-ES, es-LA, fr, hu, id, it, ja, ko, pl, pt-BR, pt-PT, ru, zh-CN, zh-TW\]

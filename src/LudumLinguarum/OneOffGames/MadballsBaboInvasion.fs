@@ -72,6 +72,8 @@ let private createCardsForDatabase(dbPath: string, language: string, lessons: Le
             KeyHash = 0
             GenderlessKeyHash = 0
             SoundResource = ""
+            ImageResource = ""
+            Speaker = ""
             LanguageTag = language
             Reversible = true
         }

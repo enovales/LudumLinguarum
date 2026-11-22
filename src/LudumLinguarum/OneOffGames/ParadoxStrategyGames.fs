@@ -56,6 +56,8 @@ let internal generateCardsForSSVContent(lessonID: int, keyRoot: string)(ssvBytes
                         KeyHash = 0
                         GenderlessKeyHash = 0
                         SoundResource = ""
+                        ImageResource = ""
+                        Speaker = ""
                         LanguageTag = lang
                         Reversible = true
                     }

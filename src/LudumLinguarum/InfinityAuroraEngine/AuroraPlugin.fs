@@ -1,6 +1,7 @@
 namespace InfinityAuroraEngine
 
 open Argu
+open AudioPipeline
 open LLDatabase
 open InfinityAuroraEngine.CommonTypes
 open InfinityAuroraEngine.GFFFileTypes
@@ -13,6 +14,7 @@ open InfinityAuroraEngine.TalkTable
 open InfinityAuroraEngine.TwoDA
 open LudumLinguarumPlugins
 open System
+open System.Collections.Generic
 open System.IO
 open System.Text.RegularExpressions
 
@@ -32,9 +34,11 @@ type AuroraPluginArgs =
 
 type private ExtractionContext<'TalkTableString when 'TalkTableString :> ITalkTableString> = {
     gameResources: IGenericResource seq;
+    voiceFiles: Map<string, string>;
     pluginSettings: ParseResults<AuroraPluginArgs>;
     masculineOrNeuterTalkTable: ITalkTable<'TalkTableString>;
     feminineTalkTable: ITalkTable<'TalkTableString>;
+    mediaContext: MediaExtractionContext;
 }
 
 /// <summary>
@@ -101,12 +105,18 @@ type AuroraPlugin() =
     interface IGameExtractorPlugin with
         member this.SupportedGames = 
             [| 
-                { GameMetadata.name = "Neverwinter Nights"; supportedLanguages = [| "de"; "en"; "es"; "fr"; "it"; "pl" |] }
-                { GameMetadata.name = "Jade Empire"; supportedLanguages = [| "de"; "en"; "es"; "fr"; "it" |] }
-                { GameMetadata.name = "Star Wars: Knights of the Old Republic"; supportedLanguages = [| "de"; "en"; "es"; "fr"; "it" |] }
-                { GameMetadata.name = "Star Wars: Knights of the Old Republic II"; supportedLanguages = [| "de"; "en"; "es"; "fr"; "it" |] }
+                { GameMetadata.name = "Neverwinter Nights"; supportedLanguages = [| "de"; "en"; "es"; "fr"; "it"; "pl" |]; supportedAudioLanguages = [| "de"; "en"; "es"; "fr"; "it"; "pl" |]; supportedImageLanguages = [||] }
+                { GameMetadata.name = "Jade Empire"; supportedLanguages = [| "de"; "en"; "es"; "fr"; "it" |]; supportedAudioLanguages = [| "de"; "en"; "es"; "fr"; "it" |]; supportedImageLanguages = [||] }
+                { GameMetadata.name = "Star Wars: Knights of the Old Republic"; supportedLanguages = [| "de"; "en"; "es"; "fr"; "it" |]; supportedAudioLanguages = [| "de"; "en"; "es"; "fr"; "it" |]; supportedImageLanguages = [||] }
+                { GameMetadata.name = "Star Wars: Knights of the Old Republic II"; supportedLanguages = [| "de"; "en"; "es"; "fr"; "it" |]; supportedAudioLanguages = [| "de"; "en"; "es"; "fr"; "it" |]; supportedImageLanguages = [||] }
             |]
         member this.ExtractAll(game: string, path: string, args: string[]): ExtractedContent = 
+            (this :> IMediaExtractorPlugin).ExtractAllWithMedia(game, path, args, MediaExtractionContext.None)
+
+    end
+
+    interface IMediaExtractorPlugin with
+        member this.ExtractAllWithMedia(game: string, path: string, args: string[], mediaCtx: MediaExtractionContext): ExtractedContent =
             let parser = ArgumentParser.Create<AuroraPluginArgs>(errorHandler = new ProcessExiter())
             let results = parser.Parse(args)
 
@@ -115,10 +125,10 @@ type AuroraPlugin() =
                 failwith "couldn't extract game"
             else
                 match game with
-                | "Neverwinter Nights" -> this.ExtractNWN1(path, results)
-                | "Jade Empire" -> this.ExtractJadeEmpire(path, results)
-                | "Star Wars: Knights of the Old Republic" -> this.ExtractKOTOR1(path, results)
-                | "Star Wars: Knights of the Old Republic II" -> this.ExtractKOTOR2(path, results)
+                | "Neverwinter Nights" -> this.ExtractNWN1(path, results, mediaCtx)
+                | "Jade Empire" -> this.ExtractJadeEmpire(path, results, mediaCtx)
+                | "Star Wars: Knights of the Old Republic" -> this.ExtractKOTOR1(path, results, mediaCtx)
+                | "Star Wars: Knights of the Old Republic II" -> this.ExtractKOTOR2(path, results, mediaCtx)
                 | g -> raise(UnknownGameException("unknown game " + g))
 
     end
@@ -145,31 +155,87 @@ type AuroraPlugin() =
             dialogueResources 
             |> Array.mapi zipResourcesAndLessons
 
-        let languageType = LanguageTypeFromIETFLanguageTag(xc.pluginSettings.GetResult(AuroraPluginArgs.Language_Tag))
+        let languageTag = xc.pluginSettings.GetResult(AuroraPluginArgs.Language_Tag)
+        let languageType = LanguageTypeFromIETFLanguageTag(languageTag)
 
         this.LogWriteLine("Dialogues loaded.") |> ignore
 
+        // Build audio lookup for archive-resident WAV resources when audio extraction is active
+        let archiveWavLookup =
+            if xc.mediaContext.ExtractAudio && xc.mediaContext.MediaStore.IsSome then
+                xc.gameResources
+                |> Seq.filter (fun r -> r.ResourceType = ResType.Wav)
+                |> Seq.map (fun r -> (r.Name.Value.Trim().ToLowerInvariant(), r))
+                |> Seq.distinctBy fst
+                |> Map.ofSeq
+            else
+                Map.empty
+
+        let ingestedAudioByResRef = Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        let mutable audioIngested = 0
+        let mutable audioErrors = 0
+
+        let auroraAudioOptions = { xc.mediaContext.AudioOptions with PreferVgmstream = true }
+
+        let resolveAndIngestSound (soundResRefOpt: string option) : string =
+            match xc.mediaContext.ExtractAudio, xc.mediaContext.MediaStore, soundResRefOpt with
+            | true, Some store, Some resRef when not (String.IsNullOrWhiteSpace(resRef)) ->
+                let key = resRef.Trim().ToLowerInvariant()
+                match ingestedAudioByResRef.TryGetValue(key) with
+                | true, hash -> hash
+                | false, _ ->
+                    let ingestResult =
+                        match xc.voiceFiles |> Map.tryFind key with
+                        | Some loosePath ->
+                            ingestExtractedAudioFile store xc.mediaContext.AudioTools auroraAudioOptions languageTag loosePath loosePath None
+                        | None ->
+                            match archiveWavLookup |> Map.tryFind key with
+                            | Some res ->
+                                use ms = new MemoryStream()
+                                use s = res.GetStream
+                                s.CopyTo(ms)
+                                let rawBytes = ms.ToArray()
+                                ingestExtractedAudioBytes store xc.mediaContext.AudioTools auroraAudioOptions languageTag (res.OriginDesc + ":" + res.Name.Value) rawBytes ".wav" None
+                            | None ->
+                                Error "" // Not present as loose or archive wav; skip silently
+
+                    match ingestResult with
+                    | Ok hash ->
+                        ingestedAudioByResRef.[key] <- hash
+                        audioIngested <- audioIngested + 1
+                        hash
+                    | Error "" ->
+                        ingestedAudioByResRef.[key] <- ""
+                        ""
+                    | Error err ->
+                        ingestedAudioByResRef.[key] <- ""
+                        audioErrors <- audioErrors + 1
+                        if audioErrors <= 10 then
+                            xc.mediaContext.Log(sprintf "Warning: failed to ingest Aurora audio '%s': %s" key err)
+                        ""
+            | _ -> ""
+
         let generateStringsAndKeys(r: Dialogue * IGenericResource * LessonRecord) = 
             let (t, dialogueResource, lessonEntry) = r
-            let extractedM = ExtractStringsFromDialogue(t, languageType, Gender.MasculineOrNeutral, xc.masculineOrNeuterTalkTable, xc.feminineTalkTable)
+            let extractedM = ExtractDialogueLinesWithMedia(t, languageType, Gender.MasculineOrNeutral, xc.masculineOrNeuterTalkTable, xc.feminineTalkTable)
             let extractedF = 
                 if (xc.masculineOrNeuterTalkTable = xc.feminineTalkTable) then 
                     []
                 else
-                    ExtractStringsFromDialogue(t, languageType, Gender.Feminine, xc.masculineOrNeuterTalkTable, xc.feminineTalkTable)
+                    ExtractDialogueLinesWithMedia(t, languageType, Gender.Feminine, xc.masculineOrNeuterTalkTable, xc.feminineTalkTable)
 
-            let zipWithLessonEntry(tuple: string * string * string * string) = 
-                let (t, k, genderlessK, g) = tuple
-                (t, k, genderlessK, lessonEntry, g)
+            let augmentLines (gender: Gender) (lines: ExtractedDialogueLine list) =
+                lines
+                |> Seq.map (fun line ->
+                    let genderedKey = "c " + dialogueResource.OriginDesc + " d " + dialogueResource.Name.Value + " g " + gender.ToString() + " " + line.NodeKey
+                    let genderlessKey = "c " + dialogueResource.OriginDesc + " d " + dialogueResource.Name.Value + " " + line.NodeKey
+                    let soundHash = resolveAndIngestSound line.SoundResRef
+                    (line.Text, genderedKey, genderlessKey, lessonEntry, gender.ToString(), soundHash, line.Speaker)
+                )
+                |> Array.ofSeq
 
-            let augmentedM = 
-                AugmentExtractedStringKeys(extractedM, dialogueResource.Name, dialogueResource.OriginDesc, Gender.MasculineOrNeutral) 
-                |> Seq.map zipWithLessonEntry
-                |> Array.ofSeq
-            let augmentedF = 
-                AugmentExtractedStringKeys(extractedF, dialogueResource.Name, dialogueResource.OriginDesc, Gender.Feminine) 
-                |> Seq.map zipWithLessonEntry
-                |> Array.ofSeq
+            let augmentedM = augmentLines Gender.MasculineOrNeutral extractedM
+            let augmentedF = augmentLines Gender.Feminine extractedF
 
             Array.concat([|augmentedM; augmentedF|] |> Array.toSeq)
 
@@ -178,18 +244,22 @@ type AuroraPlugin() =
             Array.collect(generateStringsAndKeys)
 
         this.LogWriteLine("Dialogue strings extracted.") |> ignore
+        if xc.mediaContext.ExtractAudio && xc.mediaContext.MediaStore.IsSome then
+            xc.mediaContext.Log(sprintf "Aurora audio extraction (%s): ingested %d unique voice clips (%d errors)." languageTag audioIngested audioErrors)
 
-        let generateCardRecordForTuple(tuple: string * string * string * LessonRecord * string) = 
-            let (t, k, genderlessKey, l, g) = tuple
+        let generateCardRecordForTuple(tuple: string * string * string * LessonRecord * string * string * string) = 
+            let (t, k, genderlessKey, l, g, soundHash, speaker) = tuple
             {
                 CardRecord.Gender = g;
                 ID = 0;
                 KeyHash = 0;
                 GenderlessKeyHash = 0;
-                LanguageTag = xc.pluginSettings.GetResult(AuroraPluginArgs.Language_Tag);
+                LanguageTag = languageTag;
                 LessonID = l.ID;
                 Reversible = true;
-                SoundResource = String.Empty;
+                SoundResource = soundHash;
+                ImageResource = String.Empty;
+                Speaker = speaker;
                 Text = t;
                 Key = k;
                 GenderlessKey = genderlessKey;
@@ -230,6 +300,8 @@ type AuroraPlugin() =
                     LessonID = l.ID;
                     Reversible = true;
                     SoundResource = String.Empty;
+                    ImageResource = String.Empty;
+                    Speaker = String.Empty;
                     Text = (xc.masculineOrNeuterTalkTable.Strings.[strRef] :> ITalkTableString).Value
                 }
             )
@@ -389,7 +461,7 @@ type AuroraPlugin() =
         |]
         this.Extract2DAs(xc, extractionList)
 
-    member private this.ExtractNWN1(path: string, args: ParseResults<AuroraPluginArgs>) = 
+    member private this.ExtractNWN1(path: string, args: ParseResults<AuroraPluginArgs>, mediaCtx: MediaExtractionContext) = 
         this.LogWriteLine("Creating NWN1 context from " + path) |> ignore
         let context = new NWN1Context(path)
 
@@ -404,13 +476,15 @@ type AuroraPlugin() =
 
         let extractionContext = {
             ExtractionContext.gameResources = context.Resources;
+            voiceFiles = Map.empty;
             pluginSettings = args;
             masculineOrNeuterTalkTable = masculineOrNeuterTalkTable;
             feminineTalkTable = feminineTalkTable;
+            mediaContext = mediaCtx;
         }
         
         let extractedDialogueContent = 
-            if (args.Contains(AuroraPluginArgs.Extract_All) || args.Contains(AuroraPluginArgs.Extract_Dialogues)) then
+            if (args.Contains(AuroraPluginArgs.Extract_All) || args.Contains(AuroraPluginArgs.Extract_Dialogues) || mediaCtx.ExtractAudio) then
                 [| this.ExtractDialogues(extractionContext) |]
             else
                 [||]
@@ -496,7 +570,7 @@ type AuroraPlugin() =
         let extractionList = Array.concat([| creaturesExtraction; standaloneExtraction |])
         this.Extract2DAs(xc, extractionList)
 
-    member private this.ExtractJadeEmpire(path: string, args: ParseResults<AuroraPluginArgs>) = 
+    member private this.ExtractJadeEmpire(path: string, args: ParseResults<AuroraPluginArgs>, mediaCtx: MediaExtractionContext) = 
         this.LogWriteLine("Creating Jade Empire context from " + path) |> ignore
         let context = new JadeEmpireContext(path)
 
@@ -511,13 +585,15 @@ type AuroraPlugin() =
 
         let extractionContext = {
             ExtractionContext.gameResources = context.Resources;
+            voiceFiles = Map.empty;
             pluginSettings = args;
             masculineOrNeuterTalkTable = masculineOrNeuterTalkTable;
             feminineTalkTable = feminineTalkTable;
+            mediaContext = mediaCtx;
         }
         
         let extractedDialogueContent = 
-            if (args.Contains(AuroraPluginArgs.Extract_All) || args.Contains(AuroraPluginArgs.Extract_Dialogues)) then
+            if (args.Contains(AuroraPluginArgs.Extract_All) || args.Contains(AuroraPluginArgs.Extract_Dialogues) || mediaCtx.ExtractAudio) then
                 [| this.ExtractDialogues(extractionContext) |]
             else
                 [||]
@@ -607,7 +683,7 @@ type AuroraPlugin() =
 
         this.Extract2DAs(xc, standaloneExtraction)
 
-    member private this.ExtractKOTOR1(path: string, args: ParseResults<AuroraPluginArgs>) = 
+    member private this.ExtractKOTOR1(path: string, args: ParseResults<AuroraPluginArgs>, mediaCtx: MediaExtractionContext) = 
         this.LogWriteLine("Creating KOTOR1 context from " + path) |> ignore
         let context = new KOTOR1Context(path)
 
@@ -615,13 +691,15 @@ type AuroraPlugin() =
         let masculineOrNeuterTalkTable = TalkTableV3.FromFilePath(Path.Combine(path, "dialog.tlk"))
         let extractionContext = {
             ExtractionContext.gameResources = context.Resources;
+            voiceFiles = context.VoiceFiles;
             pluginSettings = args
             masculineOrNeuterTalkTable = masculineOrNeuterTalkTable;
             feminineTalkTable = masculineOrNeuterTalkTable;
+            mediaContext = mediaCtx;
         }
         
         let extractedDialogueContent = 
-            if (args.Contains(AuroraPluginArgs.Extract_All) || args.Contains(AuroraPluginArgs.Extract_Dialogues)) then
+            if (args.Contains(AuroraPluginArgs.Extract_All) || args.Contains(AuroraPluginArgs.Extract_Dialogues) || mediaCtx.ExtractAudio) then
                 [| this.ExtractDialogues(extractionContext) |]
             else
                 [||]
@@ -716,7 +794,7 @@ type AuroraPlugin() =
 
         this.Extract2DAs(xc, standaloneExtraction)
 
-    member private this.ExtractKOTOR2(path: string, args: ParseResults<AuroraPluginArgs>) = 
+    member private this.ExtractKOTOR2(path: string, args: ParseResults<AuroraPluginArgs>, mediaCtx: MediaExtractionContext) = 
         this.LogWriteLine("Creating KOTOR2 context from " + path) |> ignore
         let context = new KOTOR2Context(path)
 
@@ -724,9 +802,11 @@ type AuroraPlugin() =
         let masculineOrNeuterTalkTable = TalkTableV3.FromFilePath(Path.Combine(path, "dialog.tlk"))
         let extractionContext = {
             ExtractionContext.gameResources = context.Resources;
+            voiceFiles = context.VoiceFiles;
             pluginSettings = args;
             masculineOrNeuterTalkTable = masculineOrNeuterTalkTable;
             feminineTalkTable = masculineOrNeuterTalkTable;
+            mediaContext = mediaCtx;
         }
 
         let findImplementationCommentsRegex = new Regex("\{.*\}")
@@ -741,7 +821,7 @@ type AuroraPlugin() =
             { c with Text = textWithoutImplementationComments(c.Text) }
         
         let extractedDialogueContent = 
-            if (args.Contains(AuroraPluginArgs.Extract_All) || args.Contains(AuroraPluginArgs.Extract_Dialogues)) then
+            if (args.Contains(AuroraPluginArgs.Extract_All) || args.Contains(AuroraPluginArgs.Extract_Dialogues) || mediaCtx.ExtractAudio) then
                 [| this.ExtractDialogues(extractionContext) |]
             else
                 [||]

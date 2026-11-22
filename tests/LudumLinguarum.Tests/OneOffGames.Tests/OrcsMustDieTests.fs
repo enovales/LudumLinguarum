@@ -37,6 +37,8 @@ let tests =
                     KeyHash = 0
                     GenderlessKeyHash = 0
                     SoundResource = ""
+                    ImageResource = ""
+                    Speaker = ""
                     LanguageTag = "en"
                     Reversible = true
                 }
@@ -67,6 +69,8 @@ let tests =
                     KeyHash = 0
                     GenderlessKeyHash = 0
                     SoundResource = ""
+                    ImageResource = ""
+                    Speaker = ""
                     LanguageTag = "en"
                     Reversible = true
                 }

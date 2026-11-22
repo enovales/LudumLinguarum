@@ -28,6 +28,10 @@
     <Compile Include="LLUtils.fs" />
     <Compile Include="BaseResources.fs" />
     <Compile Include="LLDatabase.fs" />
+    <Compile Include="MediaDatabase.fs" />
+    <Compile Include="AudioPipeline.fs" />
+    <Compile Include="TtsProviders.fs" />
+    <Compile Include="AnkiApkgExport.fs" />
     <Compile Include="Plugins.fs" />
     <Compile Include="CardExport.fs" />
     <Compile Include="Trie.fs" />
