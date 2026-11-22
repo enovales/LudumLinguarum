@@ -88,6 +88,8 @@ let createCardRecordForCustomInstructionsString(lid: int, language: string)(inde
         KeyHash = 0
         GenderlessKeyHash = 0
         SoundResource = ""
+        ImageResource = ""
+        Speaker = ""
         LanguageTag = language
         Reversible = true
     }
@@ -307,6 +309,8 @@ let convertStringBlockExtractedEntriesToCardRecords(lid: int)(extracted: StringB
             KeyHash = 0
             GenderlessKeyHash = 0
             SoundResource = e.Entry.SoundResource
+            ImageResource = ""
+            Speaker = ""
             LanguageTag = e.Language
             Reversible = e.Entry.Reversible
         }
@@ -452,6 +456,8 @@ type JetSetRadio =
                             LessonID = lessonID;
                             Reversible = true;
                             SoundResource = "";
+                            ImageResource = "";
+                            Speaker = "";
                             Text = u
                         })
                 ) |> Array.collect(fun t -> Option.toArray(t))

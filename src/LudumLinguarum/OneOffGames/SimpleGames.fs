@@ -196,6 +196,8 @@ let hbGenerateCardsForLine(languages: string seq, lid: int)(l: string): CardReco
             KeyHash = 0
             GenderlessKeyHash = 0
             SoundResource = ""
+            ImageResource = ""
+            Speaker = ""
             LanguageTag = language
             Reversible = true
         }
@@ -296,6 +298,8 @@ let private ExtractJBGames(path: string, fileNamesToLanguage: Map<string, string
             CardRecord.LessonID = lesson.ID
             CardRecord.Reversible = true
             CardRecord.SoundResource = ""
+            CardRecord.ImageResource = ""
+            CardRecord.Speaker = ""
             CardRecord.Text = translated.singular.Trim().Replace('\r', ' ').Replace('\n', ' ').Replace('\t', ' ')
         }
 
@@ -661,6 +665,8 @@ let ExtractSuperMeatBoy(path: string) =
             KeyHash = 0
             GenderlessKeyHash = 0
             SoundResource = ""
+            ImageResource = ""
+            Speaker = ""
             LanguageTag = language
             Reversible = true
         }

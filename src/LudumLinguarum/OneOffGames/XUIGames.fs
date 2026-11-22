@@ -32,6 +32,8 @@ let internal makeCardsForLanguageTags(cardKey: string, lessonId: int)(language: 
         LessonID = lessonId;
         Reversible = true;
         SoundResource = "";
+        ImageResource = "";
+        Speaker = "";
         Text = text
     }
 

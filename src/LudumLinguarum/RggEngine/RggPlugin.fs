@@ -26,11 +26,7 @@ type RggPlugin() =
     interface IGameExtractorPlugin with
         member _.SupportedGames: GameMetadata array =
             supportedGames
-            |> Array.map (fun spec ->
-                {
-                    GameMetadata.name = spec.Name
-                    supportedLanguages = spec.SupportedLanguages
-                })
+            |> Array.map (fun spec -> GameMetadata.TextOnly(spec.Name, spec.SupportedLanguages))
 
         member this.ExtractAll(game: string, path: string, _args: string[]) : ExtractedContent =
             this.LogWriteLine($"Extracting RGG Studio game '{game}' from '{path}'")

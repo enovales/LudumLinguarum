@@ -111,6 +111,8 @@ let convertCSVExtractedEntriesToCardRecords(lid: int)(extracted: CSVExtractedEnt
             KeyHash = 0
             GenderlessKeyHash = 0
             SoundResource = e.Entry.SoundResource
+            ImageResource = ""
+            Speaker = ""
             LanguageTag = e.Entry.Language
             Reversible = e.Entry.Reversible
         }

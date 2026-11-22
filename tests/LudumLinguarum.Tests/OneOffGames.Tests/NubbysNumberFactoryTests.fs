@@ -122,6 +122,8 @@ test_unquoted,Unquoted source,Unquoted translation,
         KeyHash = 0
         GenderlessKeyHash = 0
         SoundResource = ""
+        ImageResource = ""
+        Speaker = ""
         LanguageTag = "en"
         Reversible = true
     }

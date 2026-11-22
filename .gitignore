@@ -266,3 +266,7 @@ coverage.*.xml
 # Paket tool store
 .paket/.store
 .paket/paket
+
+# Exported Anki decks and local SQLite databases
+*.apkg
+*.db3

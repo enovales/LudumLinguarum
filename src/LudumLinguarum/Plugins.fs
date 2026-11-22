@@ -1,6 +1,8 @@
 ﻿module LudumLinguarumPlugins
     
+open AudioPipeline
 open LLDatabase
+open MediaDatabase
 
 open System
 open System.IO
@@ -33,7 +35,39 @@ type GameMetadata =
     {
         name: string
         supportedLanguages: string array
+        supportedAudioLanguages: string array
+        supportedImageLanguages: string array
     }
+    with
+        static member TextOnly(name: string, supportedLanguages: string array) =
+            {
+                name = name
+                supportedLanguages = supportedLanguages
+                supportedAudioLanguages = [||]
+                supportedImageLanguages = [||]
+            }
+
+        member this.SupportsAudio = this.supportedAudioLanguages.Length > 0
+        member this.SupportsImages = this.supportedImageLanguages.Length > 0
+
+type MediaExtractionContext =
+    {
+        ExtractAudio: bool
+        ExtractImages: bool
+        MediaStore: IMediaStore option
+        AudioTools: ExternalToolConfig
+        AudioOptions: AudioIngestOptions
+        Log: string -> unit
+    }
+    static member None =
+        {
+            ExtractAudio = false
+            ExtractImages = false
+            MediaStore = None
+            AudioTools = ExternalToolConfig.Default
+            AudioOptions = AudioIngestOptions.Default
+            Log = fun _ -> ()
+        }
 
 [<Interface>]
 type IGameExtractorPlugin = 
@@ -46,6 +80,16 @@ type IGameExtractorPlugin =
     /// into the provided database.
     /// </summary>
     abstract member ExtractAll: string * string * string array -> ExtractedContent
+
+/// <summary>
+/// Opt-in plugin interface for extractors that can also extract localized audio and/or
+/// visual assets and stream them directly into the companion IMediaStore.
+/// </summary>
+[<Interface>]
+type IMediaExtractorPlugin =
+    inherit IGameExtractorPlugin
+
+    abstract member ExtractAllWithMedia: string * string * string array * MediaExtractionContext -> ExtractedContent
 
 [<Interface>]
 type IPluginManager = 

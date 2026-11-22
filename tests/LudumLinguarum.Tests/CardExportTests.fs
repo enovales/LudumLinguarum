@@ -18,6 +18,8 @@ let private cr =
         KeyHash = 0
         GenderlessKeyHash = 0
         SoundResource = ""
+        ImageResource = ""
+        Speaker = ""
         LanguageTag = ""
         Reversible = true
     }
@@ -123,6 +125,8 @@ let tests =
                 KeyHash = key.GetHashCode()
                 GenderlessKeyHash = key.GetHashCode()
                 SoundResource = ""
+                ImageResource = ""
+                Speaker = ""
                 LanguageTag = lang
                 Reversible = true
             }

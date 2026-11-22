@@ -100,6 +100,8 @@ let private createCard(lessonId: int)(languageTag: string)(key: string)(text: st
         KeyHash = 0
         GenderlessKeyHash = 0
         SoundResource = ""
+        ImageResource = ""
+        Speaker = ""
         LanguageTag = languageTag
         Reversible = true
     }

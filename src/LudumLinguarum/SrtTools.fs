@@ -170,6 +170,8 @@ let convertSrtBlockExtractedEntriesToCardRecords(lid: int)(extracted: SrtBlockEx
             KeyHash = 0
             GenderlessKeyHash = 0
             SoundResource = ""
+            ImageResource = ""
+            Speaker = ""
             LanguageTag = e.Language
             Reversible = true
         }

@@ -5,100 +5,128 @@ open LudumLinguarumPlugins
 open System
 open System.IO
 
+type private OneOffGameHandler =
+    | TextOnly of (string -> ExtractedContent)
+    | WithMedia of (string -> string array -> MediaExtractionContext -> ExtractedContent)
+
 type OneOffGamesPlugin() = 
     let mutable outStream: TextWriter option = None
-    let handlerMapping = 
+    let textGame (name: string) (languages: string array) (handler: string -> ExtractedContent) =
+        (GameMetadata.TextOnly(name, languages), TextOnly handler)
+
+    let mediaGame
+        (name: string)
+        (languages: string array)
+        (audioLanguages: string array)
+        (imageLanguages: string array)
+        (handler: string -> string array -> MediaExtractionContext -> ExtractedContent) =
+        let meta =
+            {
+                GameMetadata.name = name
+                supportedLanguages = languages
+                supportedAudioLanguages = audioLanguages
+                supportedImageLanguages = imageLanguages
+            }
+        (meta, WithMedia handler)
+
+    let handlerEntries = 
         [|
-            ({ GameMetadata.name = "The King of Fighters 2002 Unlimited Match"; supportedLanguages = [| "en"; "ja" |] }, XUIGames.ExtractKOF2002)
-            ({ GameMetadata.name = "The King of Fighters '98 Ultimate Match"; supportedLanguages = [| "en"; "ja" |] }, XUIGames.ExtractKOF98)
-            ({ GameMetadata.name = "Jet Set Radio"; supportedLanguages = [| "de"; "en"; "es"; "fr"; "it"; "ja" |] }, JetSetRadio.JetSetRadio.ExtractJetSetRadio)
-            ({ GameMetadata.name = "Skulls of the Shogun"; supportedLanguages = [| "de"; "en"; "es"; "fr"; "it"; "ja"; "ko"; "pt"; "ru"; "zh" |] }, SimpleGames.ExtractSkullsOfTheShogun)
-            ({ GameMetadata.name = "Magical Drop V"; supportedLanguages = [| "de"; "en"; "es"; "fr"; "it"; "ja" |] }, SimpleGames.ExtractMagicalDropV)
-            ({ GameMetadata.name = "Audiosurf"; supportedLanguages = [| "en"; "ru" |] }, SimpleGames.ExtractAudiosurf)
-            ({ GameMetadata.name = "Bastion"; supportedLanguages = [| "de"; "en"; "es"; "fr"; "it" |] }, SupergiantGames.ExtractBastion)
-            ({ GameMetadata.name = "Magicka"; supportedLanguages = [| "de"; "en"; "es"; "fr"; "hu"; "it"; "pl"; "ru" |] }, Magicka.ExtractMagicka)
-            ({ GameMetadata.name = "Worms Armageddon"; supportedLanguages = [| "de"; "en"; "es"; "fr"; "it"; "nl"; "pt"; "ru"; "sv" |] }, WormsGames.Armageddon.ExtractWormsArmageddon)
-            ({ GameMetadata.name = "Puzzle Chronicles"; supportedLanguages = [| "de"; "en"; "en-GB"; "es"; "es-MX"; "fr"; "fr-CA"; "it" |] }, PuzzleQuestGames.ExtractPuzzleChronicles)
-            ({ GameMetadata.name = "Puzzle Kingdoms"; supportedLanguages = [| "de"; "en"; "es"; "fr"; "it" |] }, PuzzleQuestGames.ExtractPuzzleKingdoms)
-            ({ GameMetadata.name = "Puzzle Quest 2"; supportedLanguages = [| "de"; "en"; "es"; "fr"; "it" |] }, PuzzleQuestGames.ExtractPuzzleQuest2)
-            ({ GameMetadata.name = "Pillars of Eternity"; supportedLanguages = [| "de"; "en"; "es"; "fr"; "it"; "ko"; "pl"; "ru" |] }, PillarsOfEternity.ExtractPillarsOfEternity)
-            ({ GameMetadata.name = "Pillars of Eternity II: Deadfire"; supportedLanguages = [| "de"; "en"; "es"; "fr"; "it"; "ko"; "pl"; "pt"; "ru"; "zh-CN" |] }, PillarsOfEternity.ExtractPillarsOfEternity2)
-            ({ GameMetadata.name = "Orcs Must Die!"; supportedLanguages = [| "de"; "en"; "es"; "fr"; "it"; "ja"; "pl"; "pt"; "ru" |] }, OrcsMustDie.ExtractOrcsMustDie)
-            ({ GameMetadata.name = "Orcs Must Die! 2"; supportedLanguages = [| "de"; "en"; "es"; "fr"; "it"; "ja"; "pl"; "pt"; "ru" |] }, OrcsMustDie.ExtractOrcsMustDie2)
-            ({ GameMetadata.name = "Hatoful Boyfriend"; supportedLanguages = [| "de"; "en"; "es"; "fr"; "it"; "ja"; "ru" |] }, SimpleGames.ExtractHatofulBoyfriend)
-            ({ GameMetadata.name = "Hatoful Boyfriend: Holiday Star"; supportedLanguages = [| "de"; "en"; "fr"; "ja" |] }, SimpleGames.ExtractHatofulBoyfriendHolidayStar)
-            ({ GameMetadata.name = "Hell Yeah!"; supportedLanguages = [| "en"; "de"; "es"; "fr"; "it"; "ja" |] }, SimpleGames.ExtractHellYeah)
-            ({ GameMetadata.name = "Madballs: Babo Invasion"; supportedLanguages = [| "de"; "en"; "es"; "fr"; "it"; "ja"; "ko"; "pt"; "ru"; "zh" |] }, MadballsBaboInvasion.ExtractMadballsBaboInvasion)
-            ({ GameMetadata.name = "Space Channel 5: Part 2"; supportedLanguages = [| "en"; "de"; "es"; "fr"; "it"; "ja" |] }, SpaceChannel5.ExtractSpaceChannel5Part2)
-            ({ GameMetadata.name = "Sid Meier's Civilization IV"; supportedLanguages = [| "de"; "en"; "es"; "fr"; "it" |] }, CivilizationGames.ExtractCiv4)
-            ({ GameMetadata.name = "Sid Meier's Civilization IV: Warlords"; supportedLanguages = [| "de"; "en"; "es"; "fr"; "it" |] }, CivilizationGames.ExtractCiv4Warlords)
-            ({ GameMetadata.name = "Sid Meier's Civilization IV: Beyond the Sword"; supportedLanguages = [| "de"; "en"; "es"; "fr"; "it" |] }, CivilizationGames.ExtractCiv4BeyondTheSword)
-            ({ GameMetadata.name = "Sid Meier's Civilization IV: Colonization"; supportedLanguages = [| "de"; "en"; "es"; "fr"; "it" |] }, CivilizationGames.ExtractCiv4Colonization)
-            ({ GameMetadata.name = "Europa Universalis III"; supportedLanguages = [| "de"; "en" |] }, ParadoxStrategyGames.ExtractEU3)
-            ({ GameMetadata.name = "Hearts of Iron 3"; supportedLanguages = [| "de"; "en"; "fr" |] }, ParadoxStrategyGames.ExtractHOI3)
-            ({ GameMetadata.name = "Victoria 2"; supportedLanguages = [| "de"; "en"; "fr" |] }, ParadoxStrategyGames.ExtractVictoria2)
-            ({ GameMetadata.name = "Europa Universalis IV"; supportedLanguages = [| "de"; "en"; "es"; "fr" |] }, ParadoxStrategyGames.ExtractEU4)
-            ({ GameMetadata.name = "Crusader Kings II"; supportedLanguages = [| "de"; "en"; "es"; "fr" |] }, ParadoxStrategyGames.ExtractCrusaderKings2)
-            ({ GameMetadata.name = "Age of Empires II: HD Edition"; supportedLanguages = [| "de"; "en"; "es"; "fr"; "it"; "ja"; "ko"; "nl"; "pt"; "ru"; "zh" |] }, AgeOfEmpiresGames.ExtractAOE2HD)
-            ({ GameMetadata.name = "Age of Empires III"; supportedLanguages = [| "de"; "en"; "es"; "fr"; "it" |] }, AgeOfEmpiresGames.ExtractAOE3)
-            ({ GameMetadata.name = "Sonic Adventure DX"; supportedLanguages = [| "de"; "en"; "es"; "fr"; "it"; "ja" |] }, SonicAdventureDX.ExtractSonicAdventureDX)
-            ({ GameMetadata.name = "Braid"; supportedLanguages = [| "cs"; "de"; "en"; "es"; "fr"; "it"; "ja"; "ka"; "ko"; "pl"; "pt"; "ru"; "zh" |] }, SimpleGames.ExtractBraid)
-            ({ GameMetadata.name = "Transistor"; supportedLanguages = [| "de"; "en"; "es"; "fr"; "it"; "ja"; "pl"; "pt"; "ru"; "zh" |] }, SupergiantGames.ExtractTransistor)
-            ({ GameMetadata.name = "IHF Handball Challenge 12"; supportedLanguages = [| "da"; "de"; "en"; "es"; "hu"; "it"; "pt" |] }, SimpleGames.ExtractIHFHandballChallenge12)
-            ({ GameMetadata.name = "IHF Handball Challenge 14"; supportedLanguages = [| "da"; "de"; "en"; "es"; "fr"; "pl"; "sv" |] }, SimpleGames.ExtractIHFHandballChallenge14)
-            ({ GameMetadata.name = "Torment: Tides of Numenera"; supportedLanguages = [| "de"; "en"; "es"; "fr"; "it"; "pl"; "ru" |] }, PillarsOfEternity.ExtractTormentTidesOfNumenera)
-            ({ GameMetadata.name = "Tyranny"; supportedLanguages = [| "de"; "en"; "es"; "fr"; "pl"; "ru" |] }, PillarsOfEternity.ExtractTyranny)
-            ({ GameMetadata.name = "F1 Race Stars"; supportedLanguages = [| "de"; "en"; "es"; "fr"; "it"; "ja"; "pl"; "pt-BR" |] }, CodemastersGames.ExtractF1RaceStars)
-            ({ GameMetadata.name = "F1 2011"; supportedLanguages = [| "de"; "en"; "es"; "fr"; "it"; "ja"; "pl"; "pt-BR"; "pt-PT"; "ru" |] }, CodemastersGames.ExtractF12011)
-            ({ GameMetadata.name = "F1 2012"; supportedLanguages = [| "de"; "en"; "es"; "fr"; "it"; "ja"; "pl"; "pt-BR"; "ru" |] }, CodemastersGames.ExtractF12012)
-            ({ GameMetadata.name = "F1 2014"; supportedLanguages = [| "de"; "en"; "es"; "fr"; "it"; "ja"; "pl"; "pt-BR" |] }, CodemastersGames.ExtractF12014)
-            ({ GameMetadata.name = "F1 2015"; supportedLanguages = [| "de"; "en"; "es"; "fr"; "it"; "ja"; "pl"; "pt-BR"; "ru"; "zh-CN"; "zh-TW" |] }, CodemastersGames.ExtractF12015)
-            ({ GameMetadata.name = "F1 2016"; supportedLanguages = [| "de"; "en"; "es"; "fr"; "it"; "ja"; "pl"; "pt-BR"; "ru"; "zh-CN"; "zh-TW" |] }, CodemastersGames.ExtractF12016)
-            ({ GameMetadata.name = "DiRT"; supportedLanguages = [| "de"; "en-GB"; "en-US"; "es"; "fr"; "it" |] }, CodemastersGames.ExtractDirt)
-            ({ GameMetadata.name = "DiRT 2"; supportedLanguages = [| "de"; "en-GB"; "en-US"; "es"; "fr"; "it"; "ja"; "pl"; "ru" |] }, CodemastersGames.ExtractDirt2)
-            ({ GameMetadata.name = "GRID"; supportedLanguages = [| "de"; "en-GB"; "en-US"; "es"; "fr"; "it"; "ja" |] }, CodemastersGames.ExtractGrid)
-            ({ GameMetadata.name = "GRID 2"; supportedLanguages = [| "de"; "en-GB"; "en-US"; "es"; "fr"; "it"; "ja"; "pl"; "pt-BR" |] }, CodemastersGames.ExtractGrid2)
-            ({ GameMetadata.name = "GRID Autosport"; supportedLanguages = [| "de"; "en-GB"; "en-US"; "es"; "fr"; "it"; "ja"; "pl"; "pt-BR"; "ru" |] }, CodemastersGames.ExtractGridAutosport)
-            ({ GameMetadata.name = "Defcon"; supportedLanguages = [| "de"; "en"; "es"; "fr"; "it" |] }, SimpleGames.ExtractDefcon)
-            ({ GameMetadata.name = "Darwinia"; supportedLanguages = [| "de"; "en"; "es"; "fr"; "it" |] }, SimpleGames.ExtractDarwinia)
-            ({ GameMetadata.name = "Multiwinia"; supportedLanguages = [| "de"; "en"; "es"; "fr"; "it" |] }, SimpleGames.ExtractMultiwinia)
-            ({ GameMetadata.name = "The Witness"; supportedLanguages = [| "ar"; "de"; "en"; "es-ES"; "es-LA"; "fr"; "hu"; "id"; "it"; "ja"; "ko"; "pl"; "pt-BR"; "pt-PT"; "ru"; "zh-CN"; "zh-TW" |] }, SimpleGames.ExtractTheWitness)
-            ({ GameMetadata.name = "Prison Architect"; supportedLanguages = [| "bg"; "cs"; "da"; "de"; "el"; "en"; "es"; "fi"; "fr"; "hu"; "it"; "ja"; "ko"; "nl"; "no"; "pl"; "pt-PT"; "pt-BR"; "ro"; "ru"; "sv"; "th"; "tr"; "uk"; "zh-CN"; "zh-TW" |] }, SimpleGames.ExtractPrisonArchitect)
-            ({ GameMetadata.name = "The Escapists"; supportedLanguages = [| "de"; "en"; "es"; "fr"; "it"; "pl"; "ru" |]}, SimpleGames.ExtractTheEscapists)
-            ({ GameMetadata.name = "Super Meat Boy"; supportedLanguages = [| "de"; "en"; "es"; "fr"; "it"; "ja"; "kr"; "pl"; "pt"; "ru"; "zh-CN"; "zh-TW" |]}, SimpleGames.ExtractSuperMeatBoy)
-            ({ GameMetadata.name = "Mega Man Legacy Collection"; supportedLanguages = [| "de"; "en"; "es"; "fr"; "it"; "ja"; "pt-BR"; "ru" |]}, SimpleGames.ExtractMegaManLegacyCollection)
-            ({ GameMetadata.name = "Worms Crazy Golf"; supportedLanguages = [| "cs"; "de"; "en-GB"; "en-US"; "es"; "fr"; "it"; "pl" |]}, WormsGames.Common.ExtractWormsCrazyGolf)
-            ({ GameMetadata.name = "Worms W.M.D"; supportedLanguages = [| "cs"; "de"; "en-GB"; "en-US"; "es"; "fr"; "it"; "pl"; "pt-BR"; "ru"; "zh-CN" |]}, WormsGames.Common.ExtractWormsWMD)
-            ({ GameMetadata.name = "Dicey Dungeons"; supportedLanguages = [| "ar"; "br"; "ca"; "cy"; "de"; "en"; "es"; "fr"; "ie"; "it"; "ja"; "ko"; "nl"; "pl"; "pt"; "ru"; "sc"; "sz"; "tc"; "tr" |]}, DiceyDungeons.ExtractDiceyDungeons)
-            ({ GameMetadata.name = "Pyre"; supportedLanguages = [| "de"; "en"; "es"; "fr"; "ru"; "zh-CN" |]}, SupergiantGames.ExtractPyre)
-            ({ GameMetadata.name = "Hades"; supportedLanguages = [| "de"; "en"; "es"; "fr"; "it"; "ja"; "ko"; "pl"; "pt-BR"; "ru"; "zh-CN" |]}, SupergiantGames.ExtractHades)
-            ({ GameMetadata.name = "Hades II"; supportedLanguages = [| "de"; "el"; "en"; "es"; "fr"; "it"; "ja"; "ko"; "pl"; "pt-BR"; "ru"; "tr"; "uk"; "zh-CN"; "zh-TW" |]}, SupergiantGames.ExtractHades2)
-            ({ GameMetadata.name = "Nubby's Number Factory"; supportedLanguages = [| "ca"; "da"; "en"; "es"; "es-LA"; "fr"; "gl"; "hu"; "it"; "nl"; "no"; "pl"; "pt-BR"; "pt-PT"; "ru"; "sk"; "tr"; "uk" |] }, NubbysNumberFactory.ExtractNubbysNumberFactory)
-            ({ GameMetadata.name = "Balatro"; supportedLanguages = [| "de"; "en-US"; "es-419"; "es-ES"; "fr"; "id"; "it"; "ja"; "ko"; "nl"; "pl"; "pt-BR"; "ru"; "zh-CN"; "zh-TW" |] }, Balatro.ExtractBalatro)
-        |] |> Map.ofArray
+            textGame "The King of Fighters 2002 Unlimited Match" [| "en"; "ja" |] XUIGames.ExtractKOF2002
+            textGame "The King of Fighters '98 Ultimate Match" [| "en"; "ja" |] XUIGames.ExtractKOF98
+            textGame "Jet Set Radio" [| "de"; "en"; "es"; "fr"; "it"; "ja" |] JetSetRadio.JetSetRadio.ExtractJetSetRadio
+            textGame "Skulls of the Shogun" [| "de"; "en"; "es"; "fr"; "it"; "ja"; "ko"; "pt"; "ru"; "zh" |] SimpleGames.ExtractSkullsOfTheShogun
+            textGame "Magical Drop V" [| "de"; "en"; "es"; "fr"; "it"; "ja" |] SimpleGames.ExtractMagicalDropV
+            textGame "Audiosurf" [| "en"; "ru" |] SimpleGames.ExtractAudiosurf
+            textGame "Bastion" [| "de"; "en"; "es"; "fr"; "it" |] SupergiantGames.ExtractBastion
+            textGame "Magicka" [| "de"; "en"; "es"; "fr"; "hu"; "it"; "pl"; "ru" |] Magicka.ExtractMagicka
+            textGame "Worms Armageddon" [| "de"; "en"; "es"; "fr"; "it"; "nl"; "pt"; "ru"; "sv" |] WormsGames.Armageddon.ExtractWormsArmageddon
+            textGame "Puzzle Chronicles" [| "de"; "en"; "en-GB"; "es"; "es-MX"; "fr"; "fr-CA"; "it" |] PuzzleQuestGames.ExtractPuzzleChronicles
+            textGame "Puzzle Kingdoms" [| "de"; "en"; "es"; "fr"; "it" |] PuzzleQuestGames.ExtractPuzzleKingdoms
+            textGame "Puzzle Quest 2" [| "de"; "en"; "es"; "fr"; "it" |] PuzzleQuestGames.ExtractPuzzleQuest2
+            textGame "Pillars of Eternity" [| "de"; "en"; "es"; "fr"; "it"; "ko"; "pl"; "ru" |] PillarsOfEternity.ExtractPillarsOfEternity
+            textGame "Pillars of Eternity II: Deadfire" [| "de"; "en"; "es"; "fr"; "it"; "ko"; "pl"; "pt"; "ru"; "zh-CN" |] PillarsOfEternity.ExtractPillarsOfEternity2
+            textGame "Orcs Must Die!" [| "de"; "en"; "es"; "fr"; "it"; "ja"; "pl"; "pt"; "ru" |] OrcsMustDie.ExtractOrcsMustDie
+            textGame "Orcs Must Die! 2" [| "de"; "en"; "es"; "fr"; "it"; "ja"; "pl"; "pt"; "ru" |] OrcsMustDie.ExtractOrcsMustDie2
+            textGame "Hatoful Boyfriend" [| "de"; "en"; "es"; "fr"; "it"; "ja"; "ru" |] SimpleGames.ExtractHatofulBoyfriend
+            textGame "Hatoful Boyfriend: Holiday Star" [| "de"; "en"; "fr"; "ja" |] SimpleGames.ExtractHatofulBoyfriendHolidayStar
+            textGame "Hell Yeah!" [| "en"; "de"; "es"; "fr"; "it"; "ja" |] SimpleGames.ExtractHellYeah
+            textGame "Madballs: Babo Invasion" [| "de"; "en"; "es"; "fr"; "it"; "ja"; "ko"; "pt"; "ru"; "zh" |] MadballsBaboInvasion.ExtractMadballsBaboInvasion
+            textGame "Space Channel 5: Part 2" [| "en"; "de"; "es"; "fr"; "it"; "ja" |] SpaceChannel5.ExtractSpaceChannel5Part2
+            mediaGame "Sid Meier's Civilization IV" [| "de"; "en"; "es"; "fr"; "it" |] [| "de"; "en"; "es"; "fr"; "it" |] [||] CivilizationGames.ExtractCiv4WithMedia
+            mediaGame "Sid Meier's Civilization IV: Warlords" [| "de"; "en"; "es"; "fr"; "it" |] [| "de"; "en"; "es"; "fr"; "it" |] [||] CivilizationGames.ExtractCiv4WarlordsWithMedia
+            mediaGame "Sid Meier's Civilization IV: Beyond the Sword" [| "de"; "en"; "es"; "fr"; "it" |] [| "de"; "en"; "es"; "fr"; "it" |] [||] CivilizationGames.ExtractCiv4BeyondTheSwordWithMedia
+            textGame "Sid Meier's Civilization IV: Colonization" [| "de"; "en"; "es"; "fr"; "it" |] CivilizationGames.ExtractCiv4Colonization
+            textGame "Europa Universalis III" [| "de"; "en" |] ParadoxStrategyGames.ExtractEU3
+            textGame "Hearts of Iron 3" [| "de"; "en"; "fr" |] ParadoxStrategyGames.ExtractHOI3
+            textGame "Victoria 2" [| "de"; "en"; "fr" |] ParadoxStrategyGames.ExtractVictoria2
+            textGame "Europa Universalis IV" [| "de"; "en"; "es"; "fr" |] ParadoxStrategyGames.ExtractEU4
+            textGame "Crusader Kings II" [| "de"; "en"; "es"; "fr" |] ParadoxStrategyGames.ExtractCrusaderKings2
+            textGame "Age of Empires II: HD Edition" [| "de"; "en"; "es"; "fr"; "it"; "ja"; "ko"; "nl"; "pt"; "ru"; "zh" |] AgeOfEmpiresGames.ExtractAOE2HD
+            textGame "Age of Empires III" [| "de"; "en"; "es"; "fr"; "it" |] AgeOfEmpiresGames.ExtractAOE3
+            textGame "Sonic Adventure DX" [| "de"; "en"; "es"; "fr"; "it"; "ja" |] SonicAdventureDX.ExtractSonicAdventureDX
+            textGame "Braid" [| "cs"; "de"; "en"; "es"; "fr"; "it"; "ja"; "ka"; "ko"; "pl"; "pt"; "ru"; "zh" |] SimpleGames.ExtractBraid
+            textGame "Transistor" [| "de"; "en"; "es"; "fr"; "it"; "ja"; "pl"; "pt"; "ru"; "zh" |] SupergiantGames.ExtractTransistor
+            textGame "IHF Handball Challenge 12" [| "da"; "de"; "en"; "es"; "hu"; "it"; "pt" |] SimpleGames.ExtractIHFHandballChallenge12
+            textGame "IHF Handball Challenge 14" [| "da"; "de"; "en"; "es"; "fr"; "pl"; "sv" |] SimpleGames.ExtractIHFHandballChallenge14
+            textGame "Torment: Tides of Numenera" [| "de"; "en"; "es"; "fr"; "it"; "pl"; "ru" |] PillarsOfEternity.ExtractTormentTidesOfNumenera
+            textGame "Tyranny" [| "de"; "en"; "es"; "fr"; "pl"; "ru" |] PillarsOfEternity.ExtractTyranny
+            textGame "F1 Race Stars" [| "de"; "en"; "es"; "fr"; "it"; "ja"; "pl"; "pt-BR" |] CodemastersGames.ExtractF1RaceStars
+            textGame "F1 2011" [| "de"; "en"; "es"; "fr"; "it"; "ja"; "pl"; "pt-BR"; "pt-PT"; "ru" |] CodemastersGames.ExtractF12011
+            textGame "F1 2012" [| "de"; "en"; "es"; "fr"; "it"; "ja"; "pl"; "pt-BR"; "ru" |] CodemastersGames.ExtractF12012
+            textGame "F1 2014" [| "de"; "en"; "es"; "fr"; "it"; "ja"; "pl"; "pt-BR" |] CodemastersGames.ExtractF12014
+            textGame "F1 2015" [| "de"; "en"; "es"; "fr"; "it"; "ja"; "pl"; "pt-BR"; "ru"; "zh-CN"; "zh-TW" |] CodemastersGames.ExtractF12015
+            textGame "F1 2016" [| "de"; "en"; "es"; "fr"; "it"; "ja"; "pl"; "pt-BR"; "ru"; "zh-CN"; "zh-TW" |] CodemastersGames.ExtractF12016
+            textGame "DiRT" [| "de"; "en-GB"; "en-US"; "es"; "fr"; "it" |] CodemastersGames.ExtractDirt
+            textGame "DiRT 2" [| "de"; "en-GB"; "en-US"; "es"; "fr"; "it"; "ja"; "pl"; "ru" |] CodemastersGames.ExtractDirt2
+            textGame "GRID" [| "de"; "en-GB"; "en-US"; "es"; "fr"; "it"; "ja" |] CodemastersGames.ExtractGrid
+            textGame "GRID 2" [| "de"; "en-GB"; "en-US"; "es"; "fr"; "it"; "ja"; "pl"; "pt-BR" |] CodemastersGames.ExtractGrid2
+            textGame "GRID Autosport" [| "de"; "en-GB"; "en-US"; "es"; "fr"; "it"; "ja"; "pl"; "pt-BR"; "ru" |] CodemastersGames.ExtractGridAutosport
+            textGame "Defcon" [| "de"; "en"; "es"; "fr"; "it" |] SimpleGames.ExtractDefcon
+            textGame "Darwinia" [| "de"; "en"; "es"; "fr"; "it" |] SimpleGames.ExtractDarwinia
+            textGame "Multiwinia" [| "de"; "en"; "es"; "fr"; "it" |] SimpleGames.ExtractMultiwinia
+            textGame "The Witness" [| "ar"; "de"; "en"; "es-ES"; "es-LA"; "fr"; "hu"; "id"; "it"; "ja"; "ko"; "pl"; "pt-BR"; "pt-PT"; "ru"; "zh-CN"; "zh-TW" |] SimpleGames.ExtractTheWitness
+            textGame "Prison Architect" [| "bg"; "cs"; "da"; "de"; "el"; "en"; "es"; "fi"; "fr"; "hu"; "it"; "ja"; "ko"; "nl"; "no"; "pl"; "pt-PT"; "pt-BR"; "ro"; "ru"; "sv"; "th"; "tr"; "uk"; "zh-CN"; "zh-TW" |] SimpleGames.ExtractPrisonArchitect
+            textGame "The Escapists" [| "de"; "en"; "es"; "fr"; "it"; "pl"; "ru" |] SimpleGames.ExtractTheEscapists
+            textGame "Super Meat Boy" [| "de"; "en"; "es"; "fr"; "it"; "ja"; "kr"; "pl"; "pt"; "ru"; "zh-CN"; "zh-TW" |] SimpleGames.ExtractSuperMeatBoy
+            textGame "Mega Man Legacy Collection" [| "de"; "en"; "es"; "fr"; "it"; "ja"; "pt-BR"; "ru" |] SimpleGames.ExtractMegaManLegacyCollection
+            textGame "Worms Crazy Golf" [| "cs"; "de"; "en-GB"; "en-US"; "es"; "fr"; "it"; "pl" |] WormsGames.Common.ExtractWormsCrazyGolf
+            textGame "Worms W.M.D" [| "cs"; "de"; "en-GB"; "en-US"; "es"; "fr"; "it"; "pl"; "pt-BR"; "ru"; "zh-CN" |] WormsGames.Common.ExtractWormsWMD
+            textGame "Dicey Dungeons" [| "ar"; "br"; "ca"; "cy"; "de"; "en"; "es"; "fr"; "ie"; "it"; "ja"; "ko"; "nl"; "pl"; "pt"; "ru"; "sc"; "sz"; "tc"; "tr" |] DiceyDungeons.ExtractDiceyDungeons
+            textGame "Pyre" [| "de"; "en"; "es"; "fr"; "ru"; "zh-CN" |] SupergiantGames.ExtractPyre
+            textGame "Hades" [| "de"; "en"; "es"; "fr"; "it"; "ja"; "ko"; "pl"; "pt-BR"; "ru"; "zh-CN" |] SupergiantGames.ExtractHades
+            textGame "Hades II" [| "de"; "el"; "en"; "es"; "fr"; "it"; "ja"; "ko"; "pl"; "pt-BR"; "ru"; "tr"; "uk"; "zh-CN"; "zh-TW" |] SupergiantGames.ExtractHades2
+            textGame "Nubby's Number Factory" [| "ca"; "da"; "en"; "es"; "es-LA"; "fr"; "gl"; "hu"; "it"; "nl"; "no"; "pl"; "pt-BR"; "pt-PT"; "ru"; "sk"; "tr"; "uk" |] NubbysNumberFactory.ExtractNubbysNumberFactory
+            textGame "Balatro" [| "de"; "en-US"; "es-419"; "es-ES"; "fr"; "id"; "it"; "ja"; "ko"; "nl"; "pl"; "pt-BR"; "ru"; "zh-CN"; "zh-TW" |] Balatro.ExtractBalatro
+        |]
+
+    let gameNamesToHandlers =
+        handlerEntries
+        |> Array.map (fun (gmd, handler) -> (gmd.name, handler))
+        |> Map.ofArray
+
+    member private this.RunHandler(game: string, path: string, args: string[], mediaCtx: MediaExtractionContext) =
+        this.LogWriteLine("Searching for game handler for '" + game + "'") |> ignore
+        match gameNamesToHandlers |> Map.tryFind game with
+        | Some (TextOnly handler) -> handler path
+        | Some (WithMedia handler) -> handler path args mediaCtx
+        | None -> raise(UnknownGameException("unknown game " + game))
 
     interface IPlugin with
         member this.Load(tw: TextWriter, [<ParamArray>] args: string[]) = 
-            ()
+            outStream <- Some(tw)
         member this.Name = "oneoffgames"
         member this.Parameters = [||]
+
     interface IGameExtractorPlugin with
         member this.SupportedGames: GameMetadata array = 
-            handlerMapping |> Map.toArray |> Array.map (fun (k, _) -> k)
+            handlerEntries |> Array.map fst
 
         member this.ExtractAll(game: string, path: string, args: string[]): ExtractedContent = 
-            this.LogWriteLine("Searching for game handler for '" + game + "'") |> ignore
+            this.RunHandler(game, path, args, MediaExtractionContext.None)
 
-            let gameNamesToHandlers = 
-                handlerMapping 
-                |> Map.toArray 
-                |> Array.map (fun (gmd, handler) -> (gmd.name, handler))
-                |> Map.ofArray
-
-            if (gameNamesToHandlers |> Map.containsKey(game)) then
-                gameNamesToHandlers.[game](path)
-            else
-                raise(UnknownGameException("unknown game " + game))
+    interface IMediaExtractorPlugin with
+        member this.ExtractAllWithMedia(game: string, path: string, args: string[], mediaCtx: MediaExtractionContext): ExtractedContent =
+            this.RunHandler(game, path, args, mediaCtx)
 
     member private this.LogWrite(s: string) = 
         outStream |> Option.map(fun t -> t.Write(s))

@@ -1,6 +1,6 @@
 # LudumLinguarum
 
-Ludum Linguarum is a set of tools and recipes to extract localized content (currently just text) from a set of supported 
+Ludum Linguarum is a set of tools and recipes to extract localized text (and, for supported games, localized audio and visual assets) from a set of supported 
 games, which can then be turned into flash cards for use with the following [spaced repetition](https://en.wikipedia.org/wiki/Spaced_repetition) software:
 
 1. [Anki](https://apps.ankiweb.net/), one of the most popular spaced repetition software programs, with clients for all major desktop and mobile platforms.
@@ -46,6 +46,53 @@ reading the [Anki documentation](http://ankisrs.net/docs/manual.html) to find mo
 
 I also recommend setting up an [AnkiWeb](http://ankiweb.net/) account, as this will let you sync your progress between
 the desktop and mobile clients. This makes it easy to practice on the go!
+
+# Media Extraction, TTS, and Anki `.apkg` Export
+
+For games that declare native audio (or visual asset) extraction support (check with `LudumLinguarum list-supported-games --audio-only`), you can extract localized audio into a companion SQLite media database (`<GameName>.media.db3`) stored alongside the text database (`<GameName>.db3`):
+
+```sh
+LudumLinguarum import --game="Sid Meier's Civilization IV" --game-dir="<game dir>" --extract-audio --audio-language=de
+```
+
+For BioWare Aurora Engine titles (such as *Knights of the Old Republic*, *Knights of the Old Republic II*, *Neverwinter Nights*, and *Jade Empire*), pass `--language-tag` and `--extract-audio`:
+
+```sh
+LudumLinguarum import --game="Star Wars: Knights of the Old Republic II" --game-dir="<game dir>" --extract-audio --vgmstream-path="<path to vgmstream-cli>" --language-tag=de
+```
+
+Extracted audio is normalized to EBU R128 (`-16 LUFS`, disable with `--no-normalize-loudness`; optionally add `--trim-silence`) and stored as mono MP3 (deduplicated by SHA-256) for universal playback across desktop, web, Android, and iOS/AnkiMobile.
+
+## External CLI Dependencies (Optional — Needed Only for Audio Ingest / Local TTS)
+
+* **`ffmpeg`** (required for `--extract-audio` and local Piper TTS):
+  * Windows: `winget install Gyan.FFmpeg`
+  * macOS: `brew install ffmpeg`
+  * Linux: `apt install ffmpeg` (or your distribution's package manager)
+  * Can also be pointed to explicitly via `--ffmpeg-path=<path>`.
+* **`vgmstream-cli`** (needed for proprietary/wrapped game audio codecs such as BioWare WAVs, CRIWARE HCA/ADX, FMOD FSB, Wwise WEM):
+  * Download from the [vgmstream releases page](https://github.com/vgmstream/vgmstream/releases) and add to `PATH` or pass `--vgmstream-path=<path>`.
+* **`piper`** (optional, for local offline Text-to-Speech):
+  * Install via `pip install piper-tts` (Python 3.14 or compatible) or download the standalone binary from [Piper releases](https://github.com/rhasspy/piper/releases), plus `.onnx` voice models (e.g. from Hugging Face `rhasspy/piper-voices`). Pass `--piper-command="py -3.14 -m piper"` if `piper` is not directly on `PATH`.
+  * When invoked via Python (`-m piper`), LudumLinguarum keeps a persistent `PiperVoice` worker process per model so ONNX weights are loaded only once per export. For NVIDIA GPU acceleration, install `onnxruntime-gpu` (replacing CPU `onnxruntime`) and pass `--piper-cuda`.
+
+## Exporting Self-Contained Anki `.apkg` Decks (with Native Audio & TTS Fallback)
+
+Pass an `.apkg` path (or `--export-format=apkg`) to `export-anki` to generate a self-contained Anki deck package with embedded audio, images, speaker/lesson metadata, and optional blind listening comprehension cards (`--include-listening-cards`):
+
+```sh
+# Using native extracted audio + local Piper TTS fallback for missing German audio (filtered to cards with native audio):
+LudumLinguarum export-anki --game="Sid Meier's Civilization IV" --recognition-language=en --production-language=de --export-path="civ4_de.apkg" --only-with-extracted-audio --include-listening-cards --tts-provider=piper --piper-command="py -3.14 -m piper" --piper-models-dir="<dir with .onnx models>" --piper-cuda
+
+# Using Azure AI Speech TTS fallback (reads AZURE_SPEECH_KEY and AZURE_SPEECH_REGION env vars, or pass --azure-speech-key / --azure-speech-region):
+LudumLinguarum export-anki --game="Balatro" --recognition-language=en-US --production-language=de --export-path="balatro_de.apkg" --include-listening-cards --tts-provider=azure --tts-voice="de=de-DE-KatjaNeural"
+```
+
+Export-generated TTS clips are cached in `<GameName>.media.db3` with full provenance (provider, voice, model, timestamp) and never overwrite native extracted game audio. To regenerate cached TTS with a different provider or voice, pass `--regenerate-tts` on export, or clear cached entries with:
+
+```sh
+LudumLinguarum clear-tts-cache --game="Balatro" --language=de
+```
 
 # SuperMemo Quick Start
 

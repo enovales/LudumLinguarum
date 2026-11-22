@@ -39,6 +39,7 @@ type SerializedDialogueStruct = {
         RepliesList: SerializedSyncStruct list option
         Script: ResRef option
         Sound: ResRef option
+        VO_ResRef: ResRef option
         Speaker: GFFRawCExoString option
         StringRef: uint32 option
         Text: GFFRawCExoLocString option
@@ -59,6 +60,7 @@ type SerializedDialogueStruct = {
                     SerializedSyncStruct.FromGFFStructNonStartingList(e)));
             Script = s.GetResRef("Script");
             Sound = s.GetResRef("Sound");
+            VO_ResRef = s.GetResRef("VO_ResRef");
             Speaker = s.GetString("Speaker");
             StringRef = s.GetStringRef("Text");
             Text = s.GetLocString("Text")
@@ -152,6 +154,7 @@ and DialogueStruct = {
         QuestEntry: uint32 option;
         Script: ResRef option;
         Sound: ResRef option;
+        VO_ResRef: ResRef option;
         Text: GFFRawCExoLocString option;
         Next: AugmentedSyncStruct list;
         Speaker: GFFRawCExoString option;
@@ -183,6 +186,7 @@ and DialogueStruct = {
                 QuestEntry = d.QuestEntry
                 Script = d.Script
                 Sound = d.Sound
+                VO_ResRef = d.VO_ResRef
                 Text = extractedText
                 Next = match nextList with 
                        | Some(nl) -> nl |> List.map (fun r -> AugmentedSyncStruct.FromSerialized(r))
@@ -271,6 +275,80 @@ let ExtractStringsFromDialogue<'T when 'T :> ITalkTableString>(dialogue: Dialogu
     |> Array.map (fun (t, k) -> (EvaluateString(t, maleOrNeuterTalkTable, femaleTalkTable, l, g), k)) 
     |> Array.filter(fun (t, k) -> t.IsSome) 
     |> Array.map (fun (t, k) -> (t.Value, k))
+    |> List.ofArray
+
+type ExtractedDialogueLine =
+    {
+        Text: string
+        NodeKey: string
+        SoundResRef: string option
+        Speaker: string
+    }
+
+let private tryNonEmptyResRef (rrOpt: ResRef option) : string option =
+    rrOpt
+    |> Option.map (fun rr -> rr.Value.Trim())
+    |> Option.filter (fun s -> not (System.String.IsNullOrWhiteSpace(s)))
+
+let private tryResolveTalkTableSoundResRef<'T when 'T :> ITalkTableString>
+    (locStr: GFFRawCExoLocString)
+    (tMasculine: ITalkTable<'T>)
+    (tFeminine: ITalkTable<'T>)
+    (g: Gender) : string option =
+    if locStr.stringCount > 0u then
+        None
+    else
+        let table =
+            match g with
+            | Gender.Feminine -> tFeminine
+            | _ -> tMasculine
+        if uint32 table.Strings.Length > locStr.stringRef then
+            match box table.Strings.[int locStr.stringRef] with
+            | :? TalkTableV3String as v3 ->
+                if v3.Metadata.flags.HasFlag(StringFlags.SoundPresent) then
+                    tryNonEmptyResRef (Some v3.Metadata.soundResRef)
+                else
+                    None
+            | _ -> None
+        else
+            None
+
+/// <summary>
+/// Extracts dialogue lines along with their associated voice-over ResRef (checking VO_ResRef,
+/// Sound, and TalkTable soundResRef in priority order) and speaker identifier.
+/// </summary>
+let ExtractDialogueLinesWithMedia<'T when 'T :> ITalkTableString>(dialogue: Dialogue, l: LanguageType, g: Gender, maleOrNeuterTalkTable: ITalkTable<'T>, femaleTalkTable: ITalkTable<'T>) : ExtractedDialogueLine list =
+    let nodes =
+        [|
+            dialogue.EntryList |> Array.filter(fun e -> e.Text.IsSome) |> Array.mapi(fun i e -> (e, "e" + i.ToString()))
+            dialogue.ReplyList |> Array.filter(fun e -> e.Text.IsSome) |> Array.mapi(fun i e -> (e, "r" + i.ToString()))
+        |]
+        |> Array.collect id
+
+    nodes
+    |> Array.choose (fun (node, nodeKey) ->
+        let locStr = node.Text.Value
+        match EvaluateString(locStr, maleOrNeuterTalkTable, femaleTalkTable, l, g) with
+        | None -> None
+        | Some text ->
+            let soundResRef =
+                tryNonEmptyResRef node.VO_ResRef
+                |> Option.orElseWith (fun () -> tryNonEmptyResRef node.Sound)
+                |> Option.orElseWith (fun () -> tryResolveTalkTableSoundResRef locStr maleOrNeuterTalkTable femaleTalkTable g)
+
+            let speaker =
+                node.Speaker
+                |> Option.map (fun s -> s.value.Trim())
+                |> Option.defaultValue ""
+
+            Some
+                {
+                    Text = text
+                    NodeKey = nodeKey
+                    SoundResRef = soundResRef
+                    Speaker = speaker
+                }
+    )
     |> List.ofArray
 
 /// <summary>

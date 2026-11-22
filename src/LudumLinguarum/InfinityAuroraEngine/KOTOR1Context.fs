@@ -36,6 +36,18 @@ type KOTOR1Context(rootPath: string) =
         let existingRims = rimPaths |> Array.map buildPath |> Array.filter fileExistsFilter
         let existingKeys = keyPaths |> Array.map buildPath |> Array.filter fileExistsFilter
 
+        let voiceFiles =
+            let candidates = [| Path.Combine(rootPath, "StreamWaves"); Path.Combine(rootPath, "streamwaves"); Path.Combine(rootPath, "StreamVoice"); Path.Combine(rootPath, "streamvoice") |]
+            candidates
+            |> Array.filter Directory.Exists
+            |> Array.collect (fun dir -> Directory.GetFiles(dir, "*.*", SearchOption.AllDirectories))
+            |> Array.filter (fun p ->
+                let ext = Path.GetExtension(p).ToLowerInvariant()
+                ext = ".wav" || ext = ".mp3"
+            )
+            |> Array.map (fun p -> (Path.GetFileNameWithoutExtension(p).ToLowerInvariant(), p))
+            |> Map.ofArray
+
         do
             existingErfs |> Array.map (fun t -> rm.AddERF(ERFFile.FromFilePath(t), false)) |> ignore
             existingRims |> Array.map (fun t -> rm.AddRIM(RIMFile.FromFilePath(t), false)) |> ignore
@@ -45,4 +57,5 @@ type KOTOR1Context(rootPath: string) =
             rm.RecalculateResources()
 
         member this.Resources = rm.Resources
+        member this.VoiceFiles = voiceFiles
     end

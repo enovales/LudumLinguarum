@@ -15,12 +15,17 @@
     <Compile Include="DebugToolsTests.fs" />
     <Compile Include="Generators.fs" />
     <Compile Include="LLDatabaseTests.fs" />
+    <Compile Include="MediaDatabaseTests.fs" />
+    <Compile Include="AudioPipelineTests.fs" />
+    <Compile Include="TtsProvidersTests.fs" />
+    <Compile Include="AnkiApkgExportTests.fs" />
     <Compile Include="PluginManagerTests.fs" />
     <Compile Include="SrtToolsTests.fs" />
     <Compile Include="StringExtractorsTests.fs" />
     <Compile Include="TrieTests.fs" />
     <Compile Include="SjsonToolsTests.fs" />
     <Compile Include="OneOffGames.Tests\BalatroTests.fs" />
+    <Compile Include="OneOffGames.Tests\CivilizationGamesTests.fs" />
     <Compile Include="OneOffGames.Tests\JetSetRadioTests.fs" />
     <Compile Include="OneOffGames.Tests\MadballsBaboInvasionTests.fs" />
     <Compile Include="OneOffGames.Tests\MagickaTests.fs" />
