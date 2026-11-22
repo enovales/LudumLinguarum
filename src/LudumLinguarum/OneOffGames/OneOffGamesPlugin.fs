@@ -62,7 +62,7 @@ type OneOffGamesPlugin() =
             textGame "Europa Universalis IV" [| "de"; "en"; "es"; "fr" |] ParadoxStrategyGames.ExtractEU4
             textGame "Crusader Kings II" [| "de"; "en"; "es"; "fr" |] ParadoxStrategyGames.ExtractCrusaderKings2
             textGame "Age of Empires II: HD Edition" [| "de"; "en"; "es"; "fr"; "it"; "ja"; "ko"; "nl"; "pt"; "ru"; "zh" |] AgeOfEmpiresGames.ExtractAOE2HD
-            textGame "Age of Empires III" [| "de"; "en"; "es"; "fr"; "it" |] AgeOfEmpiresGames.ExtractAOE3
+            mediaGame "Age of Empires III" [| "de"; "en"; "es"; "fr"; "it" |] [| "de"; "en"; "es"; "fr"; "it" |] [||] AgeOfEmpiresGames.ExtractAOE3WithMedia
             textGame "Sonic Adventure DX" [| "de"; "en"; "es"; "fr"; "it"; "ja" |] SonicAdventureDX.ExtractSonicAdventureDX
             textGame "Braid" [| "cs"; "de"; "en"; "es"; "fr"; "it"; "ja"; "ka"; "ko"; "pl"; "pt"; "ru"; "zh" |] SimpleGames.ExtractBraid
             textGame "Transistor" [| "de"; "en"; "es"; "fr"; "it"; "ja"; "pl"; "pt"; "ru"; "zh" |] SupergiantGames.ExtractTransistor
@@ -93,8 +93,8 @@ type OneOffGamesPlugin() =
             textGame "Worms W.M.D" [| "cs"; "de"; "en-GB"; "en-US"; "es"; "fr"; "it"; "pl"; "pt-BR"; "ru"; "zh-CN" |] WormsGames.Common.ExtractWormsWMD
             textGame "Dicey Dungeons" [| "ar"; "br"; "ca"; "cy"; "de"; "en"; "es"; "fr"; "ie"; "it"; "ja"; "ko"; "nl"; "pl"; "pt"; "ru"; "sc"; "sz"; "tc"; "tr" |] DiceyDungeons.ExtractDiceyDungeons
             textGame "Pyre" [| "de"; "en"; "es"; "fr"; "ru"; "zh-CN" |] SupergiantGames.ExtractPyre
-            textGame "Hades" [| "de"; "en"; "es"; "fr"; "it"; "ja"; "ko"; "pl"; "pt-BR"; "ru"; "zh-CN" |] SupergiantGames.ExtractHades
-            textGame "Hades II" [| "de"; "el"; "en"; "es"; "fr"; "it"; "ja"; "ko"; "pl"; "pt-BR"; "ru"; "tr"; "uk"; "zh-CN"; "zh-TW" |] SupergiantGames.ExtractHades2
+            mediaGame "Hades" [| "de"; "en"; "es"; "fr"; "it"; "ja"; "ko"; "pl"; "pt-BR"; "ru"; "zh-CN" |] [| "en" |] [||] SupergiantGames.ExtractHadesWithMedia
+            mediaGame "Hades II" [| "de"; "el"; "en"; "es"; "fr"; "it"; "ja"; "ko"; "pl"; "pt-BR"; "ru"; "tr"; "uk"; "zh-CN"; "zh-TW" |] [| "en" |] [||] SupergiantGames.ExtractHades2WithMedia
             textGame "Nubby's Number Factory" [| "ca"; "da"; "en"; "es"; "es-LA"; "fr"; "gl"; "hu"; "it"; "nl"; "no"; "pl"; "pt-BR"; "pt-PT"; "ru"; "sk"; "tr"; "uk" |] NubbysNumberFactory.ExtractNubbysNumberFactory
             textGame "Balatro" [| "de"; "en-US"; "es-419"; "es-ES"; "fr"; "id"; "it"; "ja"; "ko"; "nl"; "pl"; "pt-BR"; "ru"; "zh-CN"; "zh-TW" |] Balatro.ExtractBalatro
         |]

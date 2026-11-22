@@ -1,8 +1,11 @@
 module SupergiantGames
 
+open AudioPipeline
 open CsvTools
+open FmodTools
 open LLDatabase
 open LLUtils
+open LudumLinguarumPlugins
 
 open Json.Path
 
@@ -221,16 +224,38 @@ module Hades =
         |> Array.map(fun (p1, p2) -> (Lua.hadesCueRegex.Match(p1).Groups.Item("Cue").Value, Lua.hadesTextRegex.Match(p2).Groups.Item("Text").Value))
         |> Map.ofArray
         
-    // Hades isn't structured the same way as the other Supergiant games, and requires some bespoke 
-    // mapping to allow us to match up English text that is stored in some of the Lua scripts, 
-    // with the localized versions, which are in the subtitle or game text files.
-    let internal generateCardsForLuaScript(lessonId: int)(path: string) =
+    let internal generateCardsForLuaScriptWithCue(lessonId: int)(path: string) : (string option * CardRecord) array =
         let fileText = File.ReadAllText(path)
         let commentStrippedText = Lua.stripComments(fileText)
         let fileRootName = Path.GetFileNameWithoutExtension(path)
 
         getLuaScriptCueAndText(commentStrippedText)
-        |> AssemblyResourceTools.createCardRecordForStrings(lessonId, fileRootName, "en", "masculine")
+        |> Map.toArray
+        |> Array.map (fun (cue, text) ->
+            let card =
+                {
+                    CardRecord.ID = 0
+                    LessonID = lessonId
+                    Text = text
+                    Gender = "masculine"
+                    Key = fileRootName + cue + "masculine"
+                    GenderlessKey = fileRootName + cue
+                    KeyHash = 0
+                    GenderlessKeyHash = 0
+                    SoundResource = ""
+                    ImageResource = ""
+                    Speaker = ""
+                    LanguageTag = "en"
+                    Reversible = true
+                }
+            (Some cue, card)
+        )
+
+    // Hades isn't structured the same way as the other Supergiant games, and requires some bespoke 
+    // mapping to allow us to match up English text that is stored in some of the Lua scripts, 
+    // with the localized versions, which are in the subtitle or game text files.
+    let internal generateCardsForLuaScript(lessonId: int)(path: string) =
+        generateCardsForLuaScriptWithCue lessonId path |> Array.map snd
 
     let internal normalizeQuotesToDoubleQuotes(sjson: string) =
         let pattern = "=[\s]+(?<!\")'(?:(?>[^'\"]+)|\"\"|''|'(?!\"'))*'$"
@@ -293,18 +318,40 @@ module Hades =
             jsonPathResult.Matches
             |> Seq.map (fun m -> (m.Value.Item("Id").ToString(), m.Value.Item("DisplayName").ToString()))
             |> Map.ofSeq
-            |> AssemblyResourceTools.createCardRecordForStrings(lessonId, keyRoot, language, "masculine")
+            |> Map.toArray
+            |> Array.map (fun (idKey, displayName) ->
+                let card =
+                    {
+                        CardRecord.ID = 0
+                        LessonID = lessonId
+                        Text = displayName
+                        Gender = "masculine"
+                        Key = keyRoot + idKey + "masculine"
+                        GenderlessKey = keyRoot + idKey
+                        KeyHash = 0
+                        GenderlessKeyHash = 0
+                        SoundResource = ""
+                        ImageResource = ""
+                        Speaker = ""
+                        LanguageTag = language
+                        Reversible = true
+                    }
+                (Some idKey, card)
+            )
 
         gameTextFiles
         |> Array.collect generateCardsForGameText
 
-    let internal generateCardsForSjson(path: string, lessonId: int) =
+    let internal generateCardsForSjsonWithCue(path: string, lessonId: int) =
         let languageDirectories = Directory.GetDirectories(Path.Combine(path, FixPathSeps @"Content\Game\Text"))
         languageDirectories
         |> Array.map (fun d -> Path.GetFileName(d))
         |> Array.collect(generateCardsForLanguageSjson(path, lessonId))
 
-    let internal generateCardsForAllSubtitleDirectories(path: string, lessonId: int) =
+    let internal generateCardsForSjson(path: string, lessonId: int) =
+        generateCardsForSjsonWithCue(path, lessonId) |> Array.map snd
+
+    let internal generateCardsForAllSubtitleDirectoriesWithCue(path: string, lessonId: int) =
         // Subtitle handling
         let subtitleDirectories = Directory.GetDirectories(Path.Combine(path, FixPathSeps @"Content\Subtitles"))
         let generateCardsForSubtitles(subtitleDir: string) = 
@@ -316,16 +363,34 @@ module Hades =
                 let lastIDIndex = headerFields |> Array.findIndexBack(fun f -> f = "ID")
                 let lineIndex = headerFields |> Array.findIndexBack(fun f -> f = "Line")
                 let greatestFieldIndex = Math.Max(lastIDIndex, lineIndex)
+                let keyRoot = "subtitle_" + Path.GetFileNameWithoutExtension(subtitlePath) + "_"
 
                 lines
                 |> Array.skip 1
                 |> Array.map (extractFieldsForLine(Some(",")))
                 |> Array.filter (fun lineFields -> lineFields.Length > greatestFieldIndex)
-                |> Array.map (fun lineFields -> (lineFields.[lastIDIndex]), lineFields.[lineIndex])
+                |> Array.map (fun lineFields -> (lineFields.[lastIDIndex], lineFields.[lineIndex]))
                 |> Map.ofArray
-                |> AssemblyResourceTools.createCardRecordForStrings(
-                    lessonId, 
-                    "subtitle_" + Path.GetFileNameWithoutExtension(subtitlePath) + "_", language, "masculine")
+                |> Map.toArray
+                |> Array.map (fun (idKey, lineText) ->
+                    let card =
+                        {
+                            CardRecord.ID = 0
+                            LessonID = lessonId
+                            Text = lineText
+                            Gender = "masculine"
+                            Key = keyRoot + idKey + "masculine"
+                            GenderlessKey = keyRoot + idKey
+                            KeyHash = 0
+                            GenderlessKeyHash = 0
+                            SoundResource = ""
+                            ImageResource = ""
+                            Speaker = ""
+                            LanguageTag = language
+                            Reversible = true
+                        }
+                    (Some idKey, card)
+                )
 
             files
             |> Array.collect subtitlesForFile
@@ -333,13 +398,93 @@ module Hades =
         subtitleDirectories
         |> Array.collect generateCardsForSubtitles
 
+    let internal generateCardsForAllSubtitleDirectories(path: string, lessonId: int) =
+        generateCardsForAllSubtitleDirectoriesWithCue(path, lessonId) |> Array.map snd
+
     // Used to remove formatting directives from the final text.
     let internal formattingBraceRemovalRegex = new Regex(@"\{[^\}]*\}")
     let internal formattingEscapedWhitespaceRemovalRegex = new Regex(@"\\n|\\r|\\t")
     let internal formattingAtDirectiveRemovalRegex = new Regex(@"\@[^\s]*\s*")
 
 
-let ExtractHades(path: string) =
+let private attachHadesFamilyAudioAndSpeakers
+    (gameName: string)
+    (cueBankMap: Map<string, FmodBankEntry>)
+    (mediaCtx: MediaExtractionContext)
+    (cardsWithCue: (string option * CardRecord) array)
+    : CardRecord array =
+    // Clean formatting directives first and enrich with speaker metadata when a cue matches
+    let cleanedWithCue =
+        cardsWithCue
+        |> Array.map (fun (cueOpt, c) ->
+            let cleanedText =
+                Hades.formattingAtDirectiveRemovalRegex.Replace(
+                    Hades.formattingEscapedWhitespaceRemovalRegex.Replace(
+                        Hades.formattingBraceRemovalRegex.Replace(c.Text, ""),
+                        " "
+                    ),
+                    ""
+                )
+            let normalizedCueOpt =
+                cueOpt
+                |> Option.map normalizeCueId
+                |> Option.filter (fun s -> not (String.IsNullOrWhiteSpace(s)))
+            let speaker =
+                match normalizedCueOpt |> Option.bind (fun k -> cueBankMap |> Map.tryFind k) with
+                | Some entry -> entry.Speaker
+                | None -> c.Speaker
+            (normalizedCueOpt, { c with Text = cleanedText; Speaker = speaker })
+        )
+
+    let withAudio =
+        match mediaCtx.ExtractAudio, mediaCtx.MediaStore with
+        | true, Some store when not cueBankMap.IsEmpty ->
+            let workItems =
+                cleanedWithCue
+                |> Array.choose (fun (cueOpt, c) ->
+                    if String.Equals(c.LanguageTag, "en", StringComparison.OrdinalIgnoreCase) then
+                        cueOpt
+                        |> Option.bind (fun cueKey ->
+                            cueBankMap
+                            |> Map.tryFind cueKey
+                            |> Option.map (fun entry ->
+                                {
+                                    AudioIngestWorkItem.Key = cueKey
+                                    LanguageTag = "en"
+                                    SourceDescription = sprintf "%s#%d (%s)" (Path.GetFileName(entry.BankPath)) entry.SubsongIndex cueKey
+                                    InputFilePath = entry.BankPath
+                                    SubsongIndex = Some entry.SubsongIndex
+                                }
+                            )
+                        )
+                    else
+                        None
+                )
+                |> Array.distinctBy (fun w -> w.Key)
+
+            mediaCtx.Log(sprintf "%s audio extraction (en): matched %d unique voice cues across FMOD banks." gameName workItems.Length)
+            let (hashByCue, succeeded, errors) =
+                ingestExtractedAudioFileBatch store mediaCtx.AudioTools mediaCtx.AudioOptions mediaCtx.Log workItems
+            mediaCtx.Log(sprintf "%s audio extraction complete: ingested %d clips (%d errors)." gameName succeeded errors)
+
+            cleanedWithCue
+            |> Array.map (fun (cueOpt, c) ->
+                if String.Equals(c.LanguageTag, "en", StringComparison.OrdinalIgnoreCase) then
+                    match cueOpt |> Option.bind (fun k -> hashByCue |> Map.tryFind k) with
+                    | Some hash -> { c with SoundResource = hash }
+                    | None -> c
+                else
+                    c
+            )
+        | _ ->
+            cleanedWithCue |> Array.map snd
+
+    // Prefer keeping cards that have audio/speaker populated when deduplicating identical text
+    withAudio
+    |> Array.sortBy (fun c -> (if String.IsNullOrEmpty(c.SoundResource) then 1 else 0), (if String.IsNullOrEmpty(c.Speaker) then 1 else 0))
+    |> Array.distinctBy (fun c -> c.Text)
+
+let ExtractHadesWithMedia (path: string) (_args: string array) (mediaCtx: MediaExtractionContext) =
     let lessonGameTextEntry = {
         LessonRecord.ID = 0;
         Name = "Game Text"
@@ -367,33 +512,41 @@ let ExtractHades(path: string) =
         |> List.map FixPathSeps
         |> List.map (fun relativePath -> Path.Combine(path, relativePath))
 
-    let finalCards =
+    let noCue (cards: CardRecord array) = cards |> Array.map (fun c -> (None, c))
+
+    let cardsWithCue =
         [|
             [|
-                Hades.generateCardsForAllSubtitleDirectories(path, lessonSubtitlesEntry.ID)
-                generateCardsForFormattedXml(path, "HelpText", "HelpText*.xml", lessonGameTextEntry.ID)
-                generateCardsForFormattedXml(path, "1_Keywords", "1_Keywords*.xml", lessonGameTextEntry.ID)
-                generateCardsForFormattedXml(path, "Events", "Events*.xml", lessonGameTextEntry.ID)
-                generateCardsForLaunchTextXml(path, lessonGameTextEntry.ID)
-                Hades.generateCardsForSjson(path, lessonGameTextEntry.ID)
-                Hades.generateCardsForSjson(path, lessonGameTextEntry.ID)
+                Hades.generateCardsForAllSubtitleDirectoriesWithCue(path, lessonSubtitlesEntry.ID)
+                generateCardsForFormattedXml(path, "HelpText", "HelpText*.xml", lessonGameTextEntry.ID) |> noCue
+                generateCardsForFormattedXml(path, "1_Keywords", "1_Keywords*.xml", lessonGameTextEntry.ID) |> noCue
+                generateCardsForFormattedXml(path, "Events", "Events*.xml", lessonGameTextEntry.ID) |> noCue
+                generateCardsForLaunchTextXml(path, lessonGameTextEntry.ID) |> noCue
+                Hades.generateCardsForSjsonWithCue(path, lessonGameTextEntry.ID)
             |]
-            luaScriptsToProcess |> List.map (Hades.generateCardsForLuaScript(lessonGameTextEntry.ID)) |> Array.ofList
+            luaScriptsToProcess |> List.map (Hades.generateCardsForLuaScriptWithCue(lessonGameTextEntry.ID)) |> Array.ofList
         |]
         |> Array.collect id
         |> Array.collect id
-        |> Array.map (fun c -> { c with Text = Hades.formattingAtDirectiveRemovalRegex.Replace(Hades.formattingEscapedWhitespaceRemovalRegex.Replace(Hades.formattingBraceRemovalRegex.Replace(c.Text, ""), " "), "") })
-        |> Array.distinctBy (fun c -> c.Text)
+
+    let voFsb = Path.Combine(path, FixPathSeps @"Content\Audio\FMOD\Build\Desktop\VO.fsb")
+    let voHeader = Path.Combine(path, FixPathSeps @"Content\Audio\FMOD\Build\Desktop\VO.h")
+    let cueBankMap = loadSingleBankCueMap voFsb voHeader None
+
+    let finalCards = attachHadesFamilyAudioAndSpeakers "Hades" cueBankMap mediaCtx cardsWithCue
 
     {
         LudumLinguarumPlugins.ExtractedContent.lessons = [| lessonGameTextEntry; lessonSubtitlesEntry |]
         LudumLinguarumPlugins.ExtractedContent.cards = finalCards
     }
 
+let ExtractHades(path: string) =
+    ExtractHadesWithMedia path [||] MediaExtractionContext.None
+
 // Unlike the original Hades, Hades II does not ship with subtitle CSV files or the HelpText/Events/LaunchText
 // XML files: all localized text (including dialogue and subtitles) lives in the per-language SJSON files
 // underneath the game text directory, which is handled by the SJSON logic shared with the original Hades.
-let ExtractHades2(path: string) =
+let ExtractHades2WithMedia (path: string) (_args: string array) (mediaCtx: MediaExtractionContext) =
     let lessonGameTextEntry = {
         LessonRecord.ID = 0;
         Name = "Game Text"
@@ -404,19 +557,25 @@ let ExtractHades2(path: string) =
     let luaScriptsToProcess =
         Directory.GetFiles(Path.Combine(path, FixPathSeps @"Content\Scripts"), "*.lua")
 
-    let finalCards =
+    let cardsWithCue =
         [|
             [|
-                Hades.generateCardsForSjson(path, lessonGameTextEntry.ID)
+                Hades.generateCardsForSjsonWithCue(path, lessonGameTextEntry.ID)
             |]
-            luaScriptsToProcess |> Array.map (Hades.generateCardsForLuaScript(lessonGameTextEntry.ID))
+            luaScriptsToProcess |> Array.map (Hades.generateCardsForLuaScriptWithCue(lessonGameTextEntry.ID))
         |]
         |> Array.collect id
         |> Array.collect id
-        |> Array.map (fun c -> { c with Text = Hades.formattingAtDirectiveRemovalRegex.Replace(Hades.formattingEscapedWhitespaceRemovalRegex.Replace(Hades.formattingBraceRemovalRegex.Replace(c.Text, ""), " "), "") })
-        |> Array.distinctBy (fun c -> c.Text)
+
+    let voDir = Path.Combine(path, FixPathSeps @"Content\Audio\Desktop\VO")
+    let cueBankMap = loadDirectoryBankCueMap voDir
+
+    let finalCards = attachHadesFamilyAudioAndSpeakers "Hades II" cueBankMap mediaCtx cardsWithCue
 
     {
         LudumLinguarumPlugins.ExtractedContent.lessons = [| lessonGameTextEntry |]
         LudumLinguarumPlugins.ExtractedContent.cards = finalCards
     }
+
+let ExtractHades2(path: string) =
+    ExtractHades2WithMedia path [||] MediaExtractionContext.None

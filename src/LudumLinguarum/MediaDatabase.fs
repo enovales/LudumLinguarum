@@ -221,6 +221,7 @@ type IMediaStore =
 
 type MediaDatabase(dbPath: string) =
     let db = new SQLiteConnection(dbPath)
+    let dbLock = obj()
     do
         db.CreateTable(typeof<MediaEntry>) |> ignore
         db.CreateTable(typeof<TtsCacheEntry>) |> ignore
@@ -251,23 +252,25 @@ type MediaDatabase(dbPath: string) =
 
     member _.PutMedia(record: MediaRecord) : string =
         let normalized = normalizeRecord record
-        let existing =
-            db.Query<MediaEntry>(
-                "select Hash, Source from MediaEntry where Hash = ?",
-                normalized.Hash
-            )
-            |> Seq.tryHead
+        lock dbLock (fun () ->
+            let existing =
+                db.Query<MediaEntry>(
+                    "select Hash, Source from MediaEntry where Hash = ?",
+                    normalized.Hash
+                )
+                |> Seq.tryHead
 
-        match existing with
-        | Some e when e.Source = int MediaSource.Extracted && normalized.Source = MediaSource.Tts ->
-            // Never downgrade native extracted media to TTS provenance if bytes happen to match.
-            normalized.Hash
-        | Some _ ->
-            db.Update(MediaEntry.FromMediaRecord(normalized)) |> ignore
-            normalized.Hash
-        | None ->
-            db.Insert(MediaEntry.FromMediaRecord(normalized)) |> ignore
-            normalized.Hash
+            match existing with
+            | Some e when e.Source = int MediaSource.Extracted && normalized.Source = MediaSource.Tts ->
+                // Never downgrade native extracted media to TTS provenance if bytes happen to match.
+                normalized.Hash
+            | Some _ ->
+                db.Update(MediaEntry.FromMediaRecord(normalized)) |> ignore
+                normalized.Hash
+            | None ->
+                db.Insert(MediaEntry.FromMediaRecord(normalized)) |> ignore
+                normalized.Hash
+        )
 
     member _.TryGetMedia(hash: string) : MediaRecord option =
         if String.IsNullOrWhiteSpace(hash) then

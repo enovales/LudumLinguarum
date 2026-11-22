@@ -1,7 +1,7 @@
 The following games and [language tags](https://en.wikipedia.org/wiki/IETF_language_tag) are supported:
 
 * Age of Empires II: HD Edition \[de, en, es, fr, it, ja, ko, nl, pt, ru, zh\]
-* Age of Empires III \[de, en, es, fr, it\]
+* Age of Empires III \[de, en, es, fr, it\] (audio: de, en, es, fr, it)
 * Audiosurf \[en, ru\]
 * Balatro \[de, en-US, es-419, es-ES, fr, id, it, ja, ko, nl, pl, pt-BR, ru, zh-CN, zh-TW\]
 * Bastion \[de, en, es, fr, it\]
@@ -23,8 +23,8 @@ The following games and [language tags](https://en.wikipedia.org/wiki/IETF_langu
 * GRID \[de, en-GB, en-US, es, fr, it, ja\]
 * GRID 2 \[de, en-GB, en-US, es, fr, it, ja, pl, pt-BR\]
 * GRID Autosport \[de, en-GB, en-US, es, fr, it, ja, pl, pt-BR, ru\]
-* Hades \[de, en, es, fr, it, ja, ko, pl, pt-BR, ru, zh-CN\]
-* Hades II \[de, el, en, es, fr, it, ja, ko, pl, pt-BR, ru, tr, uk, zh-CN, zh-TW\]
+* Hades \[de, en, es, fr, it, ja, ko, pl, pt-BR, ru, zh-CN\] (audio: en)
+* Hades II \[de, el, en, es, fr, it, ja, ko, pl, pt-BR, ru, tr, uk, zh-CN, zh-TW\] (audio: en)
 * Hatoful Boyfriend \[de, en, es, fr, it, ja, ru\]
 * Hatoful Boyfriend: Holiday Star \[de, en, fr, ja\]
 * Hearts of Iron 3 \[de, en, fr\]
